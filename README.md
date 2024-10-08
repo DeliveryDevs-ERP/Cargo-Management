@@ -1,6 +1,6 @@
-## Cargo Management
+## Frappe Cargo Management
 
-Cargo management app for FPL
+Cargo management app 
 
 #### License
 

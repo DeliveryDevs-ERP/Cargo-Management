@@ -1,7 +1,7 @@
 app_name = "cargo_management"
-app_title = "Cargo Management"
-app_publisher = "osama"
-app_description = "Cargo management app for FPL"
+app_title = "Frappe Cargo Management"
+app_publisher = "Osama"
+app_description = "Cargo management app "
 app_email = "osama.ahmed@deliverydevs.com"
 app_license = "mit"
 
@@ -15,7 +15,7 @@ app_license = "mit"
 # 	{
 # 		"name": "cargo_management",
 # 		"logo": "/assets/cargo_management/logo.png",
-# 		"title": "Cargo Management",
+# 		"title": "Frappe Cargo Management",
 # 		"route": "/cargo_management",
 # 		"has_permission": "cargo_management.api.permission.has_app_permission"
 # 	}

@@ -1,9 +1,9 @@
 [project]
 name = "cargo_management"
 authors = [
-    { name = "osama", email = "osama.ahmed@deliverydevs.com"}
+    { name = "Osama", email = "osama.ahmed@deliverydevs.com"}
 ]
-description = "Cargo management app for FPL"
+description = "Cargo management app "
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
