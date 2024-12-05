@@ -1,0 +1,109 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{booking_order_id}-CS-{###}",
+ "creation": "2024-11-18 15:41:02.099418",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "date",
+  "booking_order_id",
+  "job_before_cross_stuff",
+  "grounded_yard_location",
+  "amended_from",
+  "section_break_pvvn",
+  "grounded_filled_containers",
+  "total_weight",
+  "remaining_weight"
+ ],
+ "fields": [
+  {
+   "fieldname": "date",
+   "fieldtype": "Datetime",
+   "label": "Date"
+  },
+  {
+   "fieldname": "booking_order_id",
+   "fieldtype": "Link",
+   "label": "Booking Order ID",
+   "link_filters": "[[\"Booking Order\",\"docstatus\",\"=\",\"1\"]]",
+   "options": "Booking Order"
+  },
+  {
+   "fieldname": "grounded_yard_location",
+   "fieldtype": "Link",
+   "label": "Grounded Yard Location",
+   "options": "Location",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_pvvn",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "grounded_filled_containers",
+   "fieldtype": "Table",
+   "label": "Grounded filled Containers",
+   "options": "Grounded Filled Cdt"
+  },
+  {
+   "fieldname": "job_before_cross_stuff",
+   "fieldtype": "Link",
+   "label": "Job before Cross Stuff",
+   "link_filters": "[[\"Service Type\",\"name1\",\"not in\",[\"Shifting\",\"Gate Out\",\"Gate In\",\"Empty Pickup\",\"Empty Return\",\"Cross Stuff\"]]]",
+   "options": "Service Type"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_weight",
+   "fieldtype": "Float",
+   "label": "Total Weight",
+   "non_negative": 1,
+   "precision": "1"
+  },
+  {
+   "default": "0",
+   "fieldname": "remaining_weight",
+   "fieldtype": "Float",
+   "label": "Remaining Weight",
+   "precision": "1"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Perform Cross Stuff",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-11-19 13:13:54.831100",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Perform Cross Stuff",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,76 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-11-08 15:39:24.407869",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "expense_type",
+  "client",
+  "amount",
+  "invoiced_",
+  "remarks",
+  "column_break_mque",
+  "job_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "job_id",
+   "fieldtype": "Data",
+   "label": "Job Id"
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Supplier",
+   "options": "Customer"
+  },
+  {
+   "fetch_from": "expense_type.cost",
+   "fieldname": "amount",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Amount",
+   "options": "currency",
+   "precision": "1"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "expense_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Cost Type",
+   "options": "FPL Cost Type"
+  },
+  {
+   "fieldname": "column_break_mque",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "invoiced_",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Invoiced ?"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-12-02 12:54:55.909991",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Expenses cdt",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

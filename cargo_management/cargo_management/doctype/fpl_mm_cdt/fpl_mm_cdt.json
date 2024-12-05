@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-31 11:53:03.839525",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "job",
+  "mm_job_id",
+  "container",
+  "wagon_number",
+  "received_",
+  "container_number"
+ ],
+ "fields": [
+  {
+   "fieldname": "mm_job_id",
+   "fieldtype": "Link",
+   "label": "MM Job ID",
+   "options": "FPLRailJob"
+  },
+  {
+   "default": "0",
+   "fieldname": "received_",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Received ?"
+  },
+  {
+   "fieldname": "wagon_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Wagon Number"
+  },
+  {
+   "fieldname": "job",
+   "fieldtype": "Data",
+   "label": "Job"
+  },
+  {
+   "fieldname": "container",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Container",
+   "options": "FPL Containers"
+  },
+  {
+   "fetch_from": "container.container_number",
+   "fieldname": "container_number",
+   "fieldtype": "Data",
+   "label": "Container Number",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-11-26 16:42:12.820456",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPL MM cdt",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

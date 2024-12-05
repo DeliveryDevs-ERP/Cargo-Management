@@ -1,0 +1,220 @@
+{
+ "actions": [],
+ "autoname": "format:{freight_order_number}",
+ "creation": "2024-10-25 16:36:46.419534",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "freight_order_number",
+  "sales_order_number",
+  "client",
+  "column_break_auic",
+  "documents_received",
+  "container_section",
+  "container_number",
+  "container_type",
+  "column_break_mbvl",
+  "bounded",
+  "seal_no",
+  "column_break_jkzu",
+  "size",
+  "weight",
+  "section_break_eays",
+  "jobs",
+  "freight_order_status_tab",
+  "status_section",
+  "status",
+  "mm_completed_",
+  "section_break_vdvh",
+  "last_job",
+  "column_break_pppd",
+  "next_job"
+ ],
+ "fields": [
+  {
+   "fieldname": "freight_order_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Freight Order Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sales_order_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Booking Order Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Client",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "jobs",
+   "fieldtype": "Table",
+   "label": "Jobs",
+   "options": "FPL Jobs"
+  },
+  {
+   "fieldname": "column_break_auic",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "container_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Container Number"
+  },
+  {
+   "description": "(Tons)",
+   "fieldname": "weight",
+   "fieldtype": "Float",
+   "label": "Weight"
+  },
+  {
+   "fieldname": "section_break_eays",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "container_section",
+   "fieldtype": "Section Break",
+   "label": "Container Details"
+  },
+  {
+   "fieldname": "container_type",
+   "fieldtype": "Link",
+   "label": "Container Type",
+   "options": "Container Type"
+  },
+  {
+   "fieldname": "column_break_mbvl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "documents_received",
+   "fieldtype": "Datetime",
+   "label": "Documents Received"
+  },
+  {
+   "fieldname": "freight_order_status_tab",
+   "fieldtype": "Tab Break",
+   "label": "Status"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nDraft\nCross Stuff\nIn Progress\nCompleted"
+  },
+  {
+   "fieldname": "last_job",
+   "fieldtype": "Data",
+   "label": "Last Job",
+   "read_only": 1
+  },
+  {
+   "fieldname": "next_job",
+   "fieldtype": "Data",
+   "label": "Next Job",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_vdvh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_pppd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_jkzu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Int",
+   "label": "Size",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "mm_completed_",
+   "fieldtype": "Check",
+   "label": "MM Completed ?",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "bounded",
+   "fieldtype": "Check",
+   "label": "Bounded?"
+  },
+  {
+   "fieldname": "seal_no",
+   "fieldtype": "Data",
+   "label": "Seal No"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "FPLYardJob",
+   "link_fieldname": "freight_order_id",
+   "table_fieldname": "freight_order_number"
+  },
+  {
+   "link_doctype": "FPLRoadJob",
+   "link_fieldname": "freight_order_id",
+   "table_fieldname": "freight_order_number"
+  },
+  {
+   "link_doctype": "FPLRailJob",
+   "link_fieldname": "freight_order_id"
+  },
+  {
+   "link_doctype": "FPLCrossStuffJob",
+   "link_fieldname": "freight_order_id"
+  }
+ ],
+ "modified": "2024-11-25 18:12:52.174478",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPL Freight Orders",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

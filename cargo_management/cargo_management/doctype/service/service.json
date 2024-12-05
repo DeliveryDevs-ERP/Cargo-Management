@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-10 13:29:29.638116",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "service_name",
+  "column_break_mjcr",
+  "transport_mode"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_name",
+   "fieldtype": "Data",
+   "label": "Service name"
+  },
+  {
+   "fieldname": "transport_mode",
+   "fieldtype": "Link",
+   "label": "Transport mode",
+   "options": "Transport Mode"
+  },
+  {
+   "fieldname": "column_break_mjcr",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-10-10 13:37:02.085768",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Service",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

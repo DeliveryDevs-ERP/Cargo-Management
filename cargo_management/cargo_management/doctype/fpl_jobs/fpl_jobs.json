@@ -1,0 +1,61 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-21 09:35:40.024803",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "job_name",
+  "job_id",
+  "status",
+  "start_location",
+  "end_location"
+ ],
+ "fields": [
+  {
+   "fieldname": "job_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Job Name",
+   "options": "Service Type"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Status"
+  },
+  {
+   "fieldname": "start_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Start Location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "end_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "End Location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "job_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Job Id"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-11-05 16:57:13.801950",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPL Jobs",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

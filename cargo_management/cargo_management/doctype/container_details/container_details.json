@@ -1,0 +1,83 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-21 15:32:59.502804",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "type",
+  "number",
+  "status",
+  "state",
+  "freight_order_id",
+  "pickup_location",
+  "dropoff_location",
+  "job_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "Container Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Number"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status (EF)",
+   "options": "\nEmpty\nFilled"
+  },
+  {
+   "fieldname": "pickup_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Pickup location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "dropoff_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Dropoff location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "freight_order_id",
+   "fieldtype": "Data",
+   "label": "Freight Order ID"
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Select",
+   "label": "State",
+   "options": "\nLoaded\nIn transit\nGate In\nGate Out\nDelivered"
+  },
+  {
+   "fieldname": "job_id",
+   "fieldtype": "Data",
+   "label": "Job ID"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-10-29 18:21:04.558808",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Container Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

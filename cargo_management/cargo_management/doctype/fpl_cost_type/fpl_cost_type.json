@@ -1,0 +1,83 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-11-11 12:05:26.862507",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "cost_name",
+  "job_mode",
+  "cost",
+  "column_break_augo",
+  "fixed_",
+  "item_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "cost_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Cost Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "job_mode",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Job Mode",
+   "options": "\nTrain Job\nTruck Job\nYard Job\nCross Stuff Job",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "fixed_",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Fixed ?"
+  },
+  {
+   "fieldname": "item_id",
+   "fieldtype": "Link",
+   "label": "Item ID",
+   "options": "Item"
+  },
+  {
+   "fieldname": "column_break_augo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cost",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Cost",
+   "non_negative": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-05 13:17:30.657440",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPL Cost Type",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "cost_name",
+ "translated_doctype": 1
+}

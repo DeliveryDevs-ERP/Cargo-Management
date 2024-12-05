@@ -1,0 +1,98 @@
+{
+ "actions": [],
+ "creation": "2024-10-31 17:38:22.758817",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "container_number",
+  "container_type",
+  "freight_order_id",
+  "active_job_id",
+  "column_break_vrgt",
+  "status",
+  "state",
+  "container_location",
+  "container_next_location"
+ ],
+ "fields": [
+  {
+   "fieldname": "container_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Container Number",
+   "unique": 1
+  },
+  {
+   "fieldname": "container_type",
+   "fieldtype": "Link",
+   "label": "Container Type",
+   "options": "Container Type"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nEmpty\nFilled"
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Select",
+   "label": "State",
+   "options": "\nLoaded\nIn transit\nGate In\nGate Out\nDelivered"
+  },
+  {
+   "fieldname": "active_job_id",
+   "fieldtype": "Data",
+   "label": "Active Job "
+  },
+  {
+   "fieldname": "column_break_vrgt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "container_location",
+   "fieldtype": "Link",
+   "label": "Container last Location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "freight_order_id",
+   "fieldtype": "Data",
+   "label": "Freight Order ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "container_next_location",
+   "fieldtype": "Link",
+   "label": "Container next Location",
+   "options": "Location"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-14 16:37:22.806440",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPL Containers",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "container_number",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "container_number"
+}

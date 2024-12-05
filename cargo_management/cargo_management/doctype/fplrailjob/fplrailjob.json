@@ -1,0 +1,124 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-29 13:17:53.268200",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "freight_order_id",
+  "sales_order_number",
+  "client",
+  "job_start_location",
+  "job_end_location",
+  "container_number",
+  "column_break_alag",
+  "job_type",
+  "status",
+  "assigned_at",
+  "train_number"
+ ],
+ "fields": [
+  {
+   "fieldname": "freight_order_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Freight Order ID"
+  },
+  {
+   "fieldname": "sales_order_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Booking Order Number"
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Client",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "job_start_location",
+   "fieldtype": "Link",
+   "label": "Job Start Location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "job_end_location",
+   "fieldtype": "Link",
+   "label": "Job End Location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "column_break_alag",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "job_type",
+   "fieldtype": "Link",
+   "label": "Job Type",
+   "options": "Service Type"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nDraft\nAssigned\nCompleted\nCancelled"
+  },
+  {
+   "fieldname": "container_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Container Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "assigned_at",
+   "fieldtype": "Datetime",
+   "label": "Assigned at"
+  },
+  {
+   "fieldname": "train_number",
+   "fieldtype": "Link",
+   "label": "Train Number",
+   "options": "FPL Perform Middle Mile"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-05 12:48:07.726753",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPLRailJob",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "job_type"
+}

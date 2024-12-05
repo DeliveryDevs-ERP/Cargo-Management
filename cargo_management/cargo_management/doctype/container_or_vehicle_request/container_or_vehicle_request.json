@@ -1,0 +1,85 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:Request - {###}",
+ "creation": "2024-11-18 14:44:22.865570",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "request_date",
+  "booking_order_id",
+  "cargo_type",
+  "yard_location",
+  "table_ktch",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "request_date",
+   "fieldtype": "Datetime",
+   "label": "Request Date"
+  },
+  {
+   "fieldname": "booking_order_id",
+   "fieldtype": "Link",
+   "label": "Booking Order ID",
+   "link_filters": "[[\"Booking Order\",\"docstatus\",\"=\",\"1\"]]",
+   "options": "Booking Order"
+  },
+  {
+   "fieldname": "cargo_type",
+   "fieldtype": "Select",
+   "label": "Cargo Type",
+   "options": "\nContainerised\nNon Containerised"
+  },
+  {
+   "fieldname": "yard_location",
+   "fieldtype": "Link",
+   "label": "Yard Location ",
+   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
+   "options": "Location"
+  },
+  {
+   "fieldname": "table_ktch",
+   "fieldtype": "Table",
+   "label": "Request",
+   "options": "Container or Vehicle Request cdt"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Container or Vehicle Request",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-11-18 16:51:14.160226",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Container or Vehicle Request",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "autoname": "field:name1",
+ "creation": "2024-10-08 17:14:18.217846",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "name1",
+  "type",
+  "state",
+  "size",
+  "max_weight_ton",
+  "max_count"
+ ],
+ "fields": [
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "\nSmall\nConventional\nLarge\nDummy\nBreak"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Size",
+   "options": "\n20\n40\n60"
+  },
+  {
+   "fieldname": "max_weight_ton",
+   "fieldtype": "Float",
+   "label": "Max Weight (Ton)"
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "State",
+   "options": "\nEmpty\nLoaded\nDrail\nMaintenance"
+  },
+  {
+   "fieldname": "max_count",
+   "fieldtype": "Int",
+   "label": "Max Count"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-04 13:44:50.808081",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPL Wagons",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "name1"
+}

@@ -1,0 +1,99 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-11-19 14:23:34.250228",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "freight_order_id",
+  "sales_order_number",
+  "client",
+  "cross_stuff_performance_location",
+  "container_number",
+  "column_break_uhhp",
+  "job_type",
+  "status",
+  "assigned_at",
+  "performance_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "freight_order_id",
+   "fieldtype": "Data",
+   "label": "Freight Order ID"
+  },
+  {
+   "fieldname": "sales_order_number",
+   "fieldtype": "Data",
+   "label": "Sales Order Number"
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "label": "Client",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "cross_stuff_performance_location",
+   "fieldtype": "Link",
+   "label": "Cross Stuff Performance Location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "container_number",
+   "fieldtype": "Data",
+   "label": "Container Number"
+  },
+  {
+   "fieldname": "job_type",
+   "fieldtype": "Link",
+   "label": "Job type",
+   "options": "Service Type"
+  },
+  {
+   "fieldname": "column_break_uhhp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nDraft\nAssigned\nCompleted\nCancelled"
+  },
+  {
+   "fieldname": "assigned_at",
+   "fieldtype": "Datetime",
+   "label": "Assigned at"
+  },
+  {
+   "fieldname": "performance_details",
+   "fieldtype": "Link",
+   "label": "Performance details",
+   "options": "Perform Cross Stuff"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-19 14:30:34.424720",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPLCrossStuffJob",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

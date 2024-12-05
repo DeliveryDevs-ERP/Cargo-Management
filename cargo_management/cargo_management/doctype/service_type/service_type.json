@@ -1,0 +1,90 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-08 18:05:21.158438",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "name1",
+  "transport_mode",
+  "applicable",
+  "job_type",
+  "miscellaneous"
+ ],
+ "fields": [
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name of Service"
+  },
+  {
+   "fieldname": "transport_mode",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Transport mode",
+   "options": "Transport Mode"
+  },
+  {
+   "default": "0",
+   "fieldname": "applicable",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Applicable?"
+  },
+  {
+   "fieldname": "job_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Job Type",
+   "options": "\nRoad\nRail\nYard\nCross Stuff"
+  },
+  {
+   "default": "0",
+   "fieldname": "miscellaneous",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Miscellaneous?"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-25 17:29:14.382095",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Service Type",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "name1",
+ "translated_doctype": 1
+}

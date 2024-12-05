@@ -1,0 +1,159 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{job_type}-{###}",
+ "creation": "2024-10-29 13:18:19.690206",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "freight_order_id",
+  "sales_order_number",
+  "client",
+  "job_start_location",
+  "job_end_location",
+  "column_break_yump",
+  "job_type",
+  "status",
+  "container_number",
+  "assigned_at",
+  "section_break_dvmn",
+  "gate_in",
+  "column_break_ynlf",
+  "gate_out",
+  "section_break_blmp",
+  "expenses"
+ ],
+ "fields": [
+  {
+   "fieldname": "freight_order_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Freight Order ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "job_type",
+   "fieldtype": "Link",
+   "label": "Job Type",
+   "options": "Service Type",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.job_type == 'enrhva2nvi';",
+   "fieldname": "gate_in",
+   "fieldtype": "Datetime",
+   "label": "Gate In Datetime"
+  },
+  {
+   "depends_on": "eval: doc.job_type == 'eo0ldr6jda';",
+   "fieldname": "gate_out",
+   "fieldtype": "Datetime",
+   "label": "Gate Out Datetime"
+  },
+  {
+   "fieldname": "column_break_yump",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nDraft\nAssigned\nCompleted\nCancelled"
+  },
+  {
+   "fieldname": "sales_order_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Sales Order Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "label": "Client",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "job_start_location",
+   "fieldtype": "Link",
+   "label": "Job Start Location",
+   "options": "Location",
+   "read_only": 1
+  },
+  {
+   "fieldname": "job_end_location",
+   "fieldtype": "Link",
+   "label": "Job End Location",
+   "options": "Location",
+   "read_only": 1
+  },
+  {
+   "fieldname": "container_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Container Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_blmp",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "expenses",
+   "fieldtype": "Table",
+   "label": "Expenses",
+   "options": "Expenses cdt"
+  },
+  {
+   "fieldname": "assigned_at",
+   "fieldtype": "Datetime",
+   "label": "Assigned at"
+  },
+  {
+   "fieldname": "section_break_dvmn",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_ynlf",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-25 16:08:35.296781",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPLYardJob",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "job_type"
+}

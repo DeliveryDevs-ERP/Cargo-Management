@@ -1,1 +1,1 @@
-Frappe Cargo Management
+Cargo Management

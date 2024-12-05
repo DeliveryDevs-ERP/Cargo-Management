@@ -1,0 +1,29 @@
+{
+ "allow_roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "creation": "2024-11-19 12:22:55.122330",
+ "docstatus": 0,
+ "doctype": "Module Onboarding",
+ "documentation_url": "https://docs.erpnext.com/docs/user/manual/en/introduction",
+ "idx": 0,
+ "is_complete": 0,
+ "modified": "2024-11-19 12:22:55.122330",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "CargoManagement",
+ "owner": "Administrator",
+ "steps": [
+  {
+   "step": "Create a Customer"
+  },
+  {
+   "step": "Create an Item"
+  }
+ ],
+ "subtitle": "Customised Module ",
+ "success_message": "Welcome To Cargo Management",
+ "title": "Cargo Management"
+}

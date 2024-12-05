@@ -1,0 +1,287 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{rail_number}-FPL-{###}",
+ "creation": "2024-10-31 11:38:10.741643",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "train_formation_tab",
+  "expected_time_of_arrival_eta",
+  "expected_departure_time_eda",
+  "finish_train_formation",
+  "column_break_lnsu",
+  "rail_number",
+  "movement_type",
+  "status",
+  "section_break_udos",
+  "departure_location",
+  "column_break_zvhq",
+  "arrival_location",
+  "section_break_qyfj",
+  "wagons",
+  "loading_tab",
+  "loading_time",
+  "loading_end_time",
+  "finish_loading",
+  "section_break_nhhe",
+  "middle_mile",
+  "departure_tab",
+  "loco_number",
+  "break_number",
+  "finish_departure",
+  "column_break_rchg",
+  "departure_time",
+  "section_break_vfmj",
+  "middle_mile_in_loading",
+  "tab_5_tab",
+  "actual_arrival_datetime",
+  "finish_arrival",
+  "column_break_gcyp",
+  "offloading_start_time",
+  "offloading_end_time",
+  "section_break_kklg",
+  "middle_mile_copy",
+  "expenses_tab",
+  "expenses"
+ ],
+ "fields": [
+  {
+   "fieldname": "rail_number",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Rail Number",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "movement_type",
+   "fieldtype": "Select",
+   "label": "Movement Type ",
+   "options": "\nUp\nDown"
+  },
+  {
+   "fieldname": "expected_time_of_arrival_eta",
+   "fieldtype": "Datetime",
+   "label": "Expected Time of Arrival (ETA)"
+  },
+  {
+   "fieldname": "column_break_lnsu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "middle_mile",
+   "fieldtype": "Table",
+   "label": "Middle Mile",
+   "options": "FPL MM cdt"
+  },
+  {
+   "fieldname": "train_formation_tab",
+   "fieldtype": "Tab Break",
+   "label": "Train formation"
+  },
+  {
+   "fieldname": "expected_departure_time_eda",
+   "fieldtype": "Datetime",
+   "label": "Expected Departure time (EDA)"
+  },
+  {
+   "depends_on": "eval:doc.finish_train_formation === 1;",
+   "fieldname": "loading_tab",
+   "fieldtype": "Tab Break",
+   "label": "Loading"
+  },
+  {
+   "depends_on": "eval:doc.finish_loading === 1;",
+   "fieldname": "departure_tab",
+   "fieldtype": "Tab Break",
+   "label": "Departure"
+  },
+  {
+   "depends_on": "eval:doc.finish_departure === 1;",
+   "fieldname": "tab_5_tab",
+   "fieldtype": "Tab Break",
+   "label": "Arrival"
+  },
+  {
+   "fieldname": "loco_number",
+   "fieldtype": "Data",
+   "label": "Loco Number"
+  },
+  {
+   "fieldname": "break_number",
+   "fieldtype": "Data",
+   "label": "Break Number"
+  },
+  {
+   "fieldname": "column_break_rchg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "departure_time",
+   "fieldtype": "Datetime",
+   "label": "Actual Departure Time (ATD)"
+  },
+  {
+   "fieldname": "loading_time",
+   "fieldtype": "Datetime",
+   "label": "Loading Start Time"
+  },
+  {
+   "fieldname": "loading_end_time",
+   "fieldtype": "Datetime",
+   "label": "Loading End Time"
+  },
+  {
+   "fieldname": "section_break_vfmj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "middle_mile_in_loading",
+   "fieldtype": "Table",
+   "label": "Middle Mile in Departure",
+   "options": "FPL MM cdt",
+   "read_only": 1
+  },
+  {
+   "fieldname": "actual_arrival_datetime",
+   "fieldtype": "Datetime",
+   "label": "Actual Arrival Time (ATA)"
+  },
+  {
+   "fieldname": "offloading_start_time",
+   "fieldtype": "Datetime",
+   "label": "Offloading start time "
+  },
+  {
+   "fieldname": "offloading_end_time",
+   "fieldtype": "Datetime",
+   "label": "Offloading end time  "
+  },
+  {
+   "fieldname": "column_break_gcyp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_kklg",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "middle_mile_copy",
+   "fieldtype": "Table",
+   "label": "Middle Mile in Arrival",
+   "options": "FPL MM cdt"
+  },
+  {
+   "fieldname": "section_break_nhhe",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "departure_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Departure Location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "section_break_qyfj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "wagons",
+   "fieldtype": "Table",
+   "label": "Wagons",
+   "options": "FPL Wagon cdt",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "finish_train_formation",
+   "fieldtype": "Check",
+   "label": "Finish train formation",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "finish_loading",
+   "fieldtype": "Check",
+   "label": "Finish Loading",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "finish_departure",
+   "fieldtype": "Check",
+   "label": "Finish Departure",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "finish_arrival",
+   "fieldtype": "Check",
+   "label": "Finish Arrival",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expenses_tab",
+   "fieldtype": "Tab Break",
+   "label": "Expenses"
+  },
+  {
+   "fieldname": "expenses",
+   "fieldtype": "Table",
+   "label": "Expenses",
+   "options": "Expenses cdt"
+  },
+  {
+   "fieldname": "section_break_udos",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_zvhq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "arrival_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Arrival Location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "\nTrain Formed\nLoaded\nDeparted\nArrived"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-02 15:05:19.024140",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPL Perform Middle Mile",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "rail_number"
+}

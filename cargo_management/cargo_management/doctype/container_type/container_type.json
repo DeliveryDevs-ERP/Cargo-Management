@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2024-10-08 17:02:57.564764",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "name1",
+  "size",
+  "length_m",
+  "width_m",
+  "height_m",
+  "capacity_m3",
+  "tare_weight_kg",
+  "max_cargo_weight_kg"
+ ],
+ "fields": [
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Int",
+   "label": "Size"
+  },
+  {
+   "fieldname": "length_m",
+   "fieldtype": "Float",
+   "label": "Length (m)"
+  },
+  {
+   "fieldname": "width_m",
+   "fieldtype": "Float",
+   "label": "Width (m)"
+  },
+  {
+   "fieldname": "height_m",
+   "fieldtype": "Float",
+   "label": "Height (m)"
+  },
+  {
+   "fieldname": "capacity_m3",
+   "fieldtype": "Int",
+   "label": "Capacity (m3)"
+  },
+  {
+   "fieldname": "tare_weight_kg",
+   "fieldtype": "Int",
+   "label": "Tare Weight (kg)"
+  },
+  {
+   "fieldname": "max_cargo_weight_kg",
+   "fieldtype": "Int",
+   "label": "Max Cargo Weight (kg)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-10-21 15:51:09.351213",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Container Type",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "name1",
+ "translated_doctype": 1
+}

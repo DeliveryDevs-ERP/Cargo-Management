@@ -1,0 +1,54 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-11-18 17:50:10.207682",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "container_number",
+  "size",
+  "weight",
+  "reference_container"
+ ],
+ "fields": [
+  {
+   "fieldname": "container_number",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Container Number",
+   "options": "FPL Containers"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Size"
+  },
+  {
+   "fieldname": "weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Weight"
+  },
+  {
+   "fieldname": "reference_container",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Reference Container",
+   "options": "FPL Containers"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-11-18 18:12:39.682825",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Grounded Empty cdt",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

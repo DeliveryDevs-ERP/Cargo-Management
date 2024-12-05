@@ -1,0 +1,209 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-29 13:02:36.497523",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "freight_order_id",
+  "sales_order_number",
+  "client",
+  "job_start_location",
+  "job_end_location",
+  "container_number",
+  "column_break_dlnr",
+  "job_type",
+  "status",
+  "vehicle_number",
+  "vehicle_supplier",
+  "driver_name",
+  "assigned_at",
+  "section_break_tiif",
+  "pickup_arrival",
+  "pickup_departure",
+  "column_break_npmw",
+  "dropoff_arrival",
+  "dropoff_completed",
+  "section_break_mguy",
+  "double_20_",
+  "container_number_to_link",
+  "section_break_pdnj",
+  "expenses"
+ ],
+ "fields": [
+  {
+   "fieldname": "freight_order_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Freight Order ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vehicle_number",
+   "fieldtype": "Data",
+   "label": "Vehicle Number"
+  },
+  {
+   "fieldname": "vehicle_supplier",
+   "fieldtype": "Link",
+   "label": "Vehicle Supplier",
+   "options": "Vehicle Supplier"
+  },
+  {
+   "fieldname": "driver_name",
+   "fieldtype": "Link",
+   "label": "Driver Name",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "column_break_dlnr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assigned_at",
+   "fieldtype": "Datetime",
+   "label": "Assigned at"
+  },
+  {
+   "fieldname": "job_type",
+   "fieldtype": "Link",
+   "label": "Job Type",
+   "options": "Service Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nAssigned\nCompleted\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sales_order_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Booking Order Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "client",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Client",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "job_start_location",
+   "fieldtype": "Link",
+   "label": "Job Start Location",
+   "options": "Location",
+   "read_only": 1
+  },
+  {
+   "fieldname": "job_end_location",
+   "fieldtype": "Link",
+   "label": "Job End Location",
+   "options": "Location",
+   "read_only": 1
+  },
+  {
+   "fieldname": "container_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Container Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_tiif",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "pickup_arrival",
+   "fieldtype": "Datetime",
+   "label": "Pickup Arrival "
+  },
+  {
+   "fieldname": "pickup_departure",
+   "fieldtype": "Datetime",
+   "label": "Pickup Departure"
+  },
+  {
+   "fieldname": "column_break_npmw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dropoff_arrival",
+   "fieldtype": "Datetime",
+   "label": "Dropoff Arrival"
+  },
+  {
+   "fieldname": "dropoff_completed",
+   "fieldtype": "Datetime",
+   "label": "Dropoff Completed"
+  },
+  {
+   "fieldname": "section_break_pdnj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "expenses",
+   "fieldtype": "Table",
+   "label": "Expenses",
+   "options": "Expenses cdt"
+  },
+  {
+   "fieldname": "section_break_mguy",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "double_20_",
+   "fieldtype": "Check",
+   "label": "Double 20 ?"
+  },
+  {
+   "depends_on": "eval: doc.double_20_ == 1;",
+   "fieldname": "container_number_to_link",
+   "fieldtype": "Link",
+   "label": "Container Number (to link)",
+   "options": "FPL Containers"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-05 12:48:58.044748",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "FPLRoadJob",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "job_type"
+}

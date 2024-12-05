@@ -1,0 +1,72 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-11-18 14:49:25.578374",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "qty",
+  "size",
+  "type",
+  "last_free_date",
+  "pickup_location",
+  "empty_return_location"
+ ],
+ "fields": [
+  {
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Size",
+   "options": "\n20\n40\n45"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "Container Type"
+  },
+  {
+   "fieldname": "last_free_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Last Free Date"
+  },
+  {
+   "fieldname": "pickup_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Pickup Location",
+   "options": "Location"
+  },
+  {
+   "fieldname": "empty_return_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Empty Return Location ",
+   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
+   "options": "Location"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-11-18 14:58:09.899370",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Container or Vehicle Request cdt",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

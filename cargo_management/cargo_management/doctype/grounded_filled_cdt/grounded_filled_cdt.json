@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-11-18 15:50:37.308047",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "container_number",
+  "weight",
+  "empty_return_location",
+  "weight_to_transfer",
+  "reference_container"
+ ],
+ "fields": [
+  {
+   "fetch_from": "freight_order_id.container_number",
+   "fieldname": "container_number",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Container Number (FO)",
+   "options": "FPL Containers"
+  },
+  {
+   "description": "(Tons)",
+   "fetch_from": "freight_order_id.weight",
+   "fieldname": "weight",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Cargo Weight ",
+   "precision": "1"
+  },
+  {
+   "fieldname": "empty_return_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Empty Return Location",
+   "options": "Location"
+  },
+  {
+   "description": "(Tons)",
+   "fieldname": "weight_to_transfer",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Weight to Transfer",
+   "precision": "1"
+  },
+  {
+   "fieldname": "reference_container",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Reference Container (CFO)",
+   "options": "FPL Containers"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-11-18 19:50:02.288498",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Grounded Filled Cdt",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
