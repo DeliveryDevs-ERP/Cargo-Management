@@ -1,0 +1,352 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"LtMbqZLZr6\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Cargo Management</span>\",\"col\":12}},{\"id\":\"6tKF3K8kdu\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Bookings\",\"col\":4}},{\"id\":\"zQH8Itk_pg\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Invoices\",\"col\":4}},{\"id\":\"U7_dHZj80j\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"z08JDDaX2n\",\"type\":\"card\",\"data\":{\"card_name\":\"Operations\",\"col\":4}},{\"id\":\"jOB0xcqhk_\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"is9uodgyAS\",\"type\":\"paragraph\",\"data\":{\"text\":\"Road Jobs\",\"col\":12}},{\"id\":\"KX0zDZnFxs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"First Mile\",\"col\":3}},{\"id\":\"MPV3NA71bq\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Last Mile\",\"col\":3}},{\"id\":\"seE62pEMlX\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Long Haul\",\"col\":3}},{\"id\":\"UHxxY0aaUX\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Short Haul\",\"col\":3}},{\"id\":\"IvflKSQ2Nk\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Empty Pickup\",\"col\":3}},{\"id\":\"yxQWMCaXdw\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"wrnHOAFBXF\",\"type\":\"paragraph\",\"data\":{\"text\":\"Rail Jobs\",\"col\":12}},{\"id\":\"BEdNrNYFv4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Middle Mile\",\"col\":3}},{\"id\":\"Dng5_arApo\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Arrived Trains\",\"col\":3}},{\"id\":\"KG8oQHOdaL\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"FFObC-GmNj\",\"type\":\"paragraph\",\"data\":{\"text\":\"Yard Jobs\",\"col\":12}},{\"id\":\"7a8kKMpzV5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Gate In\",\"col\":3}},{\"id\":\"ue-2V9zS-g\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Gate Out\",\"col\":3}},{\"id\":\"QUCMJdlDo9\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"EpE6qkQs-q\",\"type\":\"paragraph\",\"data\":{\"text\":\"Cross Stuff Jobs\",\"col\":12}},{\"id\":\"AL2V_LTOQ_\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Cross Stuff\",\"col\":3}},{\"id\":\"qRAYA257jO\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"mqEJDTv7DE\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":3}},{\"id\":\"U5ZWQ3NVYv\",\"type\":\"card\",\"data\":{\"card_name\":\"Setup\",\"col\":4}},{\"id\":\"XxxowsB4wn\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
+ "creation": "2024-11-19 12:46:04.610792",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "tool",
+ "idx": 0,
+ "indicator_color": "blue",
+ "is_hidden": 0,
+ "label": "Cargo Management",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Masters",
+   "link_count": 9,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Locations",
+   "link_count": 0,
+   "link_to": "Location",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Cost Types",
+   "link_count": 0,
+   "link_to": "FPL Cost Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Services",
+   "link_count": 0,
+   "link_to": "Service Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Wagons",
+   "link_count": 0,
+   "link_to": "FPL Wagons",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Commodities",
+   "link_count": 0,
+   "link_to": "FPL Commodities",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customers",
+   "link_count": 0,
+   "link_to": "Customer",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Suppliers",
+   "link_count": 0,
+   "link_to": "Supplier",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Items",
+   "link_count": 0,
+   "link_to": "Item",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Container Types",
+   "link_count": 0,
+   "link_to": "Container Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Operations",
+   "link_count": 2,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Container or Vehicle Request",
+   "link_count": 0,
+   "link_to": "Container or Vehicle Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Freight Orders",
+   "link_count": 0,
+   "link_to": "FPL Freight Orders",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Setup",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Supported Transport modes",
+   "link_count": 0,
+   "link_to": "Transport Mode",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Predefined Job Sequence",
+   "link_count": 0,
+   "link_to": "FPL Jobs Sequence",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Supported Rate Types",
+   "link_count": 0,
+   "link_to": "UOM",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Container/ Vehicle Types",
+   "link_count": 0,
+   "link_to": "Container Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Train Summary",
+   "link_count": 0,
+   "link_to": "Trains summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "FPL Perform Middle Mile",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Grounded Container Summary",
+   "link_count": 0,
+   "link_to": "Yard & Date wise Grounded Container Summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "FPLYardJob",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Grounded Container detail",
+   "link_count": 0,
+   "link_to": "Yard and Date wise Grounded Container",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "FPLYardJob",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Train Detail",
+   "link_count": 0,
+   "link_to": "Train Detail",
+   "link_type": "Report",
+   "onboard": 0,
+   "report_ref_doctype": "FPL Perform Middle Mile",
+   "type": "Link"
+  }
+ ],
+ "modified": "2024-12-06 16:53:10.017891",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Cargo Management",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [
+  {
+   "document_type": "Booking Order",
+   "label": "Bookings",
+   "quick_list_filter": "[[\"Booking Order\",\"docstatus\",\"=\",\"1\",false]]"
+  },
+  {
+   "document_type": "Sales Invoice",
+   "label": "Invoices",
+   "quick_list_filter": "[[\"Sales Invoice\",\"status\",\"=\",\"Unpaid\",false]]"
+  }
+ ],
+ "roles": [],
+ "sequence_id": 3.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "First Mile",
+   "link_to": "FPLRoadJob",
+   "stats_filter": "[[\"FPLRoadJob\",\"job_type\",\"=\",\"vg2osur4ei\",false],[\"FPLRoadJob\",\"status\",\"=\",\"Assigned\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Long Haul",
+   "link_to": "FPLRoadJob",
+   "stats_filter": "[[\"FPLRoadJob\",\"job_type\",\"=\",\"giml5efmsh\",false],[\"FPLRoadJob\",\"status\",\"=\",\"Assigned\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Empty Pickup",
+   "link_to": "FPLRoadJob",
+   "stats_filter": "[[\"FPLRoadJob\",\"job_type\",\"=\",\"b8mpmejmts\",false],[\"FPLRoadJob\",\"job_type\",\"=\",\"oapcdu6gv3\",false],[\"FPLRoadJob\",\"status\",\"=\",\"Assigned\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Middle Mile",
+   "link_to": "FPLRailJob",
+   "stats_filter": "[[\"FPLRailJob\",\"job_type\",\"=\",\"oagb0ddmuo\",false],[\"FPLRailJob\",\"status\",\"=\",\"Assigned\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "Arrived Trains",
+   "link_to": "FPL Perform Middle Mile",
+   "stats_filter": "[[\"FPL Perform Middle Mile\",\"status\",\"=\",\"Arrived\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Cross Stuff",
+   "link_to": "FPLCrossStuffJob",
+   "stats_filter": "[[\"FPLCrossStuffJob\",\"status\",\"=\",\"Assigned\",false],[\"FPLCrossStuffJob\",\"job_type\",\"=\",\"l645t4f4fm\",false],[\"FPLCrossStuffJob\",\"job_type\",\"=\",\"l6cdsvneqs\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Last Mile",
+   "link_to": "FPLRoadJob",
+   "stats_filter": "[[\"FPLRoadJob\",\"job_type\",\"=\",\"oalds7gjs7\",false],[\"FPLRoadJob\",\"status\",\"=\",\"Assigned\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Short Haul",
+   "link_to": "FPLRoadJob",
+   "stats_filter": "[[\"FPLRoadJob\",\"job_type\",\"=\",\"oasikqkqg2\",false],[\"FPLRoadJob\",\"status\",\"=\",\"Assigned\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Gate In",
+   "link_to": "FPLYardJob",
+   "stats_filter": "[[\"FPLYardJob\",\"job_type\",\"=\",\"enrhva2nvi\",false],[\"FPLYardJob\",\"status\",\"=\",\"Assigned\",false]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Gate Out",
+   "link_to": "FPLYardJob",
+   "stats_filter": "[[\"FPLYardJob\",\"job_type\",\"=\",\"eo0ldr6jda\",false],[\"FPLYardJob\",\"status\",\"=\",\"Assigned\",false]]",
+   "type": "DocType"
+  }
+ ],
+ "title": "Cargo Management"
+}

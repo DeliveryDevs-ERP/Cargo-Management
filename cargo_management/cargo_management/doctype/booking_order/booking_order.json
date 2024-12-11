@@ -391,9 +391,13 @@
   {
    "link_doctype": "Sales Invoice",
    "link_fieldname": "custom_booking_order"
+  },
+  {
+   "link_doctype": "Sales Order",
+   "link_fieldname": "custom_booking_order_id"
   }
  ],
- "modified": "2024-12-05 13:02:35.853609",
+ "modified": "2024-12-05 15:38:47.572776",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Booking Order",

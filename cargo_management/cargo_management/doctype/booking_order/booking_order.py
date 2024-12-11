@@ -66,7 +66,8 @@ class BookingOrder(Document):
     def on_submit(self):
         try:
             self.create_freight_orders()  # Create freight orders first
-            self.create_and_submit_sales_invoice()  # Attempt to create and submit Sales Invoice
+            self.create_and_submit_sales_order()# Attempt to create and saves Sales Invoice
+            # self.create_and_submit_sales_invoice()  # Attempt to create and saves Sales Invoice
         except Exception as e:
             frappe.db.rollback()  # Roll back changes if any error occurs
             frappe.throw(f"Booking Order submission failed due to: {str(e)}")
@@ -229,53 +230,53 @@ class BookingOrder(Document):
                 frappe.throw(f"No Service Type found for name1: {service_name} and transport mode: {transport_mode}")
 
 
-    # def create_and_submit_sales_order(self):
-    #     try:
-    #         # Create Sales Order
-    #         sales_order = frappe.get_doc({
-    #             "doctype": "Sales Order",
-    #             "customer": self.bill_to,
-    #             "company": self.company,  
-    #             "items": self.get_sales_order_items(),
-    #             "status": "To Deliver and Bill",
-    #             "order_type": "Sales",
-    #             "custom_booking_order_id" : self.name,
-    #             "delivery_date": self.delivery_date,  # Assuming 'delivery_date' is a field in Booking Order
-    #         })
+    def create_and_submit_sales_order(self):
+        try:
+            # Create Sales Order
+            sales_order = frappe.get_doc({
+                "doctype": "Sales Order",
+                "customer": self.bill_to,
+                "company": self.company,  
+                "items": self.get_sales_order_items(),
+                "status": "To Deliver and Bill",
+                "order_type": "Sales",
+                "custom_booking_order_id" : self.name,
+                "delivery_date": self.delivery_date,  # Assuming 'delivery_date' is a field in Booking Order
+            })
 
-    #         # Save and submit the Sales Order
-    #         sales_order.insert()
-    #         sales_order.submit()
+            # Save and save the Sales Order
+            sales_order.insert()
+            sales_order.save()
 
-    #         frappe.msgprint(f"Sales Order {sales_order.name} created and submitted successfully.")
-    #         return sales_order.name  # Return Sales Order name if needed
+            frappe.msgprint(f"Sales Order {sales_order.name} created and save successfully.")
+            return sales_order.name  # Return Sales Order name if needed
 
-    #     except Exception as e:
-    #         # Raise an error if the Sales Order submission fails
-    #         frappe.throw(f"Failed to create and submit Sales Order: {str(e)}")
+        except Exception as e:
+            # Raise an error if the Sales Order submission fails
+            frappe.throw(f"Failed to create and save Sales Order: {str(e)}")
 
 
-    # def get_sales_order_items(self):
-    #     """Extract items from the Booking Order to populate Sales Order."""
-    #     sales_order_items = []
-    #     for cargo in self.get("cargo_details", []):
-    #         UOM = cargo.rate_type
-    #         if (UOM == "Per Container"):
-    #             weight = cargo.avg_weight
-    #             qty = cargo.qty
-    #         elif (UOM == "Per Weight(Ton)")or (UOM == 'Per Bag'):
-    #             weight = cargo.bag_weight
-    #             qty = cargo.bag_qty
-    #         sales_order_items.append({
-    #             "item_code": cargo.cargo_type,  # Assuming cargo contains 'item_code'
-    #             "qty": qty,  
-    #             "uom": cargo.rate_type,
-    #             "rate": cargo.rate, 
-    #             "amount" : cargo.amount,
-    #             "weight_per_unit": weight,
-    #             "description": f"Transport Mode: {self.transport_type}, Container Size: {cargo.size}, Avg Weight: {cargo.avg_weight or cargo.bag_weight} Tons, from {self.pickup_location} to {self.dropoff_location}, BOL: {self.bill_of_landing_number}"
-    #         })
-    #     return sales_order_items
+    def get_sales_order_items(self):
+        """Extract items from the Booking Order to populate Sales Order."""
+        sales_order_items = []
+        for cargo in self.get("cargo_details", []):
+            UOM = cargo.rate_type
+            if (UOM == "Per Container"):
+                weight = cargo.avg_weight
+                qty = cargo.qty
+            elif (UOM == "Per Weight(Ton)")or (UOM == 'Per Bag'):
+                weight = cargo.bag_weight
+                qty = cargo.bag_qty
+            sales_order_items.append({
+                "item_code": cargo.cargo_type,  # Assuming cargo contains 'item_code'
+                "qty": qty,  
+                "uom": cargo.rate_type,
+                "rate": cargo.rate, 
+                "amount" : cargo.amount,
+                "weight_per_unit": weight,
+                "description": f"Transport Mode: {self.transport_type}, Container Size: {cargo.size}, Avg Weight: {cargo.avg_weight or cargo.bag_weight} Tons, from {self.pickup_location} to {self.dropoff_location}, BOL: {self.bill_of_landing_number}"
+            })
+        return sales_order_items
 
     def create_and_submit_sales_invoice(self):
         try:
@@ -293,9 +294,9 @@ class BookingOrder(Document):
 
             # Save and submit the Sales Invoice
             sales_invoice.insert()
-            sales_invoice.submit()
+            sales_invoice.save()
 
-            frappe.msgprint(f"Sales Invoice {sales_invoice.name} created and submitted successfully.")
+            frappe.msgprint(f"Sales Invoice {sales_invoice.name} created and saved successfully.")
             return sales_invoice.name  # Return Sales Invoice name if needed
 
         except Exception as e:
