@@ -12,14 +12,14 @@ class BookingOrder(Document):
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
+        from cargo_management.cargo_management.doctype.cargo_detail_cdt.cargo_detail_cdt import CargoDetailcdt
         from cargo_management.cargo_management.doctype.fpl_servicess.fpl_servicess import FPLServicess
-        from frappe.model.document import Document
         from frappe.types import DF
 
         amended_from: DF.Link | None
         bill_of_landing_number: DF.Data | None
         bill_to: DF.Literal[None]
-        cargo_details: DF.Table[Document]
+        cargo_details: DF.Table[CargoDetailcdt]
         cargo_owner: DF.Link | None
         commodity: DF.Link | None
         company: DF.Link

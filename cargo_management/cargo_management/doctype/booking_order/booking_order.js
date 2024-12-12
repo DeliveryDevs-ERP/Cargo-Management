@@ -228,20 +228,12 @@ frappe.ui.form.on('FPL Servicess', {
 });
 
 
-// frappe.ui.form.on('Cargo Details', {
-//     qty: function(frm, cdt, cdn) {
-//         calculate_amount(frm, cdt, cdn);
-//     },
-//     rate: function(frm, cdt, cdn) {
-//         calculate_amount(frm, cdt, cdn);
-//     }
-// });
 
-frappe.ui.form.on('Cargo Details', {
-    qty: function(frm, cdt, cdn) {
-        calculate_amount(frm, cdt, cdn);
-        calculate_total(frm); // Recalculate total when qty changes
-    },
+frappe.ui.form.on('Cargo Detail cdt', {
+    // qty: function(frm, cdt, cdn) {
+    //     calculate_amount(frm, cdt, cdn);
+    //     calculate_total(frm); // Recalculate total when qty changes
+    // },
     rate: function(frm, cdt, cdn) {
         calculate_amount(frm, cdt, cdn);
         calculate_total(frm); // Recalculate total when rate changes
@@ -253,7 +245,15 @@ frappe.ui.form.on('Cargo Details', {
 
 function calculate_amount(frm, cdt, cdn) {
     var child = locals[cdt][cdn];
-    if (child.rate && child.qty) {
+    if (child.rate && child.rate_type == "Per Weight(Ton)") {
+        var amount = child.rate * child.avg_weight;
+        frappe.model.set_value(cdt, cdn, 'amount', amount);
+    }
+    else if (child.rate  && child.rate_type == "Per Bag") {
+        var amount = child.rate * child.bag_qty;
+        frappe.model.set_value(cdt, cdn, 'amount', amount);
+    }   
+    else{
         var amount = child.rate * child.qty;
         frappe.model.set_value(cdt, cdn, 'amount', amount);
     }

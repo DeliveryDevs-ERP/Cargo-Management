@@ -137,7 +137,7 @@
    "fieldname": "cargo_details",
    "fieldtype": "Table",
    "label": "Cargo Details",
-   "options": "Cargo Details",
+   "options": "Cargo Detail cdt",
    "reqd": 1
   },
   {
@@ -201,14 +201,14 @@
    "fieldname": "mm_loading_station",
    "fieldtype": "Link",
    "label": "MM Loading Location",
-   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
    "options": "Location"
   },
   {
    "fieldname": "mm_offloading_station",
    "fieldtype": "Link",
    "label": "MM Offloading Location",
-   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
    "options": "Location"
   },
   {
@@ -378,7 +378,8 @@
   {
    "fieldname": "total",
    "fieldtype": "Currency",
-   "label": "Total Amount"
+   "label": "Total Amount",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -397,7 +398,7 @@
    "link_fieldname": "custom_booking_order_id"
   }
  ],
- "modified": "2024-12-05 15:38:47.572776",
+ "modified": "2024-12-12 17:14:04.111881",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Booking Order",
