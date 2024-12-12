@@ -11,7 +11,7 @@ frappe.query_reports["Yard & Date wise Grounded Container Summary"] = {
             "get_query": function() {
                 return {
                     filters: {
-                        location_type: "Yard" // Only fetch locations of type 'Yard'
+                        custom_location_type: "Yard" // Only fetch locations of type 'Yard'
                     }
                 };
             },

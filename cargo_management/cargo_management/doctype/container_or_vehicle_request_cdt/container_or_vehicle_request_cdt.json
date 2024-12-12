@@ -53,7 +53,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Empty Return Location ",
-   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
    "options": "Location"
   }
  ],

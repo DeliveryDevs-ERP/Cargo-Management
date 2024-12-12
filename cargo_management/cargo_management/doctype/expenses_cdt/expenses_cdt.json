@@ -12,7 +12,8 @@
   "invoiced_",
   "remarks",
   "column_break_mque",
-  "job_id"
+  "job_id",
+  "slip"
  ],
  "fields": [
   {
@@ -59,12 +60,17 @@
    "fieldtype": "Check",
    "in_list_view": 1,
    "label": "Invoiced ?"
+  },
+  {
+   "fieldname": "slip",
+   "fieldtype": "Attach Image",
+   "label": "Slip"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-02 12:54:55.909991",
+ "modified": "2024-12-12 16:01:41.772796",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Expenses cdt",

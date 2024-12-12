@@ -201,14 +201,14 @@
    "fieldname": "mm_loading_station",
    "fieldtype": "Link",
    "label": "MM Loading Location",
-   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
    "options": "Location"
   },
   {
    "fieldname": "mm_offloading_station",
    "fieldtype": "Link",
    "label": "MM Offloading Location",
-   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
    "options": "Location"
   },
   {
