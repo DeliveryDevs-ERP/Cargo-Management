@@ -41,7 +41,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Rate type",
-   "options": "Rate type"
+   "options": "UOM"
   },
   {
    "fieldname": "cargo_number",
