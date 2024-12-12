@@ -21,7 +21,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Cargo Type",
-   "options": "Cargo Type",
+   "options": "Item",
    "reqd": 1
   },
   {
