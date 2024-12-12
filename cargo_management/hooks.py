@@ -82,8 +82,8 @@ app_license = "mit"
 # Installation
 # ------------
 
-# before_install = "cargo_management.install.before_install"
-# after_install = "cargo_management.install.after_install"
+before_install = "cargo_management.install.before_install"
+after_install = "cargo_management.install.after_install"
 
 # Uninstallation
 # ------------

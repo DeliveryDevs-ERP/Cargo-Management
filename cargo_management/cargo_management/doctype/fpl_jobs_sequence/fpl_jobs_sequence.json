@@ -5,17 +5,12 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "sequenceid",
   "sequence",
   "transport_mode",
-  "sales_order_type"
+  "sales_order_type",
+  "service_name"
  ],
  "fields": [
-  {
-   "fieldname": "sequenceid",
-   "fieldtype": "Data",
-   "label": "SequenceID"
-  },
   {
    "fieldname": "sequence",
    "fieldtype": "Int",
@@ -26,10 +21,10 @@
   },
   {
    "fieldname": "transport_mode",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Transport Mode",
-   "options": "\nRoad\nRail",
+   "options": "Transport Mode",
    "reqd": 1
   },
   {
@@ -39,11 +34,17 @@
    "label": "Sales Order Type",
    "options": "\nDomestic\nImport\nExport",
    "reqd": 1
+  },
+  {
+   "fieldname": "service_name",
+   "fieldtype": "Link",
+   "label": "Service Name",
+   "options": "Service Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-28 14:04:25.456043",
+ "modified": "2024-12-12 15:37:55.401048",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Jobs Sequence",
@@ -63,6 +64,7 @@
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC",
- "states": []
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "service_name"
 }
