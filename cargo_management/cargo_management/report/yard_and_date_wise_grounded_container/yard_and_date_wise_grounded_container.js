@@ -22,7 +22,7 @@ frappe.query_reports["Yard and Date wise Grounded Container"] = {
             "fieldname": "gate_in_date",
             "label": __("Grounded Date"),
             "fieldtype": "Date", // Date field for filtering by grounding date
-            "default": "", // No default value
+            "default": frappe.datetime.get_today(),
             "reqd": 0 // Not required
         },
 		{

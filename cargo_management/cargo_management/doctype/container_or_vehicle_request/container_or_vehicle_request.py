@@ -29,7 +29,7 @@ class ContainerorVehicleRequest(Document):
         size = item.size if item.size else None
         freight_order = frappe.get_doc({
             'doctype': 'FPL Freight Orders',
-            'freight_order_number': 'FPL-CFO-' + random_string(5),
+            'freight_order_number': 'CFO-' + random_string(5),
             'freight_order_id': random_string(5),
             'sales_order_number': self.booking_order_id,
             'client': self.get_Client_from_BO(),

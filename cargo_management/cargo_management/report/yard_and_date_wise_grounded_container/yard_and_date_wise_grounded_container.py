@@ -7,7 +7,6 @@ def execute(filters=None):
 
     return columns, data
 
-
 def get_columns():
     """Define the columns for the report."""
     return [
@@ -22,6 +21,7 @@ def get_columns():
         {"label": "POD", "fieldname": "pod", "fieldtype": "Data", "width": 150},
         {"label": "Sales Person", "fieldname": "sales_person", "fieldtype": "Data", "width": 150},
         {"label": "Cntr Grounded (Date/Time)", "fieldname": "gate_in_datetime", "fieldtype": "Datetime", "width": 200},
+        {"label": "Cntr Out (Date/Time)", "fieldname": "gate_out_datetime", "fieldtype": "Datetime", "width": 200}, # Optional field for gate out
     ]
 
 def get_data(filters):
@@ -30,7 +30,6 @@ def get_data(filters):
     gate_in_location = filters.get("gate_in_location") if filters else None
     filter_date = filters.get("gate_in_date") if filters else None
 
-    # Ensure filter_date is parsed correctly
     if filter_date:
         try:
             filter_date = frappe.utils.get_datetime(filter_date)
@@ -66,23 +65,19 @@ def get_data(filters):
     super_array = {}
     for job in gate_in_jobs:
         container = job["container_number"]
-        super_array[container] = {"gate_in": job["gate_in"], "gate_out": None}
+        if job["gate_in"] <= filter_date + timedelta(days=1): # Include only if gate_in is on or after filter_date
+            super_array[container] = {"gate_in": job["gate_in"], "gate_out": None}
 
     for job in gate_out_jobs:
         container = job["container_number"]
         if container in super_array:
             super_array[container]["gate_out"] = job["gate_out"]
 
-    # Step 4: Filter containers based on the filter_date
-    valid_containers = {
-        container: times
-        for container, times in super_array.items()
-        if times["gate_in"] and times["gate_out"] and times["gate_in"] <= filter_date + timedelta(days=1) <= times["gate_out"]
-    }
+    # Step 4: No additional filtering needed here as it's already done
+    valid_containers = super_array
 
     # Step 5: Fetch data for valid containers
     for container_number, times in valid_containers.items():
-        # Fetch Freight Orders for the container
         freight_orders = frappe.get_all(
             "FPL Freight Orders",
             filters={"container_number": container_number, "size": container_size} if container_size else {"container_number": container_number},
@@ -90,19 +85,15 @@ def get_data(filters):
         )
 
         for fo in freight_orders:
-            # Fetch the first job from the child table "jobs" in FPL Freight Orders
             job_data = frappe.get_all(
                 "FPL Jobs",
-                filters={"parent": fo["name"]},  # Link with parent Freight Order
+                filters={"parent": fo["name"]},
                 fields=["start_location"],
-                order_by="idx asc",  # Ensure the first job is fetched
+                order_by="idx asc",
                 limit=1
             )
 
-            # Extract the POD (start_location) if available
             pod = job_data[0]["start_location"] if job_data else None
-
-            # Fetch the linked Booking Order
             booking_order = frappe.get_value(
                 "Booking Order",
                 {"name": fo["sales_order_number"]},
@@ -110,7 +101,6 @@ def get_data(filters):
                 as_dict=True
             )
 
-            # Add data row
             data.append({
                 "s_no": s_no,
                 "container_no": fo["container_number"],
@@ -128,5 +118,3 @@ def get_data(filters):
             s_no += 1
 
     return data
-
-

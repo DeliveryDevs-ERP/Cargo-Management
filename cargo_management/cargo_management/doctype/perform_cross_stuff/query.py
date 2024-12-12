@@ -33,7 +33,7 @@ def get_FO_containers(doctype, txt, searchfield, start, page_len, filters):
         WHERE 
             freight_order.sales_order_number = %(booking_order_id)s
             AND container.status = 'Filled'
-            AND freight_order.name LIKE 'FPL-FO%%'
+            AND freight_order.name LIKE 'FO-%%'
     """, {
         'booking_order_id': booking_order_id
     })
@@ -43,7 +43,7 @@ def get_FO_containers(doctype, txt, searchfield, start, page_len, filters):
 def get_CFO_containers(doctype, txt, searchfield, start, page_len, filters):
     """
     Fetch containers associated with FPL Freight Orders for the given booking_order_id
-    where container status is 'Filled' and name starts with 'FPL-FP%'.
+    where container status is 'Filled' and name starts with 'FPL-CFO%'.
     """
     booking_order_id = filters.get('booking_order_id')
     
@@ -61,7 +61,7 @@ def get_CFO_containers(doctype, txt, searchfield, start, page_len, filters):
         WHERE 
             freight_order.sales_order_number = %(booking_order_id)s
             AND container.status = 'Filled'
-            AND freight_order.name LIKE 'FPL-CFO%%'
+            AND freight_order.name LIKE 'CFO-%%'
     """, {
         'booking_order_id': booking_order_id
     })
