@@ -45,9 +45,8 @@
   },
   {
    "fieldname": "vehicle_supplier",
-   "fieldtype": "Link",
-   "label": "Vehicle Supplier",
-   "options": "Vehicle Supplier"
+   "fieldtype": "Data",
+   "label": "Vehicle Supplier"
   },
   {
    "fieldname": "driver_name",
@@ -173,7 +172,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-05 12:48:58.044748",
+ "modified": "2024-12-13 18:20:18.998986",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLRoadJob",
