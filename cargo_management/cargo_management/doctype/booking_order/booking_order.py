@@ -215,20 +215,25 @@ class BookingOrder(Document):
         return ordered_services
 
     def get_service_type_name(self, service_name, transport_mode):
-            if service_name == 'Gate In' or service_name == 'Gate Out':
-                transport_mode = None
-                
+        if service_name in ['Gate In', 'Gate Out']:
             service_type = frappe.get_value(
-                "Service Type", 
-                {"name1": service_name, "transport_mode": transport_mode}, 
+                "Service Type",
+                {"name1": service_name},
                 "name"
             )
-            
-            if service_type:
-                return service_type
-            else:
-                frappe.throw(f"No Service Type found for name1: {service_name} and transport mode: {transport_mode}")
-
+        else:
+            service_type = frappe.get_value(
+                "Service Type",
+                {"name1": service_name, "transport_mode": transport_mode},
+                "name"
+            )
+        
+        if service_type:
+            return service_type
+        else:
+            frappe.throw(
+                f"No Service Type found for name1: {service_name} and transport mode: {transport_mode}"
+            )
 
     def create_and_submit_sales_order(self):
         try:
