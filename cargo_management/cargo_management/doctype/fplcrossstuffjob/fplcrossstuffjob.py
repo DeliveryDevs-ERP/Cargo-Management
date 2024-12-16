@@ -3,6 +3,7 @@
 
 # import frappe
 from frappe.model.document import Document
+from cargo_management.cargo_management.utils.Update_JOB_Container_FO_Status import updateJobStatus
 
 
 class FPLCrossStuffJob(Document):
@@ -29,3 +30,4 @@ class FPLCrossStuffJob(Document):
 	def validate(self):
 			if self.performance_details:
 				self.status = "Completed"
+				updateJobStatus(self.name, self.freight_order_id, self.container_number)

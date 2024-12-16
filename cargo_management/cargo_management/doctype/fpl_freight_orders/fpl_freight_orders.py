@@ -201,7 +201,8 @@ class FPLFreightOrders(Document):
                     frappe.msgprint(f"{doctype} {job.name} does not have a 'container_number' field.")
         
         for job in self.jobs:
-            job.status = "Assigned"
+            if job.status != "Completed":
+                job.status = "Assigned"
 
 @frappe.whitelist()
 def create_Job_withoutId(docname):

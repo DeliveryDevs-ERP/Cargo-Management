@@ -31,7 +31,7 @@ class PerformCrossStuff(Document):
                     else:
                         FO.jobs = FO.jobs[:existing_cross_stuff_job_index]
                     self.append_Gate_Out_job(FO, existing_cross_stuff_job_index, row)
-                    self.append_empty_return_job(FO, row)
+                    self.append_empty_return_job(FO, crossStuff_location, row)
                 else:
                     job_to_amend_index = next((i for i, job in enumerate(FO.jobs) if job.job_name == self.job_before_cross_stuff), None)
                     if job_to_amend_index is not None:
@@ -44,7 +44,7 @@ class PerformCrossStuff(Document):
                             FO.jobs = FO.jobs[:job_to_amend_index]
                         self.append_cross_stuff_job(FO, crossStuff_location, row)
                         self.append_Gate_Out_job(FO, crossStuff_location, row)
-                        self.append_empty_return_job(FO, row)
+                        self.append_empty_return_job(FO, crossStuff_location, row)
 
                 # Reindex jobs to maintain sequential idx
                 for idx, job in enumerate(FO.jobs, start=1):
@@ -55,12 +55,12 @@ class PerformCrossStuff(Document):
         return temp_jobs
 
 
-    def append_empty_return_job(self, FO, row):
+    def append_empty_return_job(self, FO, crossStuff_location,  row):
         transport_mode = self.determine_transport_mode()
         FO.append('jobs', {
             'job_name': self.get_service_type_name("Empty Return", transport_mode),
             'status': 'Draft',
-            'start_location': self.grounded_yard_location,
+            'start_location': crossStuff_location,
             'end_location': row.empty_return_location
         })
 

@@ -1,7 +1,7 @@
 import frappe
 
 def get_job_type_by_id(job_id):
-    job_doctypes = ["FPLRailJob", "FPLYardJob", "FPLRoadJob"] 
+    job_doctypes = ["FPLRailJob", "FPLYardJob", "FPLRoadJob", "FPLCrossStuffJob"] 
     for doctype in job_doctypes:
         job_type = frappe.db.get_value(doctype, {"name": job_id}, "job_type")
         if job_type:
