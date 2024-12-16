@@ -69,37 +69,20 @@ class ContainerorVehicleRequest(Document):
 
         frappe.db.commit()
 
-    def get_ordered_services(self, services):
-        if not services:
-            return []
-        job_sequence = frappe.get_all(
-            'FPL Jobs Sequence',
-            fields=['service_name', 'sequence'],
-            filters={
-                'transport_mode': self.transport_type,
-                'sales_order_type': self.sales_order_type
-            },
-            order_by='sequence asc'
-        )
-        service_map = {service.services: service for service in services if service.applicable == 1}
-        ordered_services = []
-        for seq in job_sequence:
-            service_name = seq['service_name']
-            matching_service = next((s for s in services if s.services == service_name), None)
-            if matching_service:
-                ordered_services.append(matching_service)
-        return ordered_services
-
     def get_service_type_name(self, service_name, transport_mode):
         if service_name in ['Gate In', 'Gate Out']:
-            transport_mode = None
-
-        service_type = frappe.get_value(
-            "Service Type",
-            {"name1": service_name, "transport_mode": transport_mode},
-            "name"
-        )
-
+            service_type = frappe.get_value(
+                "Service Type",
+                {"name1": service_name},
+                "name"
+            )
+        else:
+            service_type = frappe.get_value(
+                "Service Type",
+                {"name1": service_name, "transport_mode": transport_mode},
+                "name"
+            )
+        
         if service_type:
             return service_type
         else:
