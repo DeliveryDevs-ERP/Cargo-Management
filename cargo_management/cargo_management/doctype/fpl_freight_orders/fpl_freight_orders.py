@@ -192,7 +192,7 @@ class FPLFreightOrders(Document):
             jobs = frappe.get_all(doctype, filters={'freight_order_id': self.freight_order_number}, fields=['name'])
             for job in jobs:
                 job_doc = frappe.get_doc(doctype, job.name)
-                if hasattr(job_doc, 'container_number'):
+                if hasattr(job_doc, 'container_number') and job_doc.status != "Completed":
                     job_doc.container_number = self.container_number
                     job_doc.status = "Assigned"
                     job_doc.save()
