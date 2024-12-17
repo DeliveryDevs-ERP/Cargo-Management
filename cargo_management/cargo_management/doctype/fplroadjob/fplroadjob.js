@@ -1,5 +1,7 @@
 frappe.ui.form.on("FPLRoadJob", {
     setup: function(frm) {
+
+        populate_expenses(frm, 'Truck Job'); 
         // Setting up the query for the container_number_to_link field
         frm.fields_dict['container_number_to_link'].get_query = function(doc) {
             if (!frm.doc.job_type) {
@@ -12,11 +14,7 @@ frappe.ui.form.on("FPLRoadJob", {
                     job_type: frm.doc.job_type 
                 }
             };
-        };
-    },
-
-    onload: function(frm) {
-        populate_expenses(frm, 'Truck Job');
+        };   
     },
 
     refresh: function(frm) {
@@ -64,8 +62,6 @@ function populate_expenses(frm, job_mode) {
                         row.amount = cost_obj.cost;
                     }
                 });
-
-                frm.refresh_field("expenses");
             }
         }
     });

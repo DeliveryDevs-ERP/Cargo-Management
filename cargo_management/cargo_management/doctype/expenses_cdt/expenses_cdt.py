@@ -6,4 +6,24 @@ from frappe.model.document import Document
 
 
 class Expensescdt(Document):
+	# begin: auto-generated types
+	# This code is auto-generated. Do not modify anything in this block.
+
+	from typing import TYPE_CHECKING
+
+	if TYPE_CHECKING:
+		from frappe.types import DF
+
+		amount: DF.Float
+		client: DF.Link | None
+		expense_type: DF.Link | None
+		invoiced_: DF.Check
+		job_id: DF.Data | None
+		parent: DF.Data
+		parentfield: DF.Data
+		parenttype: DF.Data
+		remarks: DF.SmallText | None
+		sales_invoice_no: DF.Link | None
+		slip: DF.AttachImage | None
+	# end: auto-generated types
 	pass

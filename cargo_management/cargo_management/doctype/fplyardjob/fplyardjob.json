@@ -59,7 +59,8 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "\nDraft\nAssigned\nCompleted\nCancelled"
+   "options": "\nDraft\nAssigned\nCompleted\nCancelled",
+   "read_only": 1
   },
   {
    "fieldname": "sales_order_number",
@@ -122,7 +123,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-25 16:08:35.296781",
+ "modified": "2024-12-17 14:00:51.903848",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLYardJob",

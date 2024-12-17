@@ -13,7 +13,8 @@
   "remarks",
   "column_break_mque",
   "job_id",
-  "slip"
+  "slip",
+  "sales_invoice_no"
  ],
  "fields": [
   {
@@ -65,12 +66,19 @@
    "fieldname": "slip",
    "fieldtype": "Attach Image",
    "label": "Slip"
+  },
+  {
+   "fieldname": "sales_invoice_no",
+   "fieldtype": "Link",
+   "label": "Sales Invoice No.",
+   "options": "Sales Invoice",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-12 16:01:41.772796",
+ "modified": "2024-12-17 13:41:00.286646",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Expenses cdt",

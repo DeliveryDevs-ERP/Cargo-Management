@@ -193,8 +193,6 @@ function populate_expenses(frm, job_mode) {
                         row.amount = cost_obj.cost;
                     }
                 });
-
-                frm.refresh_field("expenses");
             }
         }
     });

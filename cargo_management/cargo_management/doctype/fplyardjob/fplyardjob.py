@@ -31,7 +31,7 @@ class FPLYardJob(Document):
 	# end: auto-generated types
 
 	def validate(self):
-		if self.gate_in or self.gate_out and self.status != "Completed":
+		if (self.gate_in or self.gate_out) and self.status != "Completed":
 			self.status = "Completed"
 			updateJobStatus(self.name , self.freight_order_id, self.container_number)
 		if self.status == "Assigned":
