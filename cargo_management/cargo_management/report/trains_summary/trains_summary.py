@@ -29,6 +29,10 @@ from frappe.utils import getdate
 
 def get_data(filters):
     """Fetch and process data for the report."""
+    
+    if filters.get("train_no_from") is None or filters.get("train_no_to") is None:
+        return []
+
     train_no_from = int(filters.get("train_no_from").split("-")[0])
     train_no_to = int(filters.get("train_no_to").split("-")[0])
     movement = filters.get("movement")
