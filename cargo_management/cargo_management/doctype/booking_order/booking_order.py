@@ -273,7 +273,7 @@ class BookingOrder(Document):
                 weight = cargo.bag_weight
                 qty = cargo.bag_qty
             sales_order_items.append({
-                "item_code": cargo.cargo_type,  # Assuming cargo contains 'item_code'
+                "item_code": cargo.cargo_type,
                 "qty": qty,  
                 "uom": cargo.rate_type,
                 "rate": cargo.rate, 
