@@ -363,7 +363,8 @@
    "fieldname": "sales_person",
    "fieldtype": "Link",
    "label": "Sales Person",
-   "options": "Employee"
+   "options": "Employee",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_rqhq",
@@ -398,7 +399,7 @@
    "link_fieldname": "custom_booking_order_id"
   }
  ],
- "modified": "2024-12-30 12:20:27.027360",
+ "modified": "2024-12-30 12:36:45.129326",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Booking Order",

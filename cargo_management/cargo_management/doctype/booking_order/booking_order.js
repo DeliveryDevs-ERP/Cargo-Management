@@ -41,6 +41,18 @@ frappe.ui.form.on('Booking Order', {
         frm.fields_dict['customer'].df.onchange = update_bill_to_options;
         frm.fields_dict['cargo_owner'].df.onchange = update_bill_to_options;
         calculate_total(frm);
+
+
+        if (!frm.doc.sales_person) {
+            frappe.db.get_value("Employee", {
+                "user_id": frappe.session.user
+                }, 'name', function(value) {
+                frm.set_value('sales_person', value.name);
+                frm.refresh_field('sales_person');
+                console.log("Employee Name set in Sales Person:", value.name);
+                });
+            }
+
     },
 
     
@@ -124,6 +136,12 @@ frappe.ui.form.on('Booking Order', {
 
     },
 
+    fm_dropoff_location: function(frm) {
+        if (frm.doc.fm_dropoff_location) {
+            frm.set_value('mm_loading_station', frm.doc.fm_dropoff_location);
+        }
+    },
+
     mm_loading_station: function(frm) {
         if (frm.doc.mm_loading_station) {
             frm.set_value('fm_dropoff_location', frm.doc.mm_loading_station);
@@ -133,6 +151,12 @@ frappe.ui.form.on('Booking Order', {
     mm_offloading_station: function(frm) {
         if (frm.doc.mm_offloading_station) {
             frm.set_value('lm_pickup_location', frm.doc.mm_offloading_station);
+        }
+    },
+
+    lm_pickup_location: function(frm) {
+        if (frm.doc.lm_pickup_location) {
+            frm.set_value('mm_offloading_station', frm.doc.lm_pickup_location);
         }
     },
 
