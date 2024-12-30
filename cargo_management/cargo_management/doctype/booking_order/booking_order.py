@@ -245,8 +245,9 @@ class BookingOrder(Document):
                 "items": self.get_sales_order_items(),
                 "status": "To Deliver and Bill",
                 "order_type": "Sales",
+                "transaction_date": self.sales_order_date,
                 "custom_booking_order_id" : self.name,
-                "delivery_date": self.delivery_date,  # Assuming 'delivery_date' is a field in Booking Order
+                "delivery_date": self.delivery_date, 
             })
 
             # Save and save the Sales Order
