@@ -42,18 +42,35 @@ frappe.ui.form.on('Booking Order', {
         frm.fields_dict['cargo_owner'].df.onchange = update_bill_to_options;
         calculate_total(frm);
 
+    },
 
-        if (!frm.doc.sales_person) {
-            frappe.db.get_value("Employee", {
-                "user_id": frappe.session.user
-                }, 'name', function(value) {
-                frm.set_value('sales_person', value.name);
-                frm.refresh_field('sales_person');
-                console.log("Employee Name set in Sales Person:", value.name);
+        customer: function(frm) {
+            // Check if the customer field has a value
+            if (frm.doc.customer) {
+                // Fetch related Sales Team records from the Customer doctype
+                frappe.db.get_list('Sales Team', {
+                    fields: ['sales_person'],
+                    filters: {
+                        parenttype: 'Customer',
+                        parent: frm.doc.customer,
+                        sales_person: ['!=', '']
+                    },
+                    order_by: 'idx asc',
+                    limit: 1
+                }).then(records => {
+                    if (records && records.length > 0 && records[0].sales_person) {
+                        // Set the first non-empty sales_person to the sales_person field in Booking Order
+                        frm.set_value('sales_person', records[0].sales_person);
+                        frm.refresh_field('sales_person');
+                        console.log("Sales Person from Sales Team:", records[0].sales_person);
+                    } else {
+                        // Optionally handle the case where no sales_person is found
+                        console.log("No Sales Person found in the Sales Team for the selected customer.");
+                    }
                 });
             }
-
-    },
+        },
+    
 
     
 
@@ -157,6 +174,13 @@ frappe.ui.form.on('Booking Order', {
     lm_pickup_location: function(frm) {
         if (frm.doc.lm_pickup_location) {
             frm.set_value('mm_offloading_station', frm.doc.lm_pickup_location);
+        }
+    },
+
+
+    lm_dropoff_location: function(frm) {
+        if (frm.doc.lm_dropoff_location) {
+            frm.set_value('empty_return_pickup_location', frm.doc.lm_dropoff_location);
         }
     },
 
@@ -270,7 +294,7 @@ frappe.ui.form.on('Cargo Detail cdt', {
 function calculate_amount(frm, cdt, cdn) {
     var child = locals[cdt][cdn];
     if (child.rate && child.rate_type == "Per Weight(Ton)") {
-        var amount = child.rate * child.avg_weight;
+        var amount = child.rate * child.avg_weight * child.qty;
         frappe.model.set_value(cdt, cdn, 'amount', amount);
     }
     else if (child.rate  && child.rate_type == "Per Bag") {

@@ -201,14 +201,14 @@
    "fieldname": "mm_loading_station",
    "fieldtype": "Link",
    "label": "MM Loading Location",
-   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
    "options": "Location"
   },
   {
    "fieldname": "mm_offloading_station",
    "fieldtype": "Link",
    "label": "MM Offloading Location",
-   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
    "options": "Location"
   },
   {
@@ -363,7 +363,7 @@
    "fieldname": "sales_person",
    "fieldtype": "Link",
    "label": "Sales Person",
-   "options": "Employee",
+   "options": "Sales Person",
    "read_only": 1
   },
   {
@@ -391,15 +391,11 @@
    "link_fieldname": "sales_order_number"
   },
   {
-   "link_doctype": "Sales Invoice",
-   "link_fieldname": "custom_booking_order"
-  },
-  {
    "link_doctype": "Sales Order",
    "link_fieldname": "custom_booking_order_id"
   }
  ],
- "modified": "2024-12-30 12:36:45.129326",
+ "modified": "2024-12-30 14:12:07.203817",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Booking Order",

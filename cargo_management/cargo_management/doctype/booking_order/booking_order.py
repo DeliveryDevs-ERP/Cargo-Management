@@ -22,9 +22,9 @@ class BookingOrder(Document):
         cargo_details: DF.Table[CargoDetailcdt]
         cargo_owner: DF.Link | None
         commodity: DF.Link | None
-        company: DF.Link
+        company: DF.Link | None
         customer: DF.Link
-        delivery_date: DF.Date | None
+        delivery_date: DF.Date
         demurrage_date: DF.Date | None
         dropoff_location: DF.Link | None
         empty_pickup_dropoff_location: DF.Link | None

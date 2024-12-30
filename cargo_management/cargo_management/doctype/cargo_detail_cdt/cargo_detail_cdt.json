@@ -76,7 +76,7 @@
    "fieldname": "qty",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Qty",
+   "label": "Cargo Qty",
    "reqd": 1
   },
   {
@@ -89,7 +89,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-30 11:37:32.975707",
+ "modified": "2024-12-30 13:20:44.797691",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Cargo Detail cdt",
