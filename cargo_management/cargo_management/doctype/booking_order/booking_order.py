@@ -359,4 +359,28 @@ class BookingOrder(Document):
             frappe.db.commit()
         else:
             frappe.msgprint("No reordering was done. 'Cross Stuff' is already at the end or no valid index provided.")
+    
+    
+@frappe.whitelist()
+def get_sales_person(customer):
+    """
+    Fetch the first Sales Person associated with the given customer from the Sales Team doctype.
+    """
+    # Ensure the method only fetches data if there's a valid customer ID
+    if not customer:
+        return None
 
+    # Attempt to fetch the first sales person from the Sales Team linked to the customer
+    sales_person = frappe.get_value("Sales Team", 
+                                    filters={
+                                        "parenttype": "Customer",
+                                        "parent": customer,
+                                        "sales_person": ["!=", ""]
+                                    },
+                                    fieldname="sales_person",
+                                    order_by="idx asc")
+
+    frappe.errprint(f"Sales Person: {sales_person}")  # Debug print to check the fetched sales person
+
+    # Return the fetched sales person or None if not found
+    return sales_person

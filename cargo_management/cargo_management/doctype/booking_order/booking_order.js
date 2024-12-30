@@ -44,33 +44,26 @@ frappe.ui.form.on('Booking Order', {
 
     },
 
-        customer: function(frm) {
-            // Check if the customer field has a value
-            if (frm.doc.customer) {
-                // Fetch related Sales Team records from the Customer doctype
-                frappe.db.get_list('Sales Team', {
-                    fields: ['sales_person'],
-                    filters: {
-                        parenttype: 'Customer',
-                        parent: frm.doc.customer,
-                        sales_person: ['!=', '']
-                    },
-                    order_by: 'idx asc',
-                    limit: 1
-                }).then(records => {
-                    if (records && records.length > 0 && records[0].sales_person) {
-                        // Set the first non-empty sales_person to the sales_person field in Booking Order
-                        frm.set_value('sales_person', records[0].sales_person);
+    customer: function(frm) {
+        if (frm.doc.customer) {
+            frappe.call({
+                method: 'cargo_management.cargo_management.doctype.booking_order.booking_order.get_sales_person',
+                args: {
+                    'customer': frm.doc.customer
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        frm.set_value('sales_person', r.message);
                         frm.refresh_field('sales_person');
-                        console.log("Sales Person from Sales Team:", records[0].sales_person);
                     } else {
-                        // Optionally handle the case where no sales_person is found
-                        console.log("No Sales Person found in the Sales Team for the selected customer.");
+                        console.log("No Sales Person found for the selected customer.");
+                        frm.set_value('sales_person', '');
+                        frm.refresh_field('sales_person');
                     }
-                });
-            }
-        },
-    
+                }
+            });
+        }
+    },
 
     
 
