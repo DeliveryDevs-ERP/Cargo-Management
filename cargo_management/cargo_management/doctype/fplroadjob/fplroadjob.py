@@ -39,12 +39,28 @@ class FPLRoadJob(Document):
         if (self.vehicle_number and self.vehicle_supplier) and (self.pickup_arrival and self.pickup_departure) and (self.dropoff_arrival and self.dropoff_completed) and self.status != "Completed":
             self.status = "Completed"
             updateJobStatus(self.name, self.freight_order_id, self.container_number)
+            self.completeNextGateIn()
 
         if self.container_number_to_link:
             self.sync_with_linked_job()
 
         if self.status == "Assigned":
             self.assigned_at = now_datetime()   
+            
+    def completeNextGateIn(self):
+        freight_order = frappe.get_doc("FPL Freight Orders", self.freight_order_id)
+        jobs = freight_order.jobs  # Assuming 'jobs' is the child table of Freight Order containing job references
+        # Find current job index
+        current_job_index = next((index for (index, job) in enumerate(jobs) if job.job_id == self.name), None)
+        # Check if next job is 'Gate In' type
+        if current_job_index is not None and current_job_index + 1 < len(jobs):
+            next_job = jobs[current_job_index + 1]
+            if next_job.job_name == "enrhva2nvi":  # Assuming there is a 'job_name' field in the job entries enrhva2nvi == Gate In
+                yard_job = frappe.get_doc("FPLYardJob", next_job.job_id)
+                yard_job.gate_in = self.dropoff_completed
+                yard_job.save(ignore_permissions=True)
+
+                
 
     def sync_with_linked_job(self):
         # Prevent recursion by setting a temporary flag
@@ -113,3 +129,6 @@ def link_container(container_number_to_link, self_container_number, job_type=Non
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Error in link_container")
         return {"message": f"An error occurred: {str(e)}"}
+
+
+

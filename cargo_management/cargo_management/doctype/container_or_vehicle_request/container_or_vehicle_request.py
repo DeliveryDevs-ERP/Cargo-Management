@@ -29,8 +29,7 @@ class ContainerorVehicleRequest(Document):
         size = item.size if item.size else None
         freight_order = frappe.get_doc({
             'doctype': 'FPL Freight Orders',
-            'freight_order_number': 'CFO-' + random_string(5),
-            'freight_order_id': random_string(5),
+            'freight_order_number':  self.get_next_name("CFO-"),
             'sales_order_number': self.booking_order_id,
             'client': self.get_Client_from_BO(),
             'weight': None,
@@ -98,3 +97,14 @@ class ContainerorVehicleRequest(Document):
         booking_order = frappe.get_doc("Booking Order", self.booking_order_id)
         # Return the client field from the Booking Order
         return booking_order.customer
+
+    def get_next_name(self, key):
+        current = frappe.get_last_doc('FPL Freight Orders')
+        if current:
+            name_parts = current.name.split('-')
+            if name_parts:
+                # Assuming the last part is the numeric
+                next_number = int(name_parts[-1]) + 1
+                new_name = f"{key}{next_number:04d}"  # Pad with zeros if needed
+                return new_name
+        return f"{key}0001"

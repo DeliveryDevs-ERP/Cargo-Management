@@ -184,7 +184,7 @@
    "link_fieldname": "freight_order_id"
   }
  ],
- "modified": "2024-11-25 18:12:52.174478",
+ "modified": "2024-12-30 20:15:09.267290",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Freight Orders",

@@ -15,7 +15,8 @@
   "job_type",
   "status",
   "assigned_at",
-  "train_number"
+  "train_number",
+  "train_arrival_datetime"
  ],
  "fields": [
   {
@@ -83,11 +84,17 @@
    "fieldtype": "Link",
    "label": "Train Number",
    "options": "FPL Perform Middle Mile"
+  },
+  {
+   "fetch_from": "train_number.actual_arrival_datetime",
+   "fieldname": "train_arrival_datetime",
+   "fieldtype": "Datetime",
+   "label": "Train Arrival Datetime"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-05 12:48:07.726753",
+ "modified": "2024-12-31 12:32:44.215198",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLRailJob",

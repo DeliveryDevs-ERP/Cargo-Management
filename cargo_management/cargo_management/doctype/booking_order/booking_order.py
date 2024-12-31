@@ -90,8 +90,7 @@ class BookingOrder(Document):
         size = item.size if item.size else None
         freight_order = frappe.get_doc({
             'doctype': 'FPL Freight Orders',
-            'freight_order_number': 'FO-' + random_string(5),
-            'freight_order_id': random_string(5),
+            'freight_order_number': self.get_next_name("FO-"),
             'sales_order_number': self.name,
             'client': self.customer,
             'weight': weight, 
@@ -155,6 +154,19 @@ class BookingOrder(Document):
             self.reorder_Freight_orderJobs_after_crossStuff_insert(freight_order,cross_stuff_index)
 
             
+    def get_next_name(self, key):
+    # Get the current value of the series
+        current = frappe.get_last_doc('FPL Freight Orders')
+        if current:
+            name_parts = current.name.split('-')
+            if name_parts:
+                # Assuming the last part is the numeric
+                next_number = int(name_parts[-1]) + 1
+                new_name = f"{key}{next_number:04d}"  # Pad with zeros if needed
+                return new_name
+        return f"{key}0001"
+
+
 
     def get_Job_LocationPickup(self, serviceName):
         if serviceName == 'First Mile':
