@@ -271,7 +271,7 @@ class BookingOrder(Document):
             sales_order.insert()
             sales_order.save()
 
-            frappe.msgprint(f"Sales Order {sales_order.name} created and save successfully.")
+            # frappe.msgprint(f"Sales Order {sales_order.name} created and save successfully.")
             return sales_order.name  # Return Sales Order name if needed
 
         except Exception as e:
@@ -319,7 +319,7 @@ class BookingOrder(Document):
             sales_invoice.insert()
             sales_invoice.save()
 
-            frappe.msgprint(f"Sales Invoice {sales_invoice.name} created and saved successfully.")
+            # frappe.msgprint(f"Sales Invoice {sales_invoice.name} created and saved successfully.")
             return sales_invoice.name  # Return Sales Invoice name if needed
 
         except Exception as e:
@@ -375,7 +375,7 @@ class BookingOrder(Document):
             freight_order.save()
             frappe.db.commit()
         else:
-            frappe.msgprint("No reordering was done. 'Cross Stuff' is already at the end or no valid index provided.")
+            frappe.errprint(f"No reordering was done. 'Cross Stuff' is already at the end or no valid index provided.")
     
     
 @frappe.whitelist()

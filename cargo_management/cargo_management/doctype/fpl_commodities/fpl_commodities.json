@@ -13,13 +13,13 @@
    "fieldname": "comodity_name",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "type",
+   "label": "Type",
    "options": "\nBulk Goods\nManufactured\nConsumer Goods\nNon Perishable Food\nIndustrial"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-02 17:32:35.129095",
+ "modified": "2025-01-02 18:12:32.173540",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Commodities",
