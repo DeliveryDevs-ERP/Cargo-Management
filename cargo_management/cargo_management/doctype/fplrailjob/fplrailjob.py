@@ -40,7 +40,7 @@ class FPLRailJob(Document):
         # Check if next job is 'Gate In' type
         if current_job_index is not None and current_job_index + 1 < len(jobs):
             next_job = jobs[current_job_index + 1]
-            if next_job.job_name == "enrhva2nvi":  # Assuming 'enrhva2nvi' is the code for a Gate In type job
+            if next_job.job_name == "enrhva2nvi":
                 yard_job = frappe.get_doc("FPLYardJob", next_job.job_id)
                 yard_job.gate_in = self.train_arrival_datetime
                 yard_job.save(ignore_permissions=True)

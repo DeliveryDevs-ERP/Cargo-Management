@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{rail_number}-FPL-{###}",
+ "autoname": "format:{rail_number}-{movement_type}-{###}",
  "creation": "2024-10-31 11:38:10.741643",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -251,6 +251,7 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "hidden": 1,
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
@@ -259,7 +260,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-31 12:42:09.833074",
+ "modified": "2025-01-02 16:25:31.606499",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",

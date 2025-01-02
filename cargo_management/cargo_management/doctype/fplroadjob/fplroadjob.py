@@ -37,9 +37,14 @@ class FPLRoadJob(Document):
     def validate(self):
         frappe.errprint(f"Status of Job :{self.name} - {self.status}")
         if (self.vehicle_number and self.vehicle_supplier) and (self.pickup_arrival and self.pickup_departure) and (self.dropoff_arrival and self.dropoff_completed) and self.status != "Completed":
-            self.status = "Completed"
-            updateJobStatus(self.name, self.freight_order_id, self.container_number)
-            self.completeNextGateIn()
+            if updateJobStatus(self.name, self.freight_order_id, self.container_number):
+                self.status = "Completed"
+                self.completeNextGateIn()
+            else:
+                self.completePrevGateOut() 
+                updateJobStatus(self.name, self.freight_order_id, self.container_number)
+                self.status = "Completed"
+            
 
         if self.container_number_to_link:
             self.sync_with_linked_job()
@@ -60,6 +65,20 @@ class FPLRoadJob(Document):
                 yard_job.gate_in = self.dropoff_completed
                 yard_job.save(ignore_permissions=True)
 
+
+    def completePrevGateOut(self):
+        freight_order = frappe.get_doc("FPL Freight Orders", self.freight_order_id)
+        jobs = freight_order.jobs  # Assuming 'jobs' is the child table of Freight Order containing job references
+        # Find current job index
+        current_job_index = next((index for (index, job) in enumerate(jobs) if job.job_id == self.name), None)
+        # Check if previous job is 'Gate Out' type
+        if current_job_index is not None and current_job_index - 1 >= 0:
+            previous_job = jobs[current_job_index - 1]
+            if previous_job.job_name == "eo0ldr6jda":  # Assuming 'eo0ldr6jda' is a 'Gate Out' job name
+                yard_job = frappe.get_doc("FPLYardJob", previous_job.job_id)
+                yard_job.gate_out = self.pickup_departure  # Assuming 'pickup_departure' is the correct field for setting Gate Out time
+                yard_job.save(ignore_permissions=True)
+                
                 
 
     def sync_with_linked_job(self):
@@ -91,7 +110,7 @@ class FPLRoadJob(Document):
             linked_job.save(ignore_permissions=True)
             del linked_job._is_syncing  # Remove the flag after save
 
-            frappe.msgprint(f"Linked Road Job {linked_job_name} updated with changes from the current document.")
+            # frappe.msgprint(f"Linked Road Job {linked_job_name} updated with changes from the current document.")
         
         # Clean up the flag after sync is done
         del self._is_syncing

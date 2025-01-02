@@ -7,7 +7,7 @@ def updateJobStatus(job_id, freight_order_id, container_number):
     
     if not freight_order:
         frappe.throw(f"No FPL Freight Order found with ID {freight_order_id}")
-        return
+        return False
 
     job_found = False
     next_job_id = None
@@ -21,8 +21,8 @@ def updateJobStatus(job_id, freight_order_id, container_number):
             if i > 0:
                 previous_jobs_completed = all(freight_order.jobs[j].status == "Completed" for j in range(i))
                 if not previous_jobs_completed:
-                    frappe.msgprint(f"Cannot complete job {job_id} as previous jobs are not marked as completed.")
-                    return
+                    # frappe.msgprint(f"Cannot complete job {job_id} as previous jobs are not marked as completed.")
+                    return False
             
             # Mark the job as completed if all previous jobs are completed
             job.status = "Completed"
@@ -55,7 +55,7 @@ def updateJobStatus(job_id, freight_order_id, container_number):
 
     if not job_found:
         frappe.throw(f"No job found with job_id {job_id} in the FPL Freight Order document.")
-        return
+        return False
     
     # Save the updated Freight Order document
     freight_order.save()
@@ -72,6 +72,7 @@ def updateJobStatus(job_id, freight_order_id, container_number):
         container.save()
     else:
         frappe.throw(f"No FPL Container found with container number {container_number}")
-        return
-
-    frappe.msgprint(f"Job {job_id} marked as completed. Container {container_number} is updated.")
+        return False
+    
+    return True
+    # frappe.msgprint(f"Job {job_id} marked as completed. Container {container_number} is updated.")

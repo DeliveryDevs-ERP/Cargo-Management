@@ -2,6 +2,7 @@ frappe.ui.form.on("FPLRoadJob", {
     setup: function(frm) {
 
         populate_expenses(frm, 'Truck Job'); 
+        set_cost_type_filter(frm, 'Truck Job');
         // Setting up the query for the container_number_to_link field
         frm.fields_dict['container_number_to_link'].get_query = function(doc) {
             if (!frm.doc.job_type) {
@@ -15,10 +16,6 @@ frappe.ui.form.on("FPLRoadJob", {
                 }
             };
         };   
-    },
-
-    refresh: function(frm) {
-        set_cost_type_filter(frm, 'Truck Job');
     },
 
     container_number_to_link: function(frm) {
@@ -40,7 +37,7 @@ frappe.ui.form.on("FPLRoadJob", {
     },
 });
 
-function populate_expenses(frm, job_mode) {
+function populate_expenses(frm, job_mode) {    
     frappe.call({
         method: "frappe.client.get_list",
         args: {
@@ -52,9 +49,7 @@ function populate_expenses(frm, job_mode) {
         },
         callback: function(response) {
             if (response.message) {
-                frm.clear_table("expenses");
                 console.log('Fetched Cost Types:', response.message);
-
                 response.message.forEach(function(cost_obj) {
                     if (cost_obj.fixed_ == 1) {
                         let row = frm.add_child('expenses');
@@ -65,6 +60,7 @@ function populate_expenses(frm, job_mode) {
             }
         }
     });
+    frm.refresh_field('expenses');
 }
 
 function set_cost_type_filter(frm, job_mode) {

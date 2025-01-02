@@ -37,50 +37,50 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
     },
 
 
-    rail_number(frm) {
-        frm.doc.rail_number_state = frm.doc.rail_number;
-        frm.trigger("update_middle_mile_jobs");
-    },
+    // rail_number(frm) {
+    //     frm.doc.rail_number_state = frm.doc.rail_number;
+    //     // frm.trigger("update_middle_mile_jobs");
+    // },
 
-    movement_type(frm) {
-        frm.doc.movement_type_state = frm.doc.movement_type;
-        frm.trigger("update_middle_mile_jobs");
-    },
+    // movement_type(frm) {
+    //     frm.doc.movement_type_state = frm.doc.movement_type;
+    //     // frm.trigger("update_middle_mile_jobs");
+    // },
 
-    update_middle_mile_jobs(frm) {
-        if (frm.doc.rail_number_state || frm.doc.movement_type) {
-            frappe.call({
-                method: "frappe.client.get_list",
-                args: {
-                    doctype: "FPLRailJob",
-                    filters: {
-                        sales_order_number: frm.doc.sales_order_number
-                    },
-                    fields: ["name"]
-                },
-                callback: function(r) {
-                    if (r.message) {
-                        r.message.forEach(job => {
-                            frappe.call({
-                                method: "frappe.client.set_value",
-                                args: {
-                                    doctype: "FPLRailJob",
-                                    name: job.name,
-                                    fieldname: {
-                                        rail_number: frm.doc.rail_number_state,
-                                        rail_movement_type: frm.doc.movement_type_state
-                                    }
-                                },
-                                callback: function(response) {
-                                    console.log("Updated job:", response);
-                                }
-                            });
-                        });
-                    }
-                }
-            });
-        }
-    },
+    // update_middle_mile_jobs(frm) {
+    //     if (frm.doc.rail_number_state || frm.doc.movement_type) {
+    //         frappe.call({
+    //             method: "frappe.client.get_list",
+    //             args: {
+    //                 doctype: "FPLRailJob",
+    //                 filters: {
+    //                     sales_order_number: frm.doc.sales_order_number
+    //                 },
+    //                 fields: ["name"]
+    //             },
+    //             callback: function(r) {
+    //                 if (r.message) {
+    //                     r.message.forEach(job => {
+    //                         frappe.call({
+    //                             method: "frappe.client.set_value",
+    //                             args: {
+    //                                 doctype: "FPLRailJob",
+    //                                 name: job.name,
+    //                                 fieldname: {
+    //                                     rail_number: frm.doc.rail_number_state,
+    //                                     rail_movement_type: frm.doc.movement_type_state
+    //                                 }
+    //                             },
+    //                             callback: function(response) {
+    //                                 console.log("Updated job:", response);
+    //                             }
+    //                         });
+    //                     });
+    //                 }
+    //             }
+    //         });
+    //     }
+    // },
 
     before_save(frm) {
         console.log('Before Save Triggered');

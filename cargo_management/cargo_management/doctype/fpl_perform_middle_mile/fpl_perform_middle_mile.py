@@ -59,10 +59,10 @@ class FPLPerformMiddleMile(Document):
         if self.finish_train_formation == 1 and self.finish_loading == 1 and self.finish_departure == 1 and self.finish_arrival==0: # formation, loading & departure is completed now completing arrival
             self.carry_forward_the_specified_row2()
             self.update_gate_out_jobs() # do gate out job
-            self.bulk_update_container_status() # arrival completes
+            # self.bulk_update_container_status() # arrival completes
             
-        # if self.finish_arrival==1:
-        #     self.bulk_update_container_status()
+        if self.finish_arrival==1:
+            self.bulk_update_container_status()
 
 
     def fill_child_middle_mile_tables_with_WagonName_rows(self): # Loading of Containers
@@ -118,8 +118,11 @@ class FPLPerformMiddleMile(Document):
                 if freight_order_id and mm_job_id:
                     # Update job status as needed
                     frappe.db.set_value("FPLRailJob",mm_job_id,"train_number",self.name)
+                    frappe.db.set_value("FPLRailJob",mm_job_id,"train_arrival_datetime",self.actual_arrival_datetime)
                     updateJobStatus(mm_job_id, freight_order_id, container_number)
-                    frappe.msgprint(f"Updated status for Middle Mile job: {mm_job_id}")
+                    rail_job_doc = frappe.get_doc("FPLRailJob", mm_job_id)
+                    rail_job_doc.save()
+                    # frappe.msgprint(f"Updated status for Middle Mile job: {mm_job_id}")
 
                     # Fetch the freight order document and locate "Middle Mile" job
                     freight_order = frappe.get_doc("FPL Freight Orders", freight_order_id)
