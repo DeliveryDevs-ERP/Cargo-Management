@@ -27,7 +27,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Supplier",
-   "options": "Customer"
+   "options": "Supplier"
   },
   {
    "fetch_from": "expense_type.cost",
@@ -78,7 +78,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-17 13:41:00.286646",
+ "modified": "2024-12-31 16:08:30.198353",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Expenses cdt",

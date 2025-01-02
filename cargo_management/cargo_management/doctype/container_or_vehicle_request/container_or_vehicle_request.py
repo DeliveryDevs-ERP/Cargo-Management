@@ -99,12 +99,16 @@ class ContainerorVehicleRequest(Document):
         return booking_order.customer
 
     def get_next_name(self, key):
-        current = frappe.get_last_doc('FPL Freight Orders')
-        if current:
-            name_parts = current.name.split('-')
-            if name_parts:
-                # Assuming the last part is the numeric
-                next_number = int(name_parts[-1]) + 1
-                new_name = f"{key}{next_number:04d}"  # Pad with zeros if needed
-                return new_name
+        try:
+            # Try to get the last document in the series
+            current = frappe.get_last_doc('FPL Freight Orders')
+            if current:
+                name_parts = current.name.split('-')
+                if name_parts:
+                    # Assuming the last part is the numeric
+                    next_number = int(name_parts[-1]) + 1
+                    new_name = f"{key}{next_number:04d}"  # Pad with zeros if needed
+                    return new_name
+        except frappe.DoesNotExistError:
+            return f"{key}0001"
         return f"{key}0001"

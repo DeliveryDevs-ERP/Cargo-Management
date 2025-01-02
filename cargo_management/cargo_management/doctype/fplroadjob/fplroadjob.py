@@ -18,7 +18,7 @@ class FPLRoadJob(Document):
         container_number: DF.Data | None
         container_number_to_link: DF.Link | None
         double_20_: DF.Check
-        driver_name: DF.Link | None
+        driver_name: DF.Data | None
         dropoff_arrival: DF.Datetime | None
         dropoff_completed: DF.Datetime | None
         expenses: DF.Table[Expensescdt]

@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "prompt",
  "creation": "2024-10-23 17:34:23.065282",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -10,16 +11,18 @@
  "fields": [
   {
    "fieldname": "comodity_name",
-   "fieldtype": "Data",
-   "label": "Comodity name "
+   "fieldtype": "Select",
+   "label": "type",
+   "options": "\nBulk Goods\nManufactured\nConsumer Goods\nNon Perishable Food\nIndustrial"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-24 13:02:03.705755",
+ "modified": "2025-01-02 14:08:06.066910",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Commodities",
+ "naming_rule": "Set by user",
  "owner": "Administrator",
  "permissions": [
   {
@@ -33,9 +36,19 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1
   }
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "comodity_name"
 }

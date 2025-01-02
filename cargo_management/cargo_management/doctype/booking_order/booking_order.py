@@ -155,17 +155,22 @@ class BookingOrder(Document):
 
             
     def get_next_name(self, key):
-    # Get the current value of the series
-        current = frappe.get_last_doc('FPL Freight Orders')
-        if current:
-            name_parts = current.name.split('-')
-            if name_parts:
-                # Assuming the last part is the numeric
-                next_number = int(name_parts[-1]) + 1
-                new_name = f"{key}{next_number:04d}"  # Pad with zeros if needed
-                return new_name
-        return f"{key}0001"
+        try:
+            # Try to get the last document in the series
+            current = frappe.get_last_doc('FPL Freight Orders')
+            if current:
+                name_parts = current.name.split('-')
+                if name_parts:
+                    # Assuming the last part is the numeric
+                    next_number = int(name_parts[-1]) + 1
+                    new_name = f"{key}{next_number:04d}"  # Pad with zeros if needed
+                    return new_name
+        except frappe.DoesNotExistError:
+            # If no documents are found, start at the beginning of the series
+            return f"{key}0001"
 
+        # Fallback in case of any other unexpected issue
+        return f"{key}0001"
 
 
     def get_Job_LocationPickup(self, serviceName):
