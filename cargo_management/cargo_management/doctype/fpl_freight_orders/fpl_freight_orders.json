@@ -50,7 +50,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Client",
-   "options": "Customer"
+   "options": "Customer",
+   "read_only": 1
   },
   {
    "fieldname": "jobs",
@@ -184,7 +185,7 @@
    "link_fieldname": "freight_order_id"
   }
  ],
- "modified": "2025-01-03 16:32:21.029324",
+ "modified": "2025-01-03 17:31:20.466223",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Freight Orders",

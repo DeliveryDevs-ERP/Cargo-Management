@@ -2,6 +2,9 @@ from frappe.model.document import Document
 import frappe
 from frappe import _
 
+class ContainerNumberFormatError(frappe.ValidationError):
+	pass
+
 class FPLFreightOrders(Document):
     # begin: auto-generated types
     # This code is auto-generated. Do not modify anything in this block.
@@ -30,21 +33,19 @@ class FPLFreightOrders(Document):
     # end: auto-generated types
 
     def validate(self):
-        self.validate_container_Number()
         self.check_job_status()
         if self.container_number and self.container_type and self.documents_received:
+            self.validate_container_Number()
             self.create_or_update_container()
             if self.status == "Draft":
                 self.status = "Assigned"
-    
-
+                
     def validate_container_Number(self):
         import re
         pattern = r'^[A-Z]{4}\d{7}$'
         if not re.match(pattern, self.container_number):
-            frappe.throw(_("Container number must be 4 uppercase letters followed by 7 digits."))
-            
-
+            frappe.throw(_("Container number must be 4 uppercase letters followed by 7 digits."),exc=ContainerNumberFormatError,)            
+    
     def after_insert(self):
         self.process_jobs()
 

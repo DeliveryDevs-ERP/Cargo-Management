@@ -7,7 +7,6 @@ frappe.ui.form.on("FPL Freight Orders", {
                 has_new_job = true;
             }
         });
-
         if (has_new_job) {
             frappe.call({
                 method: "cargo_management.cargo_management.doctype.fpl_freight_orders.fpl_freight_orders.create_Job_withoutId",
