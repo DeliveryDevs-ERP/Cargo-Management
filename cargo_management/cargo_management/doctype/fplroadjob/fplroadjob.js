@@ -1,9 +1,17 @@
 frappe.ui.form.on("FPLRoadJob", {
-    setup: function(frm) {
+    onload: function(frm) {
+        // Initialize a custom flag to false
+        frm.expenses_populated = false;
+    },
 
-        populate_expenses(frm, 'Truck Job'); 
+    setup: function(frm) {
+        if (!frm.expenses_populated) {
+            populate_expenses(frm, 'Truck Job'); 
+            frm.expenses_populated = true; // Set the flag to true after populating expenses
+        }
         set_cost_type_filter(frm, 'Truck Job');
-        // Setting up the query for the container_number_to_link field
+
+        // Setup for container_number_to_link field
         frm.fields_dict['container_number_to_link'].get_query = function(doc) {
             if (!frm.doc.job_type) {
                 frappe.msgprint("Please specify a Job Type before selecting a container.");
@@ -16,6 +24,13 @@ frappe.ui.form.on("FPLRoadJob", {
                 }
             };
         };   
+    },
+
+    refresh: function(frm) {
+        if (!frm.expenses_populated && !frm.is_new()) {
+            populate_expenses(frm, 'Truck Job');
+            frm.expenses_populated = true;
+        }
     },
 
     container_number_to_link: function(frm) {
@@ -57,10 +72,10 @@ function populate_expenses(frm, job_mode) {
                         row.amount = cost_obj.cost;
                     }
                 });
+                frm.refresh_field('expenses');
             }
         }
     });
-    frm.refresh_field('expenses');
 }
 
 function set_cost_type_filter(frm, job_mode) {
@@ -72,3 +87,4 @@ function set_cost_type_filter(frm, job_mode) {
         };
     };
 }
+
