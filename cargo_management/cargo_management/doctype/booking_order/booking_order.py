@@ -66,8 +66,7 @@ class BookingOrder(Document):
     def on_submit(self):
         try:
             self.create_freight_orders()  # Create freight orders first
-            self.create_and_submit_sales_order()# Attempt to create and saves Sales Invoice
-            # self.create_and_submit_sales_invoice()  # Attempt to create and saves Sales Invoice
+            # self.create_and_submit_sales_order()# Attempt to create and saves Sales Invoice
         except Exception as e:
             frappe.db.rollback()  # Roll back changes if any error occurs
             frappe.throw(f"Booking Order submission failed due to: {str(e)}")

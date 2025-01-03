@@ -108,7 +108,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "\nDraft\nCross Stuff\nIn Progress\nCompleted"
+   "options": "\nDraft\nAssigned\nCross Stuff\nIn Progress\nCompleted"
   },
   {
    "fieldname": "last_job",
@@ -184,7 +184,7 @@
    "link_fieldname": "freight_order_id"
   }
  ],
- "modified": "2024-12-30 20:15:09.267290",
+ "modified": "2025-01-03 16:32:21.029324",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Freight Orders",

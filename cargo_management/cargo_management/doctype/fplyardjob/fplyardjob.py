@@ -32,8 +32,8 @@ class FPLYardJob(Document):
 
 	def validate(self):
 		if (self.gate_in or self.gate_out) and self.status != "Completed":
-			self.status = "Completed"
-			updateJobStatus(self.name , self.freight_order_id, self.container_number)
+			if updateJobStatus(self.name , self.freight_order_id, self.container_number):
+				self.status = "Completed"
 		if self.status == "Assigned":
 			self.assigned_at = now_datetime()   
 				

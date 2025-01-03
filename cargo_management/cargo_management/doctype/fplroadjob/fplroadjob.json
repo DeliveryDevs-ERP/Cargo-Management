@@ -61,7 +61,8 @@
   {
    "fieldname": "assigned_at",
    "fieldtype": "Datetime",
-   "label": "Assigned at"
+   "label": "Assigned at",
+   "read_only": 1
   },
   {
    "fieldname": "job_type",
@@ -172,7 +173,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-02 14:06:23.477439",
+ "modified": "2025-01-03 16:21:33.851553",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLRoadJob",

@@ -110,7 +110,8 @@
   {
    "fieldname": "assigned_at",
    "fieldtype": "Datetime",
-   "label": "Assigned at"
+   "label": "Assigned at",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_dvmn",
@@ -123,7 +124,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-17 14:00:51.903848",
+ "modified": "2025-01-03 16:21:58.683666",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLYardJob",

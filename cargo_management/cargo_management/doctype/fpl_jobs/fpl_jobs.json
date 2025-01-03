@@ -42,14 +42,13 @@
   {
    "fieldname": "job_id",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Job Id"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-11-05 16:57:13.801950",
+ "modified": "2025-01-03 16:38:00.941940",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Jobs",

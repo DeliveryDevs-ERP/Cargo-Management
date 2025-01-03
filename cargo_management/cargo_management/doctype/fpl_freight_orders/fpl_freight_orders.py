@@ -1,5 +1,6 @@
 from frappe.model.document import Document
 import frappe
+from frappe import _
 
 class FPLFreightOrders(Document):
     # begin: auto-generated types
@@ -24,14 +25,24 @@ class FPLFreightOrders(Document):
         sales_order_number: DF.Data | None
         seal_no: DF.Data | None
         size: DF.Int
-        status: DF.Literal["", "Draft", "Cross Stuff", "In Progress", "Completed"]
+        status: DF.Literal["", "Draft", "Assigned", "Cross Stuff", "In Progress", "Completed"]
         weight: DF.Float
     # end: auto-generated types
 
     def validate(self):
+        self.validate_container_Number()
         self.check_job_status()
-        if self.container_number and self.container_type:
+        if self.container_number and self.container_type and self.documents_received:
             self.create_or_update_container()
+            if self.status == "Draft":
+                self.status = "Assigned"
+    
+
+    def validate_container_Number(self):
+        import re
+        pattern = r'^[A-Z]{4}\d{7}$'
+        if not re.match(pattern, self.container_number):
+            frappe.throw(_("Container number must be 4 uppercase letters followed by 7 digits."))
             
 
     def after_insert(self):
@@ -179,9 +190,9 @@ class FPLFreightOrders(Document):
                     job_doc.container_number = self.container_number
                     job_doc.status = "Assigned"
                     job_doc.save()
-                    frappe.msgprint(f"Updated {doctype} {job.name} with container number {self.container_number}")
+                    # frappe.msgprint(f"Updated {doctype} {job.name} with container number {self.container_number}")
                 else:
-                    frappe.msgprint(f"{doctype} {job.name} does not have a 'container_number' field.")
+                    frappe.errprint(f"{doctype} {job.name} does not have a 'container_number' field.")
         
         for job in self.jobs:
             job.status = "Assigned"
@@ -196,7 +207,7 @@ class FPLFreightOrders(Document):
                     job_doc.container_number = self.container_number
                     job_doc.status = "Assigned"
                     job_doc.save()
-                    frappe.msgprint(f"Updated {doctype} {job.name} with container number {self.container_number}")
+                    # frappe.msgprint(f"Updated {doctype} {job.name} with container number {self.container_number}")
                 else:
                     frappe.msgprint(f"{doctype} {job.name} does not have a 'container_number' field.")
         
