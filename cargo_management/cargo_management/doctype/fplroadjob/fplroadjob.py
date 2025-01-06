@@ -35,7 +35,6 @@ class FPLRoadJob(Document):
     # end: auto-generated types
 
     def validate(self):
-        frappe.errprint(f"Status of Job :{self.name} - {self.status}")
         if (self.vehicle_number and self.vehicle_supplier) and (self.pickup_arrival and self.pickup_departure) and (self.dropoff_arrival and self.dropoff_completed) and self.status != "Completed":
             if updateJobStatus(self.name, self.freight_order_id, self.container_number):
                 self.status = "Completed"

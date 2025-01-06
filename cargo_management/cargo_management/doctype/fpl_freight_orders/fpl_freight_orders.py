@@ -191,9 +191,7 @@ class FPLFreightOrders(Document):
                     job_doc.container_number = self.container_number
                     job_doc.status = "Assigned"
                     job_doc.save()
-                    # frappe.msgprint(f"Updated {doctype} {job.name} with container number {self.container_number}")
-                else:
-                    frappe.errprint(f"{doctype} {job.name} does not have a 'container_number' field.")
+
         
         for job in self.jobs:
             job.status = "Assigned"

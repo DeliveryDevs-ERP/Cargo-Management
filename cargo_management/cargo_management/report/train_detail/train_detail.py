@@ -45,10 +45,8 @@ def get_data(filters):
     )
 
     if not train_doc:
-        frappe.errprint("No Train Document found with the given filters.")
         return data
 
-    frappe.errprint(f"Fetched Train Doc: {train_doc}")
 
     # Step 2: Fetch container and wagon data
     container_data = frappe.get_all(
@@ -57,7 +55,6 @@ def get_data(filters):
         fields=["container_number", "wagon_number", "received_"]
     )
 
-    frappe.errprint(f"Fetched Container Data: {container_data}")
 
     # Step 3: Filter unique containers and wagons, prioritize received_
     unique_data = {}
@@ -73,7 +70,6 @@ def get_data(filters):
                     "received_": received,
                 }
 
-    frappe.errprint(f"Filtered Unique Data: {unique_data}")
 
     # Step 4: Fetch data for valid containers
     for container_number, details in unique_data.items():

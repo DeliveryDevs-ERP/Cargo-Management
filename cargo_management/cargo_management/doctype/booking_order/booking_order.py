@@ -394,7 +394,6 @@ def get_sales_person(customer):
                                     fieldname="sales_person",
                                     order_by="idx asc")
 
-    # frappe.errprint(f"Sales Person: {sales_person}")  # Debug print to check the fetched sales person
 
     # Return the fetched sales person or None if not found
     return sales_person

@@ -4,7 +4,6 @@ import frappe
 def fetch_expenses_items(sales_invoice_number):
     sales_order = frappe.get_value("Sales Invoice Item", {"parent": sales_invoice_number}, "sales_order")
     booking_order = frappe.get_value("Sales Order", {"name": sales_order}, "custom_booking_order_id")
-    # frappe.errprint(f"BO number {booking_order}")
     expenses = []
     child_tables = [
         {"doctype": "FPLRoadJob", "fieldname": "expenses"},
