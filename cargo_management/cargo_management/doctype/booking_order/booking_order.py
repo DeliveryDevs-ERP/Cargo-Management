@@ -65,8 +65,8 @@ class BookingOrder(Document):
 
     def on_submit(self):
         try:
-            self.create_freight_orders()  # Create freight orders first
-            # self.create_and_submit_sales_order()# Attempt to create and saves Sales Invoice
+            self.create_freight_orders() 
+            self.create_and_submit_sales_order()
         except Exception as e:
             frappe.db.rollback()  # Roll back changes if any error occurs
             frappe.throw(f"Booking Order submission failed due to: {str(e)}")
@@ -373,9 +373,7 @@ class BookingOrder(Document):
             # Save the freight order to commit changes
             freight_order.save()
             frappe.db.commit()
-        else:
-            frappe.errprint(f"No reordering was done. 'Cross Stuff' is already at the end or no valid index provided.")
-    
+        
     
 @frappe.whitelist()
 def get_sales_person(customer):
@@ -396,7 +394,7 @@ def get_sales_person(customer):
                                     fieldname="sales_person",
                                     order_by="idx asc")
 
-    frappe.errprint(f"Sales Person: {sales_person}")  # Debug print to check the fetched sales person
+    # frappe.errprint(f"Sales Person: {sales_person}")  # Debug print to check the fetched sales person
 
     # Return the fetched sales person or None if not found
     return sales_person
