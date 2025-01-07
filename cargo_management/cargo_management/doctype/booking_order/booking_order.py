@@ -74,7 +74,6 @@ class BookingOrder(Document):
     def create_freight_orders(self):
         cargo_details = self.get('cargo_details')  
         services = self.get('services')
-        services.extend(self.get('miscellaneous_services'))
 
         for item in cargo_details:
             for _ in range(int(item.qty)):  
@@ -82,9 +81,9 @@ class BookingOrder(Document):
 
     def create_freight_order(self, item, services):
         applicable_services = [service for service in services if service.applicable == 1]
-        crossStuff_flag = any(service.service_name == "Cross Stuff" for service in applicable_services) # check if there is cross stuff present
-        if crossStuff_flag:
-            applicable_services = [service for service in applicable_services if service.service_name != "Cross Stuff"]
+        # crossStuff_flag = any(service.service_name == "Cross Stuff" for service in applicable_services) # check if there is cross stuff present
+        # if crossStuff_flag:
+            # applicable_services = [service for service in applicable_services if service.service_name != "Cross Stuff"]
         weight = item.avg_weight if item.avg_weight else item.bag_weight
         size = item.size if item.size else None
         freight_order = frappe.get_doc({
@@ -132,14 +131,14 @@ class BookingOrder(Document):
         
 
         # Cross Stuff adjustment in the jobs order:
-        if crossStuff_flag:
-            cross_stuff_index = next((index for index, job in enumerate(freight_order.jobs) if job.job_name == self.location_of_cross_stuff), None)
-            freight_order.append('jobs', {
-                'job_name': self.get_service_type_name("Cross Stuff", self.transport_type),
-                'status': 'Draft',
-                'start_location': freight_order.jobs[cross_stuff_index - 1].end_location if cross_stuff_index > 0 else freight_order.jobs[0].start_location,
-                'end_location': None
-            })
+        # if crossStuff_flag:
+        #     cross_stuff_index = next((index for index, job in enumerate(freight_order.jobs) if job.job_name == self.location_of_cross_stuff), None)
+        #     freight_order.append('jobs', {
+        #         'job_name': self.get_service_type_name("Cross Stuff", self.transport_type),
+        #         'status': 'Draft',
+        #         'start_location': freight_order.jobs[cross_stuff_index - 1].end_location if cross_stuff_index > 0 else freight_order.jobs[0].start_location,
+        #         'end_location': None
+        #     })
 
         freight_order.insert()
         if freight_order.jobs:
@@ -149,8 +148,8 @@ class BookingOrder(Document):
             
         frappe.db.commit()
 
-        if crossStuff_flag:
-            self.reorder_Freight_orderJobs_after_crossStuff_insert(freight_order,cross_stuff_index)
+        # if crossStuff_flag:
+        #     self.reorder_Freight_orderJobs_after_crossStuff_insert(freight_order,cross_stuff_index)
 
             
     def get_next_name(self, key):
@@ -349,31 +348,39 @@ class BookingOrder(Document):
         return sales_invoice_items
 
     
-    def reorder_Freight_orderJobs_after_crossStuff_insert(self, freight_order, cross_stuff_index):
-        # Verify that the cross_stuff_index is valid and there are jobs after this index
-        if cross_stuff_index is not None and cross_stuff_index + 1 < len(freight_order.jobs):
-            # Move the "Cross Stuff" job after the specified job by adjusting the sequence
-            cross_stuff_job = freight_order.jobs.pop(cross_stuff_index)
-
-            # Example reordering logic: insert the "Cross Stuff" job after two positions from its current position
-            new_position = cross_stuff_index + 2
-
-            # Ensure new position does not exceed the list size
-            new_position = min(new_position, len(freight_order.jobs))
-
-            freight_order.jobs.insert(new_position, cross_stuff_job)
-            
-            # Update the indices for all jobs to maintain consistency
-            for idx, job in enumerate(freight_order.jobs):
-                job.idx = idx + 1  # Reset idx for each job to maintain proper order in the UI
-
-            # Log changes for debugging
-            # frappe.msgprint(f"'Cross Stuff' job moved to position {new_position}.")
-
-            # Save the freight order to commit changes
-            freight_order.save()
-            frappe.db.commit()
+    def reorder_Freight_orderJobs_after_crossStuff_insert(self, freight_order, initial_cross_stuff_index):
+        # Log the initial index for troubleshooting
+        frappe.errprint(f"Initial cross_stuff_index: {initial_cross_stuff_index}")
         
+        # Verify that the initial_cross_stuff_index is valid and within bounds
+        if initial_cross_stuff_index is None or initial_cross_stuff_index >= len(freight_order.jobs):
+            frappe.throw("Invalid index for Cross Stuff job.")
+
+        # Remove the "Cross Stuff" job from its initial position
+        cross_stuff_job = freight_order.jobs.pop(initial_cross_stuff_index)
+
+        # Determine the new position for the "Cross Stuff" job
+        # Example: 2 positions after its initial index or adjust based on your specific requirements
+        new_position = initial_cross_stuff_index + 2
+        
+        # Ensure new position does not exceed the list size
+        if new_position > len(freight_order.jobs):
+            new_position = len(freight_order.jobs)
+
+        # Insert the "Cross Stuff" job at the new position
+        freight_order.jobs.insert(new_position, cross_stuff_job)
+        
+        # Log the adjusted positions for troubleshooting
+        frappe.errprint(f"New position for Cross Stuff job: {new_position}")
+
+        # Update the indices for all jobs to maintain consistency
+        for idx, job in enumerate(freight_order.jobs):
+            job.idx = idx + 1  # Update the index for each job to reflect its new position in the list
+        
+        # Save changes to the Freight Order
+        freight_order.save()
+        frappe.db.commit()
+            
     
 @frappe.whitelist()
 def get_sales_person(customer):

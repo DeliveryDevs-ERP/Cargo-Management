@@ -20,16 +20,19 @@
   {
    "fieldname": "freight_order_id",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Freight Order ID"
   },
   {
    "fieldname": "sales_order_number",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Sales Order Number"
   },
   {
    "fieldname": "client",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Client",
    "options": "Customer"
   },
@@ -42,6 +45,7 @@
   {
    "fieldname": "container_number",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Container Number"
   },
   {
@@ -57,6 +61,7 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Status",
    "options": "\nDraft\nAssigned\nCompleted\nCancelled"
   },
@@ -74,7 +79,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-19 14:30:34.424720",
+ "modified": "2025-01-07 13:45:11.737870",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLCrossStuffJob",
@@ -93,7 +98,9 @@
    "write": 1
   }
  ],
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "job_type"
 }
