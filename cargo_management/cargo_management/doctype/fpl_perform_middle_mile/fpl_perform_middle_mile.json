@@ -52,18 +52,23 @@
    "in_list_view": 1,
    "label": "Rail Number",
    "non_negative": 1,
+   "read_only_depends_on": "eval: doc.finish_train_formation === 1;",
    "reqd": 1
   },
   {
    "fieldname": "movement_type",
    "fieldtype": "Select",
    "label": "Movement Type ",
-   "options": "\nUp\nDown"
+   "mandatory_depends_on": "eval: doc.finish_train_formation === 0",
+   "options": "\nUp\nDown",
+   "read_only_depends_on": "eval: doc.finish_train_formation === 1;"
   },
   {
    "fieldname": "expected_time_of_arrival_eta",
    "fieldtype": "Datetime",
-   "label": "Expected Time of Arrival (ETA)"
+   "label": "Expected Time of Arrival (ETA)",
+   "mandatory_depends_on": "eval: doc.finish_train_formation === 0",
+   "read_only_depends_on": "eval: doc.finish_train_formation === 1;"
   },
   {
    "fieldname": "column_break_lnsu",
@@ -73,7 +78,8 @@
    "fieldname": "middle_mile",
    "fieldtype": "Table",
    "label": "Middle Mile",
-   "options": "FPL MM cdt"
+   "options": "FPL MM cdt",
+   "read_only_depends_on": "eval: doc.finish_loading === 1;"
   },
   {
    "fieldname": "train_formation_tab",
@@ -83,13 +89,16 @@
   {
    "fieldname": "expected_departure_time_eda",
    "fieldtype": "Datetime",
-   "label": "Expected Departure time (EDA)"
+   "label": "Expected Departure time (EDA)",
+   "mandatory_depends_on": "eval: doc.finish_train_formation === 0",
+   "read_only_depends_on": "eval: doc.finish_train_formation === 1;"
   },
   {
    "depends_on": "eval:doc.finish_train_formation === 1;",
    "fieldname": "loading_tab",
    "fieldtype": "Tab Break",
-   "label": "Loading"
+   "label": "Loading",
+   "read_only_depends_on": "eval: doc.finish_loading === 1;"
   },
   {
    "depends_on": "eval:doc.finish_loading === 1;",
@@ -106,12 +115,14 @@
   {
    "fieldname": "loco_number",
    "fieldtype": "Data",
-   "label": "Loco Number"
+   "label": "Loco Number",
+   "read_only_depends_on": "eval: doc.finish_departure === 1;"
   },
   {
    "fieldname": "break_number",
    "fieldtype": "Data",
-   "label": "Break Number"
+   "label": "Break Number",
+   "read_only_depends_on": "eval: doc.finish_departure === 1;"
   },
   {
    "fieldname": "column_break_rchg",
@@ -120,17 +131,20 @@
   {
    "fieldname": "departure_time",
    "fieldtype": "Datetime",
-   "label": "Actual Departure Time (ATD)"
+   "label": "Actual Departure Time (ATD)",
+   "read_only_depends_on": "eval: doc.finish_departure === 1;"
   },
   {
    "fieldname": "loading_time",
    "fieldtype": "Datetime",
-   "label": "Loading Start Time"
+   "label": "Loading Start Time",
+   "read_only_depends_on": "eval: doc.finish_loading === 1;"
   },
   {
    "fieldname": "loading_end_time",
    "fieldtype": "Datetime",
-   "label": "Loading End Time"
+   "label": "Loading End Time",
+   "read_only_depends_on": "eval: doc.finish_loading === 1;"
   },
   {
    "fieldname": "section_break_vfmj",
@@ -141,22 +155,25 @@
    "fieldtype": "Table",
    "label": "Middle Mile in Departure",
    "options": "FPL MM cdt",
-   "read_only": 1
+   "read_only_depends_on": "eval: doc.finish_departure === 1;"
   },
   {
    "fieldname": "actual_arrival_datetime",
    "fieldtype": "Datetime",
-   "label": "Actual Arrival Time (ATA)"
+   "label": "Actual Arrival Time (ATA)",
+   "read_only_depends_on": "eval: doc.finish_arrival === 1;"
   },
   {
    "fieldname": "offloading_start_time",
    "fieldtype": "Datetime",
-   "label": "Offloading start time "
+   "label": "Offloading start time ",
+   "read_only_depends_on": "eval: doc.finish_arrival === 1;"
   },
   {
    "fieldname": "offloading_end_time",
    "fieldtype": "Datetime",
-   "label": "Offloading end time  "
+   "label": "Offloading end time  ",
+   "read_only_depends_on": "eval: doc.finish_arrival === 1;"
   },
   {
    "fieldname": "column_break_gcyp",
@@ -170,7 +187,8 @@
    "fieldname": "middle_mile_copy",
    "fieldtype": "Table",
    "label": "Middle Mile in Arrival",
-   "options": "FPL MM cdt"
+   "options": "New MM cdt",
+   "read_only_depends_on": "eval: doc.finish_arrival === 1;"
   },
   {
    "fieldname": "section_break_nhhe",
@@ -181,7 +199,9 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Departure Location",
-   "options": "Location"
+   "mandatory_depends_on": "eval: doc.finish_train_formation === 0",
+   "options": "Location",
+   "read_only_depends_on": "eval: doc.finish_train_formation === 1;"
   },
   {
    "fieldname": "section_break_qyfj",
@@ -192,6 +212,7 @@
    "fieldtype": "Table",
    "label": "Wagons",
    "options": "FPL Wagon cdt",
+   "read_only_depends_on": "eval: doc.finish_train_formation === 1;",
    "reqd": 1
   },
   {
@@ -246,7 +267,9 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Arrival Location",
-   "options": "Location"
+   "mandatory_depends_on": "eval: doc.finish_train_formation === 0",
+   "options": "Location",
+   "read_only_depends_on": "eval: doc.finish_train_formation === 1;"
   },
   {
    "fieldname": "status",
@@ -255,12 +278,14 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "\nTrain Formed\nLoaded\nDeparted\nArrived"
+   "mandatory_depends_on": "eval: doc.finish_train_formation === 0",
+   "options": "\nTrain Formed\nLoaded\nDeparted\nArrived",
+   "read_only_depends_on": "eval: doc.finish_train_formation === 1;"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-02 16:25:31.606499",
+ "modified": "2025-01-09 15:08:13.315572",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",

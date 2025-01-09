@@ -34,3 +34,31 @@ def get_applicable_jobs(*args, **kwargs):
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Failed to execute SQL query in get_applicable_jobs")
         frappe.throw(("Error fetching container data: {0}").format(str(e)))
+
+
+
+
+@frappe.whitelist()
+def get_containers_from_Loading(*args, **kwargs):
+    txt = kwargs.get('txt', '')
+    searchfield = kwargs.get('searchfield', None)
+    start = int(kwargs.get('start', 0))
+    page_len = int(kwargs.get('page_len', 20))
+    filters = kwargs.get('filters', {})
+    parent = args[5].get('parent')
+   
+    try:
+        return frappe.db.sql("""
+            SELECT DISTINCT
+                Loading.container, Loading.container_number
+            FROM 
+                `tabFPL MM cdt` AS Loading
+            WHERE
+                Loading.container IS NOT NULL AND
+                Loading.parentfield = 'middle_mile' AND
+                Loading.parent = %s
+            """, (parent,))
+    
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Failed to execute SQL query in get_containers_from_Loading")
+        frappe.throw(("Error fetching container data: {0}").format(str(e)))

@@ -1,19 +1,21 @@
 frappe.ui.form.on("FPL Perform Middle Mile", {
 
     setup: function(frm) {
-        // Setting up query for 'container' field in 'middle_mile' child table
-    frm.fields_dict['middle_mile'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
-        return {
-            query: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_applicable_jobs',
-            filters: { 
-                'container_location': frm.doc.departure_location, 
-                "container_next_location": frm.doc.arrival_location 
-            }
+        frm.fields_dict['middle_mile'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
+            return {
+                query: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_applicable_jobs',
+                filters: { 
+                    'container_location': frm.doc.departure_location, 
+                    "container_next_location": frm.doc.arrival_location 
+                }
+            };
         };
-    };
-},
+    },
+    
     onload: function(frm) {
         populate_expenses(frm, 'Train Job');
+        frm.get_field('middle_mile_copy').grid.cannot_add_rows = true; 
+        frm.get_field('middle_mile_in_loading').grid.cannot_add_rows = true; 
     },
 
     refresh: function(frm) {
@@ -28,6 +30,24 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
         }
 
         set_cost_type_filter(frm, 'Train Job');
+
+        frm.fields_dict['middle_mile_in_loading'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
+            return {
+                query: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_containers_from_Loading',
+                filters: { 
+                    'parent': frm.doc.name, 
+                }
+            };
+        };
+
+        frm.fields_dict['middle_mile_copy'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
+            return {
+                query: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_containers_from_Loading',
+                filters: { 
+                    'parent': frm.doc.name, 
+                }
+            };
+        };
 
     },
 

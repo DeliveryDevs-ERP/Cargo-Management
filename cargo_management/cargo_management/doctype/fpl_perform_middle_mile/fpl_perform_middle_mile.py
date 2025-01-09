@@ -18,6 +18,7 @@ class FPLPerformMiddleMile(Document):
         from cargo_management.cargo_management.doctype.expenses_cdt.expenses_cdt import Expensescdt
         from cargo_management.cargo_management.doctype.fpl_mm_cdt.fpl_mm_cdt import FPLMMcdt
         from cargo_management.cargo_management.doctype.fpl_wagon_cdt.fpl_wagon_cdt import FPLWagoncdt
+        from cargo_management.cargo_management.doctype.new_mm_cdt.new_mm_cdt import NewMMcdt
         from frappe.types import DF
 
         actual_arrival_datetime: DF.Datetime | None
@@ -36,7 +37,7 @@ class FPLPerformMiddleMile(Document):
         loading_time: DF.Datetime | None
         loco_number: DF.Data | None
         middle_mile: DF.Table[FPLMMcdt]
-        middle_mile_copy: DF.Table[FPLMMcdt]
+        middle_mile_copy: DF.Table[NewMMcdt]
         middle_mile_in_loading: DF.Table[FPLMMcdt]
         movement_type: DF.Literal["", "Up", "Down"]
         offloading_end_time: DF.Datetime | None
