@@ -28,7 +28,7 @@ The **Cargo Management App** is a powerful tool designed to streamline logistics
    ```bash
    bench --site [your-site-name] install-app cargo_management
    ```
-3. Apply the setup SQL (optional for default configuration):
+3. Apply the setup SQL (optional for default master configuration):
    ```sql
    INSERT INTO `tabService Type` (`name`, `name1`, `transport_mode`, `applicable`, `job_type`)
    VALUES
@@ -46,6 +46,25 @@ The **Cargo Management App** is a powerful tool designed to streamline logistics
    ('oapcdu6gv3', 'Empty Pickup', 'Road (Truck)', 0, 'Road'),
    ('oalds7gjs7', 'Last Mile', 'Rail (Train)', 0, 'Road'),
    ('oagb0ddmuo', 'Middle Mile', 'Rail (Train)', 0, 'Rail');
+
+
+
+   INSERT INTO `tabTransport Mode` (`name`, `mode`)
+   VALUES
+   ('Road (Truck)', 'Road'),
+   ('Rail (Train)', 'Rail');
+
+
+
+   INSERT INTO `tabFPL Wagons` (`name`, `type`, `state`, `size`, `max_weight`, `max_count`)
+   VALUES
+   ('ZBFC (S)', 'Small', 'Empty', 40, 60, 2),
+   ('BKF', 'Large', 'Empty', 60, 0, 3),
+   ('BFC', 'Large', 'Empty', 60, 0, 3),
+   ('KF', 'Conventional', 'Empty', 20, 0, 0),
+   ('KK', 'Conventional', 'Empty', 20, 0, 0),
+   ('ZRRV', 'Large', 'Empty', 40, 0, 0),
+   ('ZBFC', 'Large', 'Empty', 60, 60, 3);
    ```
 
 ## Usage
