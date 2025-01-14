@@ -3,7 +3,7 @@ from frappe.utils import now_datetime
 from frappe.model.document import Document
 import frappe
 from frappe import _
-
+from frappe.utils import getdate
 
 class FPLRoadJob(Document):
     # begin: auto-generated types
@@ -73,10 +73,10 @@ class FPLRoadJob(Document):
         if not BO_date:
             frappe.throw(_("Booking Order Date not found for Sales Order Number: {0}").format(self.sales_order_number))
 
-        if (self.pickup_departure and self.pickup_departure < BO_date) or \
-        (self.pickup_arrival and self.pickup_arrival < BO_date) or \
-        (self.dropoff_completed and self.dropoff_completed < BO_date) or \
-        (self.dropoff_arrival and self.dropoff_arrival < BO_date):
+        if (self.pickup_departure and getdate(self.pickup_departure) < getdate(BO_date)) or \
+        (self.pickup_arrival and getdate(self.pickup_arrival) < getdate(BO_date)) or \
+        (self.dropoff_completed and getdate(self.dropoff_completed) < getdate(BO_date)) or \
+        (self.dropoff_arrival and getdate(self.dropoff_arrival) < getdate(BO_date)):
             frappe.throw(_("None of the dates (pickup departure, pickup arrival, dropoff completed, dropoff arrival) should be before the Booking Order date {0}.").format(BO_date))
 
 
