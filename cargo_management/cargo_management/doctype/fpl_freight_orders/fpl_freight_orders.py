@@ -39,6 +39,21 @@ class FPLFreightOrders(Document):
             self.create_or_update_container()
             if self.status == "Draft":
                 self.status = "Assigned"
+    
+    def after_delete(self):
+        frappe.errprint(f"After Delete Called")
+        if self.status == "Draft":
+            self.delete_all_jobs_for_this_fo()
+        elif self.status == "Assigned":
+            frappe.msgprint("This FO has a container already assigned to it")
+            self.delete_all_jobs_for_this_fo()
+            self.delete_container_doc()
+        elif self.status in ["In Progress", "Completed"] :
+            if self.has_jobs_for_this_fo():
+                frappe.throw(_("This Freight Order cannot be deleted, Please delete all the linked Jobs first"))       
+            else:
+                self.delete_container_doc()
+                    
                 
     def validate_container_Number(self):
         import re
@@ -55,16 +70,19 @@ class FPLFreightOrders(Document):
             return
 
         statuses = [job.status for job in self.jobs]
-        
         if all(status == 'Completed' for status in statuses):
             self.status = 'Completed'
+        elif any(status == 'Completed' for status in statuses):
+            self.status = 'In Progress'
+        elif all(status == 'Assigned' for status in statuses):
+            self.status = 'Assigned'
         elif all(status == 'Draft' for status in statuses):
             self.status = 'Draft'
-        elif 'Completed' in statuses:
-            self.status = 'In Progress'
         else:
-            self.status = 'In Progress'    
-
+            frappe.throw(_("Error finding status."))
+            self.status = 'In Progress'
+            
+            
     @frappe.whitelist()
     def process_jobs(self):
         for job in self.get("jobs"):
@@ -145,26 +163,21 @@ class FPLFreightOrders(Document):
 
 
     def create_or_update_container(self):
-        existing_container = frappe.get_all('FPL Containers', filters={'container_number': self.container_number}, fields=['*'])
+        existing_container = frappe.get_all('FPL Containers', filters={'container_number': self.container_number, "freight_order_id": self.name}, fields=['*'])
 
-        if existing_container:
-            return
-            frappe.msgprint("Container already in use !")
-            # container = existing_container
-        else:
+        if not existing_container: # will be called only once on creation
             container = frappe.new_doc('FPL Containers')
             container.container_number = self.container_number
-        
-        container.container_type = self.container_type
-        container.status = "Filled"
-        container.freight_order_id = self.name
-        container.state = None
-        container.active_job_id = self.jobs[0].job_id
-        container.container_location = self.fetchLocationfromFOJobGrid()
-        container.container_location = self.fetchNextLocationfromFOJobGrid()
-        container.save()
-        self.update_container_in_jobs()
-        
+            container.container_type = self.container_type
+            container.status = "Filled"
+            container.freight_order_id = self.name
+            container.state = None
+            container.active_job_id = self.jobs[0].job_id
+            container.container_location = self.fetchLocationfromFOJobGrid()
+            container.container_next_location = self.fetchNextLocationfromFOJobGrid()
+            container.save()
+            self.update_container_in_jobs()
+           
 
 
     def fetchLocationfromFOJobGrid(self):
@@ -213,6 +226,29 @@ class FPLFreightOrders(Document):
         for job in self.jobs:
             if job.status != "Completed":
                 job.status = "Assigned"
+                
+    def has_jobs_for_this_fo(self):
+        job_doctypes = ['FPLRailJob', 'FPLYardJob', 'FPLRoadJob']
+        for doctype in job_doctypes:
+            # Check if there are any jobs associated with this Freight Order
+            jobs = frappe.get_all(doctype, filters={'freight_order_id': self.name}, fields=['name'])
+            if jobs:
+                return True  # Return True immediately when jobs are found
+        return False              
+                
+    def delete_all_jobs_for_this_fo(self):
+        job_doctypes = ['FPLRailJob', 'FPLYardJob', 'FPLRoadJob']
+        for doctype in job_doctypes:
+            jobs = frappe.get_all(doctype, filters={'freight_order_id': self.name}, fields=['name'])
+            for job in jobs:
+                frappe.delete_doc(doctype, job.name)
+                frappe.msgprint(f"{doctype} job {job.name} associated with this Freight Order has been deleted.")
+
+    def delete_container_doc(self):
+        containers = frappe.get_all('FPL Containers', filters={'freight_order_id': self.name}, fields=['name'])
+        for container in containers:
+            frappe.delete_doc('FPL Containers', container.name)
+            frappe.msgprint(f"Container {container.name} associated with this Freight Order has been deleted.")            
 
 @frappe.whitelist()
 def create_Job_withoutId(docname):

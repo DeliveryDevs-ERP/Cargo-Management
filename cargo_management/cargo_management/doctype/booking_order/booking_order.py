@@ -1,8 +1,12 @@
 from frappe.model.document import Document
 import frappe
+from frappe import _
 from frappe.utils import getdate, random_string
 
 from cargo_management.cargo_management.utils.getJobTypebyID import get_job_type_by_id
+
+class SalesPersonNotFound(frappe.ValidationError):
+	pass
 
 
 class BookingOrder(Document):
@@ -53,7 +57,11 @@ class BookingOrder(Document):
         total: DF.Currency
         transport_type: DF.Link
     # end: auto-generated types
+    
+    
     def validate(self):
+        if not self.sales_person:
+            frappe.throw(_("Cannot save, Please assign a sales person to customer."), exc=SalesPersonNotFound)
         self.validate_demurrage_date()
 
     def validate_demurrage_date(self):

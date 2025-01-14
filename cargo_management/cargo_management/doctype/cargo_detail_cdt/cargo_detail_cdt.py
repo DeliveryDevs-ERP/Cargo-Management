@@ -24,7 +24,7 @@ class CargoDetailcdt(Document):
 		parenttype: DF.Data
 		qty: DF.Int
 		rate: DF.Float
-		rate_type: DF.Link | None
+		rate_type: DF.Link
 		size: DF.Literal["", "20", "40"]
 	# end: auto-generated types
 	pass

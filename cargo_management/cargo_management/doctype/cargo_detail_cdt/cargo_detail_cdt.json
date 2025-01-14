@@ -38,7 +38,7 @@
    "fieldname": "avg_weight",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Weight",
+   "label": "Avg Weight (ton)",
    "reqd": 1
   },
   {
@@ -89,7 +89,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-30 13:20:44.797691",
+ "modified": "2025-01-13 17:56:53.040155",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Cargo Detail cdt",

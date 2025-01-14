@@ -3,7 +3,7 @@
 
 from frappe.model.document import Document
 import frappe
-
+from frappe import _
 from cargo_management.cargo_management.utils.Update_JOB_Container_FO_Status import updateJobStatus
 from cargo_management.cargo_management.utils.getJobTypebyID import get_job_type_by_id
 
@@ -42,12 +42,13 @@ class FPLPerformMiddleMile(Document):
         movement_type: DF.Literal["", "Up", "Down"]
         offloading_end_time: DF.Datetime | None
         offloading_start_time: DF.Datetime | None
-        rail_number: DF.Int
+        rail_number: DF.Data
         status: DF.Literal["", "Train Formed", "Loaded", "Departed", "Arrived"]
         wagons: DF.Table[FPLWagoncdt]
     # end: auto-generated types
 
     def validate(self):
+        self.validate_expected_dates()
         
         if self.finish_train_formation == 1 and self.finish_loading == 0: # formation is completed now completing loading
             self.fill_child_middle_mile_tables_with_WagonName_rows()
@@ -307,3 +308,11 @@ class FPLPerformMiddleMile(Document):
                                 frappe.msgprint(f"Error updating Gate Out job {job.job_id} for container {row.container}: {str(e)}")
                 else:
                     frappe.msgprint(f"Freight Order not found for container {row.container}.")
+                    
+                    
+    def validate_expected_dates(self):
+        if self.expected_departure_time_eda and self.expected_time_of_arrival_eta:
+            if self.expected_time_of_arrival_eta < self.expected_departure_time_eda:
+                frappe.throw(_("The expected time of arrival (ETA) cannot be before the expected departure time (EDA)."))
+
+                    

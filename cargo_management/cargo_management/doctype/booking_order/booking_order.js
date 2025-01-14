@@ -1,5 +1,6 @@
 frappe.ui.form.on('Booking Order', {
     onload: function(frm) { frm.get_field('services').grid.cannot_add_rows = true; 
+        frm.toggle_display('transport_type', false);
 
         
     frm.set_query('location_of_cross_stuff', function(doc) {
@@ -59,13 +60,26 @@ frappe.ui.form.on('Booking Order', {
                         console.log("No Sales Person found for the selected customer.");
                         frm.set_value('sales_person', '');
                         frm.refresh_field('sales_person');
+                        frappe.msgprint({
+                            message: "This customer does not have a sales person tagged to it.",
+                            indicator: 'orange',  
+                            title: "Warning"
+                        });
                     }
                 }
             });
         }
     },
 
-    
+    sales_order_type: function(frm){
+        if (frm.doc.sales_order_type){
+            console.log("BO type selected ");
+            frm.toggle_display('transport_type', true);
+        }
+        else{
+            frm.toggle_display('transport_type', false);
+        }
+    },
 
     transport_type: function(frm) {
         frm.clear_table('services');

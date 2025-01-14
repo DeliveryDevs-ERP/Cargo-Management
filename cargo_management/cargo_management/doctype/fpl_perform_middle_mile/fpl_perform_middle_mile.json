@@ -48,12 +48,13 @@
  "fields": [
   {
    "fieldname": "rail_number",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Rail Number",
    "non_negative": 1,
    "read_only_depends_on": "eval: doc.finish_train_formation === 1;",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "movement_type",
@@ -285,7 +286,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-09 15:08:13.315572",
+ "modified": "2025-01-13 18:27:41.541675",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",

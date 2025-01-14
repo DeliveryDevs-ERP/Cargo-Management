@@ -2,6 +2,8 @@ from cargo_management.cargo_management.utils.Update_JOB_Container_FO_Status impo
 from frappe.utils import now_datetime
 from frappe.model.document import Document
 import frappe
+from frappe import _
+
 
 class FPLRoadJob(Document):
     # begin: auto-generated types
@@ -35,6 +37,7 @@ class FPLRoadJob(Document):
     # end: auto-generated types
 
     def validate(self):
+        self.validate_dates()
         if (self.vehicle_number and self.vehicle_supplier) and (self.pickup_arrival and self.pickup_departure) and (self.dropoff_arrival and self.dropoff_completed) and self.status != "Completed":
             if updateJobStatus(self.name, self.freight_order_id, self.container_number):
                 self.status = "Completed"
@@ -63,6 +66,18 @@ class FPLRoadJob(Document):
                 yard_job = frappe.get_doc("FPLYardJob", next_job.job_id)
                 yard_job.gate_in = self.dropoff_completed
                 yard_job.save(ignore_permissions=True)
+
+    def validate_dates(self):
+        BO_date = frappe.get_value("Booking Order", {"name": self.sales_order_number}, "sales_order_date")
+
+        if not BO_date:
+            frappe.throw(_("Booking Order Date not found for Sales Order Number: {0}").format(self.sales_order_number))
+
+        if (self.pickup_departure and self.pickup_departure < BO_date) or \
+        (self.pickup_arrival and self.pickup_arrival < BO_date) or \
+        (self.dropoff_completed and self.dropoff_completed < BO_date) or \
+        (self.dropoff_arrival and self.dropoff_arrival < BO_date):
+            frappe.throw(_("None of the dates (pickup departure, pickup arrival, dropoff completed, dropoff arrival) should be before the Booking Order date {0}.").format(BO_date))
 
 
     def completePrevGateOut(self):
