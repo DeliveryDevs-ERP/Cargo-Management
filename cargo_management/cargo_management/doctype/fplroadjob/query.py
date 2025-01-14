@@ -7,7 +7,7 @@ def get_applicable_containers(*args, **kwargs):
 
     try:
         # Construct the base SQL query
-        query = frappe.db.sql(f"""
+        return frappe.db.sql(f"""
             SELECT 
                 container.name, 
                 container.container_number 
@@ -20,7 +20,6 @@ def get_applicable_containers(*args, **kwargs):
             WHERE 
                 container.container_location = road_job.job_start_location
         """)
-        return query
 
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Failed to execute SQL query in get_applicable_containers")

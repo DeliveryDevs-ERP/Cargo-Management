@@ -156,7 +156,7 @@
    "fieldtype": "Table",
    "label": "Middle Mile in Departure",
    "options": "FPL MM cdt",
-   "read_only_depends_on": "eval: doc.finish_departure === 1;"
+   "read_only": 1
   },
   {
    "fieldname": "actual_arrival_datetime",
@@ -286,7 +286,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-13 18:27:41.541675",
+ "modified": "2025-01-14 16:10:22.320383",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",

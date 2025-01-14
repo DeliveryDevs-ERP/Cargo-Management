@@ -114,8 +114,8 @@ class FPLPerformMiddleMile(Document):
                 freight_order_id = frappe.db.get_value("FPL Freight Orders", {"container_number": container_number}, "name")
                 mm_job_id = frappe.db.get_value("FPLRailJob", {"container_number": container_number}, "name")
 
-                frappe.msgprint(f"Processing container: {container_number}")
-                frappe.msgprint(f"Freight Order ID: {freight_order_id}, Middle Mile Job ID: {mm_job_id}")
+                #frappe.msgprint(f"Processing container: {container_number}")
+                #frappe.msgprint(f"Freight Order ID: {freight_order_id}, Middle Mile Job ID: {mm_job_id}")
 
                 if freight_order_id and mm_job_id:
                     # Update job status as needed
@@ -136,7 +136,7 @@ class FPLPerformMiddleMile(Document):
                         if job.job_id == mm_job_id:
                             middle_mile_index = i
                             middle_mile_job_end_location = job.end_location
-                            frappe.msgprint(f"Found 'Middle Mile' job at index {middle_mile_index} with end location: {middle_mile_job_end_location}")
+                            #frappe.msgprint(f"Found 'Middle Mile' job at index {middle_mile_index} with end location: {middle_mile_job_end_location}")
                             break
 
                     if middle_mile_index is not None and middle_mile_job_end_location:
@@ -157,7 +157,7 @@ class FPLPerformMiddleMile(Document):
                             'container_number': container_number
                         })
                         gate_in_job.insert()
-                        frappe.msgprint(f"Inserted 'Gate In' job with ID: {gate_in_job.name}")
+                        #frappe.msgprint(f"Inserted 'Gate In' job with ID: {gate_in_job.name}")
 
                         # Append "Gate In" to the jobs table as a Document object after "Middle Mile"
                         gate_in_job_row = freight_order.append("jobs", {
@@ -181,7 +181,7 @@ class FPLPerformMiddleMile(Document):
                             'container_number': container_number
                         })
                         gate_out_job.insert()
-                        frappe.msgprint(f"Inserted 'Gate Out' job with ID: {gate_out_job.name}")
+                        #frappe.msgprint(f"Inserted 'Gate Out' job with ID: {gate_out_job.name}")
 
                         # Append "Gate Out" to the jobs table as a Document object after "Gate In"
                         gate_out_job_row = freight_order.append("jobs", {
@@ -195,7 +195,7 @@ class FPLPerformMiddleMile(Document):
                         # Save the updated freight order with the new jobs
                         freight_order.mm_completed_ = 1
                         freight_order.save()
-                        frappe.msgprint(f"Freight order '{freight_order_id}' updated with 'Gate In' and 'Gate Out' jobs.")
+                        #frappe.msgprint(f"Freight order '{freight_order_id}' updated with 'Gate In' and 'Gate Out' jobs.")
 
                         freight_order.reload()
                         # Fix the freight order with the new jobs Order
@@ -206,11 +206,6 @@ class FPLPerformMiddleMile(Document):
                         gate_in_job.save()
                         freight_order.reload()
 
-                    else:
-                        frappe.msgprint(f"'Middle Mile' job not found in Freight Order {freight_order_id} or end location missing.")
-                else:
-                    frappe.msgprint(f"Could not find Freight Order or Middle Mile Job for container {container_number}")
-    
     def fix_job_sequence_onGateInGateOut_insert(self, freight_order_id):
         # Fetch the freight order document
         freight_order = frappe.get_doc("FPL Freight Orders", freight_order_id)
@@ -220,9 +215,9 @@ class FPLPerformMiddleMile(Document):
         gate_in_job_index = None
 
         # Log all jobs in the freight order
-        frappe.msgprint(f"Jobs in Freight Order '{freight_order_id}':")
-        for i, job in enumerate(freight_order.jobs):
-            frappe.msgprint(f"Index {i}: Job Name - {job.job_name}, Job type - {get_job_type_by_id(job.job_id)}")
+        #frappe.msgprint(f"Jobs in Freight Order '{freight_order_id}':")
+        # for i, job in enumerate(freight_order.jobs):
+        #     frappe.msgprint(f"Index {i}: Job Name - {job.job_name}, Job type - {get_job_type_by_id(job.job_id)}")
 
         # Identify Middle Mile, Gate In, and Gate Out jobs
         jobs_after_middle_mile = []
@@ -230,14 +225,14 @@ class FPLPerformMiddleMile(Document):
             job_type = get_job_type_by_id(job.job_id)
             if job_type == "Middle Mile" and middle_mile_index is None:
                 middle_mile_index = i
-                frappe.msgprint(f"Found 'Middle Mile' at index {middle_mile_index}")
+                #frappe.msgprint(f"Found 'Middle Mile' at index {middle_mile_index}")
             elif job_type == "Gate In" and middle_mile_index is not None and gate_in_job is None:
                 gate_in_job = job
                 gate_in_job_index = i
-                frappe.msgprint(f"Found 'Gate In' after 'Middle Mile' at index {i}")
+                #frappe.msgprint(f"Found 'Gate In' after 'Middle Mile' at index {i}")
             elif job_type == "Gate Out" and gate_in_job is not None:
                 gate_out_job = job
-                frappe.msgprint(f"Found 'Gate Out' after 'Gate In' at index {i}")
+                #frappe.msgprint(f"Found 'Gate Out' after 'Gate In' at index {i}")
             elif middle_mile_index is not None and gate_in_job is not None:
                 jobs_after_middle_mile.append(job)
 
@@ -246,7 +241,7 @@ class FPLPerformMiddleMile(Document):
             # Temporarily hold jobs between "Middle Mile" and "Gate In" (exclusive of Gate In and Gate Out)
             tmp_jobs = freight_order.jobs[middle_mile_index + 1 : gate_in_job_index]
 
-            frappe.msgprint(f'Found {len(tmp_jobs)} temp jobs for reordering.')
+            #frappe.msgprint(f'Found {len(tmp_jobs)} temp jobs for reordering.')
 
             # Build the reordered list
             reordered_jobs = []
@@ -264,10 +259,8 @@ class FPLPerformMiddleMile(Document):
             # Save and reload to ensure changes reflect
             freight_order.save()
             freight_order.reload()
-            frappe.msgprint(f"Job sequence updated: 'Gate In' and 'Gate Out' placed after 'Middle Mile' in Freight Order '{freight_order_id}'.")
-        else:
-            frappe.msgprint(f"Could not reorder jobs: 'Middle Mile', 'Gate In', or 'Gate Out' not found in Freight Order '{freight_order_id}'. Please verify job names.")
-
+            #frappe.msgprint(f"Job sequence updated: 'Gate In' and 'Gate Out' placed after 'Middle Mile' in Freight Order '{freight_order_id}'.")
+        
     def update_gate_out_jobs(self):
         for row in self.middle_mile_in_loading:
             if row.container:
@@ -279,37 +272,38 @@ class FPLPerformMiddleMile(Document):
                 if freight_order_id:
                     # Fetch the Freight Order document
                     freight_order = frappe.get_doc("FPL Freight Orders", freight_order_id)
+                    needs_save = False  # Flag to indicate if save is needed
 
-                    # Find the Gate Out job in the Freight Order's jobs table
+                    # First pass: Update all Middle Mile jobs to In Progress
                     for job in freight_order.jobs:
                         job_type = get_job_type_by_id(job.job_id)
-                        # frappe.msgprint(f"Checking job {job.job_id} with type {job_type} for container {row.container}.")
-                        
+                        if job_type == "Middle Mile" and job.status != "In Progress":
+                            job.status = "In Progress"
+                            needs_save = True  # Set flag to save changes
+
+                    # Save changes if any Middle Mile jobs were updated
+                    if needs_save:
+                        freight_order.save()
+                        frappe.db.commit()  # Commit changes to ensure Middle Mile statuses are updated
+
+                    # Second pass: Process Gate Out jobs
+                    for job in freight_order.jobs:
+                        job_type = get_job_type_by_id(job.job_id)
                         if job_type == "Gate Out":
-                            # Fetch the corresponding Gate Out document in FPLYardJobs
                             try:
                                 gate_out_job_doc = frappe.get_doc("FPLYardJob", job.job_id)
-                                
-                                # Confirm that `departure_time` is set
                                 if not self.departure_time:
                                     frappe.msgprint("Departure time is not set.")
                                     return
 
-                                # Update the gate_out field with the departure time
                                 gate_out_job_doc.gate_out = self.departure_time
                                 gate_out_job_doc.save()
+                                frappe.db.commit()  # Commit each Gate Out job update individually
 
-                                # Explicitly commit the transaction to the database
-                                frappe.db.commit()
-
-                                # frappe.msgprint(f"Gate Out job {job.job_id} updated with departure time for container {row.container} in Freight Order {freight_order_id}.")
-                                break  # Stop further search as Gate Out job is found and updated
                             except Exception as e:
                                 frappe.msgprint(f"Error updating Gate Out job {job.job_id} for container {row.container}: {str(e)}")
-                else:
-                    frappe.msgprint(f"Freight Order not found for container {row.container}.")
-                    
-                    
+
+                        
     def validate_expected_dates(self):
         if self.expected_departure_time_eda and self.expected_time_of_arrival_eta:
             if self.expected_time_of_arrival_eta < self.expected_departure_time_eda:
