@@ -112,7 +112,7 @@ class FPLRoadJob(Document):
 
             # List of fields to sync
             fields_to_sync = ["pickup_arrival", "pickup_departure", "dropoff_arrival", "dropoff_completed",
-                              "vehicle_number", "vehicle_supplier", "status", "expenses"]
+                              "vehicle_number", "vehicle_supplier", "expenses"]
 
             # Update the fields in the linked job to match the current document if they have values
             for field in fields_to_sync:
@@ -143,7 +143,7 @@ def link_container(container_number_to_link, self_container_number, job_type=Non
         road_jobs = frappe.get_all("FPLRoadJob", filters=filters, fields=["name"])
         
         if not road_jobs:
-            return {"message": "No Job Order found with the specified container number."}
+            return {"message": "No Road Job found with the specified container number."}
 
         # Link the container number to the first matching Road Job
         road_job_id = road_jobs[0].name
@@ -157,7 +157,7 @@ def link_container(container_number_to_link, self_container_number, job_type=Non
         # Update the double_20_ field in the Road Job
         frappe.db.set_value("FPLRoadJob", road_job_id, "double_20_", 1)
 
-        return {"message": f"Road Job {road_job_id} updated with double_20_ set to 1."}
+        return 
     
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Error in link_container")

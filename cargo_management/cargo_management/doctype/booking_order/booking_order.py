@@ -412,3 +412,17 @@ def get_sales_person(customer):
 
     # Return the fetched sales person or None if not found
     return sales_person
+
+
+@frappe.whitelist()
+def check_booking_order_status(doc, method):
+    frappe.errprint("SO Deleting")
+    # Fetch the Booking Order based on the custom_booking_order_id from the Sales Order
+    if doc.custom_booking_order_id:
+        booking_order = frappe.get_doc("Booking Order", doc.custom_booking_order_id)
+        
+        # Check if the Booking Order is submitted
+        if booking_order.docstatus == 1:
+            frappe.throw(_("Cannot Delete Sales Order Until the Connected Booking Order is submitted."))
+        elif booking_order.docstatus == 2:
+            pass
