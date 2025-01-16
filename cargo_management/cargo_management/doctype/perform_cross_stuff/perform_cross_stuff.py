@@ -6,9 +6,9 @@ from cargo_management.cargo_management.doctype.fpl_freight_orders.fpl_freight_or
 class PerformCrossStuff(Document):
     def on_submit(self):
         temp_jobs = self.amend_FOs()
-        frappe.msgprint(f"length of temp Job after: {len(temp_jobs)}")
+        # frappe.msgprint(f"length of temp Job after: {len(temp_jobs)}")
         temp_jobs = self.remove_jobIds(temp_jobs)
-        frappe.msgprint(f"length of temp Job before: {len(temp_jobs)}")
+        # frappe.msgprint(f"length of temp Job before: {len(temp_jobs)}")
         self.amend_CFOs(temp_jobs)
 
     def amend_FOs(self):
@@ -49,7 +49,7 @@ class PerformCrossStuff(Document):
                 # Reindex jobs to maintain sequential idx
                 for idx, job in enumerate(FO.jobs, start=1):
                     job.idx = idx
-                frappe.msgprint(f"Length of FO jobs {len(FO.jobs)}")
+                # frappe.msgprint(f"Length of FO jobs {len(FO.jobs)}")
                 FO.save()
                 create_Job_withoutId(FO.name)
         return temp_jobs
@@ -144,5 +144,5 @@ class PerformCrossStuff(Document):
 
                 # Save the CFO document to persist changes
                 CFO.save()
-                frappe.msgprint(f"Length of CFO jobs {len(CFO.jobs)}")
+                # frappe.msgprint(f"Length of CFO jobs {len(CFO.jobs)}")
                 create_Job_withoutId(CFO.name)

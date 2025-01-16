@@ -33,18 +33,21 @@ def get_data(filters):
     if filters.get("train_no_from") is None or filters.get("train_no_to") is None:
         return []
 
-    train_no_from = int(filters.get("train_no_from").split("-")[0])
-    train_no_to = int(filters.get("train_no_to").split("-")[0])
+    train_no_from = getdate(filters.get("train_no_from"))
+    train_no_to = getdate(filters.get("train_no_to"))
     movement = filters.get("movement")
-
+    conditions = {}
     # Ensure train_no_from is less than train_no_to for the "between" filter
     if train_no_from > train_no_to:
         train_no_from, train_no_to = train_no_to, train_no_from
         
+    if movement:
+        conditions['movement_type'] = movement    
     # Fetch all train documents
     train_docs = frappe.get_all(
         "FPL Perform Middle Mile",
         fields=["*"],
+        filters=conditions,
         order_by="rail_number asc, creation asc"
     )
 
@@ -55,7 +58,7 @@ def get_data(filters):
 
     for train in train_docs:
         # Process only trains that qualify the range filter
-        if not (train_no_from <= int(train["rail_number"]) <= train_no_to):
+        if not (frappe.utils.get_datetime(train_no_from) <= train["departure_time"] <= frappe.utils.get_datetime(train_no_to)):
             continue  # Skip if train doesn't meet range
 
         containers = frappe.get_all(

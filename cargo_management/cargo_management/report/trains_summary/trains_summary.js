@@ -5,18 +5,16 @@ frappe.query_reports["Trains summary"] = {
     "filters": [
         {
             "fieldname": "train_no_from",
-            "label": __("Train Number From"),
-            "fieldtype": "Link", 
-            "options": "FPL Perform Middle Mile", 
-            "default": "", 
+            "label": __("Departure Date From"),
+            "fieldtype": "Datetime", 
+            "default": frappe.datetime.add_months(frappe.datetime.now_datetime(), -12), 
             "reqd": 0 
         },
         {
             "fieldname": "train_no_to",
-            "label": __("Train Number To"),
-            "fieldtype": "Link", 
-            "options": "FPL Perform Middle Mile", 
-            "default": "", 
+            "label": __("Departure Date Till"),
+            "fieldtype": "Datetime", 
+            "default": frappe.datetime.now_datetime(), 
             "reqd": 0 
         },
         {

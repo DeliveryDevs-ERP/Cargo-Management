@@ -194,20 +194,20 @@ class FPLFreightOrders(Document):
             frappe.msgprint("No start location found in the second job entry.")
             return None         
 
-    def update_container_in_jobs(self):
-        job_doctypes = ['FPLRailJob', 'FPLRoadJob', 'FPLYardJob', 'FPLCrossStuffJob']
-        for doctype in job_doctypes:
-            jobs = frappe.get_all(doctype, filters={'freight_order_id': self.freight_order_number}, fields=['name'])
-            for job in jobs:
-                job_doc = frappe.get_doc(doctype, job.name)
-                if hasattr(job_doc, 'container_number'):
-                    job_doc.container_number = self.container_number
-                    job_doc.status = "Assigned"
-                    job_doc.save()
+    # def update_container_in_jobs(self):
+    #     job_doctypes = ['FPLRailJob', 'FPLRoadJob', 'FPLYardJob', 'FPLCrossStuffJob']
+    #     for doctype in job_doctypes:
+    #         jobs = frappe.get_all(doctype, filters={'freight_order_id': self.freight_order_number}, fields=['name'])
+    #         for job in jobs:
+    #             job_doc = frappe.get_doc(doctype, job.name)
+    #             if hasattr(job_doc, 'container_number'):
+    #                 job_doc.container_number = self.container_number
+    #                 job_doc.status = "Assigned"
+    #                 job_doc.save()
 
         
-        for job in self.jobs:
-            job.status = "Assigned"
+    #     for job in self.jobs:
+    #         job.status = "Assigned"
 
     def update_container_in_jobs(self):
         job_doctypes = ['FPLRailJob', 'FPLRoadJob', 'FPLYardJob', 'FPLCrossStuffJob']
@@ -219,7 +219,6 @@ class FPLFreightOrders(Document):
                     job_doc.container_number = self.container_number
                     job_doc.status = "Assigned"
                     job_doc.save()
-                    # frappe.msgprint(f"Updated {doctype} {job.name} with container number {self.container_number}")
                 else:
                     frappe.msgprint(f"{doctype} {job.name} does not have a 'container_number' field.")
         
