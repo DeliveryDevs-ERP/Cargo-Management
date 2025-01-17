@@ -1,6 +1,7 @@
 from frappe.model.document import Document
 import frappe
 from frappe import _
+from frappe.utils import now
 
 class ContainerNumberFormatError(frappe.ValidationError):
 	pass
@@ -111,6 +112,7 @@ class FPLFreightOrders(Document):
             'sales_order_number': self.sales_order_number,
             'client': self.client,
             'cross_stuff_performance_location': job.start_location,
+            'assigned_at' : now()
         })
         crossStuff_job.insert()       
         job.job_id = crossStuff_job.name

@@ -1,29 +1,24 @@
 frappe.ui.form.on('Booking Order', {
     onload: function(frm) { frm.get_field('services').grid.cannot_add_rows = true; 
         frm.toggle_display('transport_type', false);
-
-        
-    frm.set_query('location_of_cross_stuff', function(doc) {
-                    // Start with conditions that are always applied
-                    let filters = {
-                        "name1": ["not in", ["Shifting", "Gate Out", "Gate In", "Empty Pickup", "Empty Return", "Cross Stuff"]]
-                    };
-        
-                    // Additional filters based on transport_type
-                    if (doc.transport_type === "Road (Truck)") {
-                        // Extend the 'not in' list for Road (Truck)
-                        filters["name1"][1] = filters["name1"][1].concat(["Last Mile", "First Mile", "Middle Mile"]);
-                    } else if (doc.transport_type === "Rail (Train)") {
-                        // Extend the 'not in' list for Rail (Train)
-                        filters["name1"][1] = filters["name1"][1].concat(["Long Haul", "Short Haul"]);
-                    }
-        
-                    return {
-                        filters: filters
-                    };
-                });
+        frm.toggle_display('location_of_cross_stuff', false);
+        frm.set_query('location_of_cross_stuff', function(doc) {
+                        // Start with conditions that are always applied
+                        let filters = {
+                            "name1": ["in", []]
+                        };
             
-        
+                        // Additional filters based on transport_type
+                        if (doc.transport_type === "Rail (Train)") {
+                            filters["name1"][1] = filters["name1"][1].concat(["Last Mile", "First Mile", "Middle Mile"]);
+                        } else if (doc.transport_type === "Road (Truck)") {
+                            filters["name1"][1] = filters["name1"][1].concat(["Long Haul", "Short Haul"]);
+                        }            
+                        return {
+                            filters: filters
+                        };
+                    });
+            
     },
 
     refresh: function(frm) {

@@ -10,6 +10,8 @@ class PerformCrossStuff(Document):
         temp_jobs = self.remove_jobIds(temp_jobs)
         # frappe.msgprint(f"length of temp Job before: {len(temp_jobs)}")
         self.amend_CFOs(temp_jobs)
+        self.complete_crossStuffJob_in_FO()
+        self.change_empty_return_end_location_in_CFO()
 
     def amend_FOs(self):
         temp_jobs = []
@@ -146,3 +148,38 @@ class PerformCrossStuff(Document):
                 CFO.save()
                 # frappe.msgprint(f"Length of CFO jobs {len(CFO.jobs)}")
                 create_Job_withoutId(CFO.name)
+                
+    def complete_crossStuffJob_in_FO(self):
+        for row in self.grounded_filled_containers:
+            if row.container_number:
+                container_number = frappe.get_value("FPL Containers", {"name": row.container_number}, "container_number")
+                FO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
+                CrossStuff = frappe.get_doc("FPLCrossStuffJob", {"container_number": container_number, "freight_order_id": FO.name, "sales_order_number": self.booking_order_id})
+                CrossStuff.performance_details = self.name
+                CrossStuff.save()
+    
+    def change_empty_return_end_location_in_CFO(self):
+        for row in self.grounded_filled_containers:
+            if row.reference_container:
+                container_number = frappe.get_value("FPL Containers", {"name": row.reference_container}, "container_number")
+                CFO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
+                
+                # Fetch the specific Empty Return job
+                EmptyReturn = frappe.get_doc("FPLRoadJob", {
+                    "container_number": container_number,
+                    "freight_order_id": CFO.name,
+                    "sales_order_number": self.booking_order_id,
+                    "job_type": "l5dbk4s5u4"
+                })
+                
+                EmptyReturn.job_end_location = row.empty_return_location
+                EmptyReturn.save()
+                
+                # Update the job end location in CFO.jobs grid
+                for job in CFO.jobs:
+                    if job.job_id == EmptyReturn.name:
+                        job.end_location = row.empty_return_location
+                        break
+                
+                # Save the changes to the CFO document
+                CFO.save()

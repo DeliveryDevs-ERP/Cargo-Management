@@ -29,5 +29,6 @@ class FPLCrossStuffJob(Document):
 
 	def validate(self):
 			if self.performance_details:
-				self.status = "Completed"
-				updateJobStatus(self.name, self.freight_order_id, self.container_number)
+				if updateJobStatus(self.name, self.freight_order_id, self.container_number):
+					self.status = "Completed"
+				

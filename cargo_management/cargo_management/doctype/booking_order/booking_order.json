@@ -351,13 +351,12 @@
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval:doc.transport_type === \"Road (Truck)\" || doc.transport_type === \"Rail (Train)\"\r\n",
    "description": "Cross stuff would be performed before this job",
    "fieldname": "location_of_cross_stuff",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Job before Cross Stuff",
-   "options": "Service Type"
+   "options": "Service Type",
+   "read_only_depends_on": "eval:doc.docstatus === 1;\r\n"
   },
   {
    "fieldname": "sales_person",
@@ -395,7 +394,7 @@
    "link_fieldname": "custom_booking_order_id"
   }
  ],
- "modified": "2025-01-13 18:05:20.760950",
+ "modified": "2025-01-17 15:03:36.392381",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Booking Order",
