@@ -75,6 +75,7 @@ class BookingOrder(Document):
         try:
             self.create_freight_orders() 
             self.create_and_submit_sales_order()
+            self.create_and_draft_CFO_request()
         except Exception as e:
             frappe.db.rollback()  # Roll back changes if any error occurs
             frappe.throw(f"Booking Order submission failed due to: {str(e)}")
@@ -159,7 +160,16 @@ class BookingOrder(Document):
         # if crossStuff_flag:
         #     self.reorder_Freight_orderJobs_after_crossStuff_insert(freight_order,cross_stuff_index)
 
-            
+    def create_and_draft_CFO_request(self):
+        MiscServices = self.get('miscellaneous_services')
+        for service in MiscServices:
+            if service.applicable == 1:
+                Request = frappe.get_doc({
+                    'doctype': 'Container or Vehicle Request',
+                    'booking_order_id': self.name
+                })
+                Request.insert()
+        
     def get_next_name(self, key):
         try:
             # Try to get the last document in the series
