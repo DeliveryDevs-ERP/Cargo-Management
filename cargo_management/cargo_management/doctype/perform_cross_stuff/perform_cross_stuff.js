@@ -8,6 +8,15 @@ frappe.ui.form.on("Perform Cross Stuff", {
         });
     },
 
+    onload: function(frm){
+        console.log("Setting BO");
+        frm.set_query('booking_order_id', function() {
+            return {
+                query: 'cargo_management.cargo_management.doctype.perform_cross_stuff.query.get_BOs_name'
+            };
+        });
+    },
+
     job_before_cross_stuff: function(frm) {
         if (frm.doc.booking_order_id && frm.doc.job_before_cross_stuff) {
             frappe.call({

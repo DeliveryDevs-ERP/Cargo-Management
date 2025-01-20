@@ -8,6 +8,7 @@
  "field_order": [
   "request_date",
   "booking_order_id",
+  "cross_stuff_performance",
   "cargo_type",
   "yard_location",
   "table_ktch",
@@ -36,7 +37,7 @@
    "fieldname": "yard_location",
    "fieldtype": "Link",
    "label": "Yard Location ",
-   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
    "options": "Location"
   },
   {
@@ -54,12 +55,19 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "cross_stuff_performance",
+   "fieldtype": "Link",
+   "label": "Cross Stuff Performance",
+   "options": "Perform Cross Stuff",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-11-18 16:51:14.160226",
+ "modified": "2025-01-20 16:11:00.227943",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Container or Vehicle Request",

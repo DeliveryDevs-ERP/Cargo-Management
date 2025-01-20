@@ -65,3 +65,14 @@ def get_CFO_containers(doctype, txt, searchfield, start, page_len, filters):
     """, {
         'booking_order_id': booking_order_id
     })
+
+
+@frappe.whitelist()
+def get_BOs_name(doctype, txt, searchfield, start, page_len, filters):
+    # SQL query to fetch booking_order_ids from documents that meet the conditions
+    return frappe.db.sql("""
+        SELECT booking_order_id
+        FROM `tabContainer or Vehicle Request`
+        WHERE docstatus = 1 AND cross_stuff_performance IS NULL
+        """)
+    

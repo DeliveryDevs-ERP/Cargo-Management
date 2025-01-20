@@ -9,6 +9,23 @@ from cargo_management.cargo_management.utils.getJobTypebyID import get_job_type_
 
 
 class ContainerorVehicleRequest(Document):
+    # begin: auto-generated types
+    # This code is auto-generated. Do not modify anything in this block.
+
+    from typing import TYPE_CHECKING
+
+    if TYPE_CHECKING:
+        from cargo_management.cargo_management.doctype.container_or_vehicle_request_cdt.container_or_vehicle_request_cdt import ContainerorVehicleRequestcdt
+        from frappe.types import DF
+
+        amended_from: DF.Link | None
+        booking_order_id: DF.Link | None
+        cargo_type: DF.Literal["", "Containerised", "Non Containerised"]
+        cross_stuff_performance: DF.Link | None
+        request_date: DF.Datetime | None
+        table_ktch: DF.Table[ContainerorVehicleRequestcdt]
+        yard_location: DF.Link | None
+    # end: auto-generated types
 
     def on_submit(self):
         try:

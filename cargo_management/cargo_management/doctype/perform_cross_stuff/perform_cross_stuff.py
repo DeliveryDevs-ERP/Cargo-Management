@@ -4,6 +4,24 @@ from frappe.model.document import Document
 from cargo_management.cargo_management.doctype.fpl_freight_orders.fpl_freight_orders import create_Job_withoutId
 
 class PerformCrossStuff(Document):
+    # begin: auto-generated types
+    # This code is auto-generated. Do not modify anything in this block.
+
+    from typing import TYPE_CHECKING
+
+    if TYPE_CHECKING:
+        from cargo_management.cargo_management.doctype.grounded_filled_cdt.grounded_filled_cdt import GroundedFilledCdt
+        from frappe.types import DF
+
+        amended_from: DF.Link | None
+        booking_order_id: DF.Link | None
+        date: DF.Datetime | None
+        grounded_filled_containers: DF.Table[GroundedFilledCdt]
+        grounded_yard_location: DF.Link | None
+        job_before_cross_stuff: DF.Link | None
+        remaining_weight: DF.Float
+        total_weight: DF.Float
+    # end: auto-generated types
     def on_submit(self):
         temp_jobs = self.amend_FOs()
         # frappe.msgprint(f"length of temp Job after: {len(temp_jobs)}")
@@ -12,6 +30,7 @@ class PerformCrossStuff(Document):
         self.amend_CFOs(temp_jobs)
         self.complete_crossStuffJob_in_FO()
         self.change_empty_return_end_location_in_CFO()
+        self.assign_performance_in_request()
 
     def amend_FOs(self):
         temp_jobs = []
@@ -183,3 +202,18 @@ class PerformCrossStuff(Document):
                 
                 # Save the changes to the CFO document
                 CFO.save()
+
+
+    def assign_performance_in_request(self):
+        requests = frappe.get_all("Container or Vehicle Request",
+                                filters={
+                                    "booking_order_id": self.booking_order_id,
+                                    "cross_stuff_performance": ["is", "not set"],
+                                    "docstatus": 1
+                                },
+                                fields=["name"])
+
+        for request in requests:
+            frappe.db.set_value("Container or Vehicle Request", request["name"], "cross_stuff_performance", self.name)
+            
+        frappe.db.commit()

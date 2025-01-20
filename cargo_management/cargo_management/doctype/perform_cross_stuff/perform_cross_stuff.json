@@ -26,7 +26,6 @@
    "fieldname": "booking_order_id",
    "fieldtype": "Link",
    "label": "Booking Order ID",
-   "link_filters": "[[\"Booking Order\",\"docstatus\",\"=\",\"1\"]]",
    "options": "Booking Order"
   },
   {
@@ -83,7 +82,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-11-19 13:13:54.831100",
+ "modified": "2025-01-20 16:07:22.624040",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Perform Cross Stuff",
