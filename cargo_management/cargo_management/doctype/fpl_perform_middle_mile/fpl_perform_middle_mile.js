@@ -1,5 +1,10 @@
 frappe.ui.form.on("FPL Perform Middle Mile", {
 
+    before_insert: function(frm){
+        populate_expenses(frm, 'Train Job');
+    },
+
+
     setup: function(frm) {
         frm.fields_dict['middle_mile'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
             return {
@@ -13,7 +18,6 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
     },
     
     onload: function(frm) {
-        populate_expenses(frm, 'Train Job');
         frm.get_field('middle_mile_copy').grid.cannot_add_rows = true; 
         frm.get_field('middle_mile_in_loading').grid.cannot_add_rows = true; 
     },

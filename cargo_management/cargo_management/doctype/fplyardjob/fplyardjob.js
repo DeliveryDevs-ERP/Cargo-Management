@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("FPLYardJob", {
-	onload: function(frm) {
+	before_insert: function(frm) {
         populate_expenses(frm, 'Yard Job');
     },
 

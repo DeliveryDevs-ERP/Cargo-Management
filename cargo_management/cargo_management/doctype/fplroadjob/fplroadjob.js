@@ -1,14 +1,10 @@
 frappe.ui.form.on("FPLRoadJob", {
-    onload: function(frm) {
-        // Initialize a custom flag to false
-        frm.expenses_populated = false;
+
+    before_insert: function(frm){
+        populate_expenses(frm, 'Truck Job'); 
     },
 
-    setup: function(frm) {
-        if (!frm.expenses_populated) {
-            populate_expenses(frm, 'Truck Job'); 
-            frm.expenses_populated = true; // Set the flag to true after populating expenses
-        }
+    setup: function(frm) {        
         set_cost_type_filter(frm, 'Truck Job');
 
         // Setup for container_number_to_link field
@@ -23,12 +19,6 @@ frappe.ui.form.on("FPLRoadJob", {
         };   
     },
 
-    refresh: function(frm) {
-        if (!frm.expenses_populated && !frm.is_new()) {
-            populate_expenses(frm, 'Truck Job');
-            frm.expenses_populated = true;
-        }
-    },
 
     container_number_to_link: function(frm) {
         if (frm.doc.container_number_to_link) {
