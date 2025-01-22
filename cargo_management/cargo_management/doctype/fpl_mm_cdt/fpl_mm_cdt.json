@@ -12,7 +12,9 @@
   "wagon_number",
   "received_",
   "container_number",
-  "fo"
+  "fo",
+  "size",
+  "weight"
  ],
  "fields": [
   {
@@ -25,7 +27,8 @@
    "fieldname": "wagon_number",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Wagon Number"
+   "label": "Wagon Number",
+   "read_only": 1
   },
   {
    "fieldname": "job",
@@ -57,14 +60,27 @@
    "fetch_from": "container.freight_order_id",
    "fieldname": "fo",
    "fieldtype": "Data",
-   "hidden": 1,
    "label": "FO"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Size",
+   "read_only": 1
+  },
+  {
+   "fieldname": "weight",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Weight",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-01-21 17:35:12.645561",
+ "modified": "2025-01-22 16:02:56.082824",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL MM cdt",

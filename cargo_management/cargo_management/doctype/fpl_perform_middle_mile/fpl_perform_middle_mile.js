@@ -1,21 +1,23 @@
 frappe.ui.form.on("FPL Perform Middle Mile", {
 
-    before_insert: function(frm){
-        populate_expenses(frm, 'Train Job');
-    },
+    // before_insert: function(frm){
+    //     populate_expenses(frm, 'Train Job');
+    // },
 
 
     setup: function(frm) {
         set_container_name_filter(frm);
-        frm.fields_dict['middle_mile'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
-            return {
-                query: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_applicable_jobs',
-                filters: { 
-                    'container_location': frm.doc.departure_location, 
-                    "container_next_location": frm.doc.arrival_location 
-                }
-            };
-        };
+        set_container_filter(frm);
+        // frm.fields_dict['middle_mile'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
+        //     return {
+        //         query: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_applicable_jobs',
+        //         filters: { 
+        //             'container_location': frm.doc.departure_location, 
+        //             "container_next_location": frm.doc.arrival_location,
+        //             "not_in_Container" : frm.doc.middle_mile
+        //         }
+        //     };
+        // };
     },
     
     onload: function(frm) {
@@ -153,6 +155,11 @@ frappe.ui.form.on("FPL MM cdt", {
     mm_job_id: update_related_tables,
     wagon_number: update_related_tables,
     container: update_related_tables,
+    container: set_container_filter,
+    fo: function(frm, cdt, cdn) {
+        Fetch_size(frm, cdt, cdn);
+        Fetch_weight(frm, cdt, cdn);
+    }
 });
 
 
@@ -196,32 +203,32 @@ function set_cost_type_filter(frm, job_mode) {
 }
 
 
-function populate_expenses(frm, job_mode) {
-    frappe.call({
-        method: "frappe.client.get_list",
-        args: {
-            doctype: "FPL Cost Type",
-            filters: {
-                job_mode: job_mode
-            },
-            fields: ["*"]
-        },
-        callback: function(response) {
-            if (response.message) {
-                frm.clear_table("expenses");
-                console.log('Fetched Cost Types:', response.message);
+// function populate_expenses(frm, job_mode) {
+//     frappe.call({
+//         method: "frappe.client.get_list",
+//         args: {
+//             doctype: "FPL Cost Type",
+//             filters: {
+//                 job_mode: job_mode
+//             },
+//             fields: ["*"]
+//         },
+//         callback: function(response) {
+//             if (response.message) {
+//                 frm.clear_table("expenses");
+//                 console.log('Fetched Cost Types:', response.message);
 
-                response.message.forEach(function(cost_obj) {
-                    if (cost_obj.fixed_ == 1) {
-                        let row = frm.add_child('expenses');
-                        row.expense_type = cost_obj.name;
-                        row.amount = cost_obj.cost;
-                    }
-                });
-            }
-        }
-    });
-}
+//                 response.message.forEach(function(cost_obj) {
+//                     if (cost_obj.fixed_ == 1) {
+//                         let row = frm.add_child('expenses');
+//                         row.expense_type = cost_obj.name;
+//                         row.amount = cost_obj.cost;
+//                     }
+//                 });
+//             }
+//         }
+//     });
+// }
 
 function set_container_name_filter(frm) {
     let containersInCopy = frm.doc.middle_mile_copy
@@ -232,6 +239,52 @@ function set_container_name_filter(frm) {
         return {
             filters: {
                 'container_number': ['in', containersInCopy]
+            }
+        };
+    };
+}
+
+function Fetch_size(frm, cdt, cdn) {
+    let row = locals[cdt][cdn];  // Get the current row in the child table
+        frappe.db.get_value('FPL Freight Orders', { 'name': row.fo }, 'size')
+            .then(r => {
+                if (r.message) {
+                    // If a size value is found, set it in the child table's size field
+                    frappe.model.set_value(cdt, cdn, 'size', r.message.size);
+                    frm.refresh_field("middle_mile_in_loading");
+                }
+            });
+}
+
+
+function Fetch_weight(frm, cdt, cdn) {
+    let row = locals[cdt][cdn];  // Get the current row in the child table
+        frappe.db.get_value('FPL Freight Orders', { 'name': row.fo }, 'weight')
+            .then(r => {
+                if (r.message) {
+                    // If a size value is found, set it in the child table's size field
+                    frappe.model.set_value(cdt, cdn, 'weight', r.message.weight);
+                    frm.refresh_field("middle_mile_in_loading");
+                }
+            });
+}
+
+
+function set_container_filter(frm) {
+    let existingContainers = [];
+    frm.doc.middle_mile.forEach(function(row) {
+        if (row.container) {
+            existingContainers.push(row.container);
+        }
+    });
+    console.log("existingContainers ", existingContainers);
+    frm.fields_dict['middle_mile'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
+        return {
+            query: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_applicable_jobs',
+            filters: { 
+                'container_location': frm.doc.departure_location, 
+                "container_next_location": frm.doc.arrival_location,
+                "not_in_container": existingContainers
             }
         };
     };

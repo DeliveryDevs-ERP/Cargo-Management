@@ -16,6 +16,10 @@ frappe.ui.form.on("FPLRoadJob", {
             }
             return {
                 query: 'cargo_management.cargo_management.doctype.fplroadjob.query.get_applicable_containers',
+                filters: {
+                    'job_start_location': frm.doc.job_start_location,
+                    'not_in_container_number': frm.doc.container_number
+                }
             };
         };   
     },

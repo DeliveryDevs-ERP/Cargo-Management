@@ -24,6 +24,7 @@ class FPLYardJob(Document):
 		gate_in: DF.Datetime | None
 		gate_out: DF.Datetime | None
 		job_end_location: DF.Link | None
+		job_name: DF.Data | None
 		job_start_location: DF.Link | None
 		job_type: DF.Link | None
 		sales_order_number: DF.Data | None

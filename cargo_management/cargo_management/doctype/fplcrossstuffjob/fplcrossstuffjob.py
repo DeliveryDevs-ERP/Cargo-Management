@@ -20,6 +20,7 @@ class FPLCrossStuffJob(Document):
 		container_number: DF.Data | None
 		cross_stuff_performance_location: DF.Link | None
 		freight_order_id: DF.Data | None
+		job_name: DF.Data | None
 		job_type: DF.Link | None
 		performance_details: DF.Link | None
 		sales_order_number: DF.Data | None

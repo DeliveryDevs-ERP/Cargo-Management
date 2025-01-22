@@ -18,6 +18,7 @@ class FPLRailJob(Document):
         container_number: DF.Data | None
         freight_order_id: DF.Data | None
         job_end_location: DF.Link | None
+        job_name: DF.Data | None
         job_start_location: DF.Link | None
         job_type: DF.Link | None
         sales_order_number: DF.Data | None

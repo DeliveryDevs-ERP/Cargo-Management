@@ -26,6 +26,7 @@ class FPLRoadJob(Document):
         expenses: DF.Table[Expensescdt]
         freight_order_id: DF.Data | None
         job_end_location: DF.Link | None
+        job_name: DF.Data | None
         job_start_location: DF.Link | None
         job_type: DF.Link | None
         pickup_arrival: DF.Datetime | None
@@ -121,11 +122,15 @@ class FPLRoadJob(Document):
 
             # Set a temporary flag in the linked job to prevent further recursion
             linked_job._is_syncing = True
+            
+            for expense in linked_job.expenses:
+                expense.container_number = linked_job.container_number
+                
             linked_job.save(ignore_permissions=True)
             del linked_job._is_syncing  # Remove the flag after save
 
             # frappe.msgprint(f"Linked Road Job {linked_job_name} updated with changes from the current document.")
-        
+            
         # Clean up the flag after sync is done
         del self._is_syncing
 
