@@ -323,7 +323,7 @@ class FPLPerformMiddleMile(Document):
 
         # Step 3: Fetch container details and calculate expenses
         for wagon_number, containers in wagon_groups.items():
-            frappe.errprint(f"This is my wagon groups: {wagon_groups}")
+            #frappe.errprint(f"This is my wagon groups: {wagon_groups}")
             wagon_type = wagon_types.get(wagon_number)
             if not wagon_type:
                 frappe.throw(_("Wagon type for wagon number {0} not found.").format(wagon_number))
@@ -343,7 +343,7 @@ class FPLPerformMiddleMile(Document):
                 container_details[size]['total_weight'] += weight
 
             # Step 4: Match and fetch Rail Freight Cost
-            frappe.errprint(f"This is my container details: {wagon_doc_type} {container_details}")
+            #frappe.errprint(f"This is my container details: {wagon_doc_type} {container_details}")
             condition = ""
             params = [wagon_doc_type,
                     container_details.get(20, {}).get('count', 0),
@@ -363,7 +363,7 @@ class FPLPerformMiddleMile(Document):
                 container_count_40 = %s
                 {condition}
             """, params, as_dict=1)
-            frappe.errprint(f"Fetches cost: {rail_freight_costs}")
+            #frappe.errprint(f"Fetches cost: {rail_freight_costs}")
             Fixed_exp = frappe.get_all('FPL Cost Type', 
                                     filters={'job_mode': 'Train Job', 'fixed_': 1, 'cost': ['>', 0]},
                                     fields=['name', 'cost'])
