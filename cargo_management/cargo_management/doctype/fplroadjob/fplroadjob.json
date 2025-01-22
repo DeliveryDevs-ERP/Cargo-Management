@@ -14,6 +14,7 @@
   "container_number",
   "column_break_dlnr",
   "job_type",
+  "job_name",
   "status",
   "vehicle_number",
   "vehicle_supplier",
@@ -170,11 +171,18 @@
    "fieldtype": "Link",
    "label": "Container Number (to link)",
    "options": "FPL Containers"
+  },
+  {
+   "fetch_from": "job_type.name1",
+   "fieldname": "job_name",
+   "fieldtype": "Data",
+   "label": "Job Name",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-03 17:19:02.832522",
+ "modified": "2025-01-21 16:38:38.982301",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLRoadJob",

@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:cost_name",
  "creation": "2024-11-11 12:05:26.862507",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -18,7 +19,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Cost Name",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "job_mode",
@@ -55,10 +57,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-05 13:17:30.657440",
+ "modified": "2025-01-21 20:05:57.827912",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Cost Type",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

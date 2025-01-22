@@ -14,7 +14,9 @@
   "section_break_pvvn",
   "grounded_filled_containers",
   "total_weight",
-  "remaining_weight"
+  "remaining_weight",
+  "expenses_tab",
+  "expenses"
  ],
  "fields": [
   {
@@ -77,12 +79,23 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "expenses_tab",
+   "fieldtype": "Tab Break",
+   "label": "Expenses"
+  },
+  {
+   "fieldname": "expenses",
+   "fieldtype": "Table",
+   "label": "Expenses",
+   "options": "Expenses cdt"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-20 16:07:22.624040",
+ "modified": "2025-01-21 16:26:42.490551",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Perform Cross Stuff",

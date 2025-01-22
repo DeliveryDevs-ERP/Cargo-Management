@@ -65,6 +65,7 @@ class FPLPerformMiddleMile(Document):
             
         if self.finish_arrival==1:
             self.bulk_update_container_status()
+            # self.calculate_expenses()
 
 
     def fill_child_middle_mile_tables_with_WagonName_rows(self): # Loading of Containers
@@ -309,4 +310,57 @@ class FPLPerformMiddleMile(Document):
             if self.expected_time_of_arrival_eta < self.expected_departure_time_eda:
                 frappe.throw(_("The expected time of arrival (ETA) cannot be before the expected departure time (EDA)."))
 
-                    
+    # def calculate_expenses(self):
+    #     wagon_groups = {}
+    #     # Step 1: Group containers by wagon number
+    #     for entry in self.middle_mile_copy:
+    #         if entry.wagon_number not in wagon_groups:
+    #             wagon_groups[entry.wagon_number] = []
+    #         wagon_groups[entry.wagon_number].append(entry)
+
+    #     # Step 2: Fetch wagon types from the self.wagons child table
+    #     wagon_types = {wagon.wagon_number: wagon.wagon_type for wagon in self.wagons}
+
+    #     # Step 3: Fetch container details and calculate expenses
+    #     for wagon_number, containers in wagon_groups.items():
+    #         frappe.errprint(f"This is my wagon groups : {wagon_groups}")
+    #         wagon_type = wagon_types.get(wagon_number)
+    #         if not wagon_type:
+    #             frappe.throw(_("Wagon type for wagon number {0} not found.").format(wagon_number))
+
+    #         # Fetch type from 'FPL Wagons'
+    #         wagon_doc_type = frappe.db.get_value('FPL Wagons', {'name': wagon_type}, 'type')
+
+    #         container_details = {}
+    #         for container in containers:
+    #             fo_doc = frappe.get_doc('FPL Freight Orders', container.fo)
+    #             size = fo_doc.size
+    #             weight = fo_doc.weight
+
+    #             if size not in container_details:
+    #                 container_details[size] = {'count': 0, 'total_weight': 0}
+    #             container_details[size]['count'] += 1
+    #             container_details[size]['total_weight'] += weight
+
+    #         # Step 4: Match and fetch Rail Freight Cost
+    #         frappe.errprint(f"This is my container details :{wagon_doc_type} {container_details}")
+    #         rail_freight_costs = frappe.db.sql("""
+    #             SELECT * FROM `tabRail Freight Cost` WHERE
+    #             wagon_type = %s AND
+    #             container_count = %s AND
+    #             container_count_40 = %s AND
+    #             (avg_weight <= %s AND avg_weight_40 <= %s)
+    #         """, (wagon_doc_type,
+    #             container_details.get(20, {}).get('count', 0),
+    #             container_details.get(40, {}).get('count', 0),
+    #             container_details.get(20, {}).get('total_weight', 0) / container_details.get(20, {}).get('count', 1),
+    #             container_details.get(40, {}).get('total_weight', 0) / container_details.get(40, {}).get('count', 1)), as_dict=1)
+
+    #         # Step 5: Populate Expenses
+    #         for cost in rail_freight_costs:
+    #             for size in container_details:
+    #                 self.append('expenses', {
+    #                     'expense_type': 'Train Freight',
+    #                     'container_number': ','.join([c.container for c in containers]),
+    #                     'amount': cost['rate_20'] if size == 20 else cost['rate_40']
+    #                 })  

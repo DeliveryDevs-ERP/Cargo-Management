@@ -6,6 +6,7 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
 
 
     setup: function(frm) {
+        set_container_name_filter(frm);
         frm.fields_dict['middle_mile'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
             return {
                 query: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_applicable_jobs',
@@ -220,4 +221,18 @@ function populate_expenses(frm, job_mode) {
             }
         }
     });
+}
+
+function set_container_name_filter(frm) {
+    let containersInCopy = frm.doc.middle_mile_copy
+        .filter(row => row.received_ === 1)
+        .map(row => row.container_number);
+
+    frm.fields_dict['expenses'].grid.get_field('container_number').get_query = function() {
+        return {
+            filters: {
+                'container_number': ['in', containersInCopy]
+            }
+        };
+    };
 }

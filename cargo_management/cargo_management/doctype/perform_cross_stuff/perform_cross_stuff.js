@@ -1,4 +1,9 @@
 frappe.ui.form.on("Perform Cross Stuff", {
+
+    before_insert: function(frm){
+        populate_expenses(frm, 'Cross Stuff Job'); 
+    },
+
     setup: function(frm) {
         // Set a query for job_before_cross_stuff to fetch unique name1 from Service Type
         frm.set_query('job_before_cross_stuff', function() {
@@ -193,4 +198,31 @@ function recalculate_remaining_weight(frm) {
 
     // Update remaining_weight in the form
     frm.set_value('remaining_weight', remaining_weight);
+}
+
+
+function populate_expenses(frm, job_mode) {    
+    frappe.call({
+        method: "frappe.client.get_list",
+        args: {
+            doctype: "FPL Cost Type",
+            filters: {
+                job_mode: job_mode
+            },
+            fields: ["*"]
+        },
+        callback: function(response) {
+            if (response.message) {
+                console.log('Fetched Cost Types:', response.message);
+                response.message.forEach(function(cost_obj) {
+                    if (cost_obj.fixed_ == 1) {
+                        let row = frm.add_child('expenses');
+                        row.expense_type = cost_obj.name;
+                        row.amount = cost_obj.cost;
+                    }
+                });
+                frm.refresh_field('expenses');
+            }
+        }
+    });
 }

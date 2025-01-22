@@ -35,6 +35,7 @@ class FPLFreightOrders(Document):
 
     def validate(self):
         self.check_job_status()
+        self.verify_job_location_status()
         if self.container_number and self.container_type and self.documents_received:
             self.validate_container_Number()
             self.create_or_update_container()
@@ -248,6 +249,38 @@ class FPLFreightOrders(Document):
         for container in containers:
             frappe.delete_doc('FPL Containers', container.name)
             frappe.msgprint(f"Container {container.name} associated with this Freight Order has been deleted.")            
+
+    def verify_job_location_status(self):
+        job_doctypes = ['FPLRailJob', 'FPLYardJob', 'FPLRoadJob', 'FPLCrossStuffJob']
+        job_documents = {}
+
+        for doctype in job_doctypes:
+            docs = frappe.get_all(doctype, filters={'freight_order_id': self.name}, fields=["*"])
+            for doc in docs:
+                job_documents[doc.name] = (doctype, doc)
+
+        # Check and update locations based on the jobs child table
+        for job_entry in self.jobs:
+            if job_entry.job_id in job_documents:
+                job_doc_type, job_doc = job_documents[job_entry.job_id]
+                location_update = False
+
+                # Verify start location
+                if job_doc.job_start_location != job_entry.start_location:
+                    job_doc.job_start_location = job_entry.start_location
+                    location_update = True
+
+                # Verify end location if applicable
+                if hasattr(job_doc, 'job_end_location') and job_doc.job_end_location != job_entry.end_location:
+                    job_doc.job_end_location = job_entry.end_location
+                    location_update = True
+
+                # Save the job document if any updates are made
+                if location_update:
+                    frappe.get_doc(job_doc_type, job_doc.name).update({
+                        'job_start_location': job_entry.start_location,
+                        'job_end_location': job_entry.end_location
+                    }).save()
 
 @frappe.whitelist()
 def create_Job_withoutId(docname):

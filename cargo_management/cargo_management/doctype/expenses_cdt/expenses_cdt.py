@@ -16,6 +16,7 @@ class Expensescdt(Document):
 
 		amount: DF.Float
 		client: DF.Link | None
+		container_number: DF.Link | None
 		expense_type: DF.Link | None
 		invoiced_: DF.Check
 		job_id: DF.Data | None

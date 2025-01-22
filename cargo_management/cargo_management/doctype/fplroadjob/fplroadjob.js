@@ -5,6 +5,7 @@ frappe.ui.form.on("FPLRoadJob", {
     },
 
     setup: function(frm) {        
+        set_container_name_filter(frm);
         set_cost_type_filter(frm, 'Truck Job');
 
         // Setup for container_number_to_link field
@@ -75,3 +76,17 @@ function set_cost_type_filter(frm, job_mode) {
     };
 }
 
+function set_container_name_filter(frm) {
+    frm.fields_dict['expenses'].grid.get_field('container_number').get_query = function() {
+        return {
+            filters: {
+                container_number : frm.doc.container_number,
+                freight_order_id : frm.doc.freight_order_id
+            }
+        };
+    };
+}
+
+// frappe.ui.form.on("Expenses cdt", {
+
+// }

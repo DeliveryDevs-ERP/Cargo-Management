@@ -13,6 +13,7 @@
   "job_end_location",
   "column_break_yump",
   "job_type",
+  "job_name",
   "status",
   "container_number",
   "assigned_at",
@@ -120,11 +121,18 @@
   {
    "fieldname": "column_break_ynlf",
    "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "job_type.name1",
+   "fieldname": "job_name",
+   "fieldtype": "Data",
+   "label": "Job Name",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-03 16:21:58.683666",
+ "modified": "2025-01-21 16:40:06.631286",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLYardJob",

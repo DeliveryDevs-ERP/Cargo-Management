@@ -8,6 +8,7 @@ frappe.ui.form.on("FPLYardJob", {
 
     refresh: function(frm) {
         set_cost_type_filter(frm, 'Yard Job');
+        set_container_name_filter(frm);
     },
 });
 
@@ -46,4 +47,15 @@ function populate_expenses(frm, job_mode) {
             }
         }
     });
+}
+
+function set_container_name_filter(frm) {
+    frm.fields_dict['expenses'].grid.get_field('container_number').get_query = function() {
+        return {
+            filters: {
+                container_number : frm.doc.container_number,
+                freight_order_id : frm.doc.freight_order_id
+            }
+        };
+    };
 }

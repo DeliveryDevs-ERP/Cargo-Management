@@ -5,7 +5,7 @@
 from frappe.model.document import Document
 
 
-class NewMMcdt(Document):
+class RailFreightCost(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
 
@@ -14,15 +14,12 @@ class NewMMcdt(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		container: DF.Link | None
-		container_number: DF.Data | None
-		fo: DF.Data | None
-		job: DF.Data | None
-		mm_job_id: DF.Link | None
-		parent: DF.Data
-		parentfield: DF.Data
-		parenttype: DF.Data
-		received_: DF.Check
-		wagon_number: DF.Data | None
+		avg_weight: DF.Float
+		avg_weight_40: DF.Float
+		container_count: DF.Int
+		container_count_40: DF.Int
+		rate_20: DF.Currency
+		rate_40: DF.Currency
+		wagon_type: DF.Literal["", "Small", "Conventional", "Large", "Dummy", "Break"]
 	# end: auto-generated types
 	pass
