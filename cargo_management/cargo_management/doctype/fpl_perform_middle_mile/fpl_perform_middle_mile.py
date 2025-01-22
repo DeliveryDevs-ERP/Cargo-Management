@@ -64,7 +64,7 @@ class FPLPerformMiddleMile(Document):
             # self.bulk_update_container_status() # arrival completes
             
         if self.finish_arrival==1:
-            # self.bulk_update_container_status()
+            self.bulk_update_container_status()
             self.calculate_expenses()
 
 
