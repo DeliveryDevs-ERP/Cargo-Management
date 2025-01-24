@@ -44,7 +44,8 @@ frappe.ui.form.on("FPLRoadJob", {
     },
 });
 
-function populate_expenses(frm, job_mode) {    
+function populate_expenses(frm, job_mode) {
+    // First, fetch cost types
     frappe.call({
         method: "frappe.client.get_list",
         args: {
@@ -68,6 +69,31 @@ function populate_expenses(frm, job_mode) {
             }
         }
     });
+
+    if (frm.doc.container_number && frm.doc.freight_order_id) {
+        frappe.call({
+            method: "frappe.client.get_value",
+            args: {
+                doctype: "FPL Containers",
+                filters: {
+                    container_number: frm.doc.container_number,
+                    freight_order_id: frm.doc.freight_order_id
+                },
+                fieldname: 'name'
+            },
+            callback: function(r) {
+                if (r.message) {
+                    console.log('Fetched Container:', r.message);
+                    // Update the container_number in expenses after fetching
+                    let expenses = frm.doc.expenses;
+                    expenses.forEach(function(expense) {
+                        expense.container_number = r.message.name;
+                    });
+                    frm.refresh_field('expenses');
+                }
+            }
+        });
+    }
 }
 
 function set_cost_type_filter(frm, job_mode) {
@@ -90,7 +116,3 @@ function set_container_name_filter(frm) {
         };
     };
 }
-
-// frappe.ui.form.on("Expenses cdt", {
-
-// }

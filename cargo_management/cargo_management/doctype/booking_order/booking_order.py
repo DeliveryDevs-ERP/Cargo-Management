@@ -62,14 +62,6 @@ class BookingOrder(Document):
     def validate(self):
         if not self.sales_person:
             frappe.throw(_("Cannot save, Please assign a sales person to customer."), exc=SalesPersonNotFound)
-        self.validate_demurrage_date()
-
-    def validate_demurrage_date(self):
-        if self.demurrage_date and self.delivery_date:
-            demurrage_date = getdate(self.demurrage_date)
-            delivery_date = getdate(self.delivery_date)
-            if demurrage_date <= delivery_date:
-                frappe.throw("Demurrage date must be after the delivery date.")
 
     def on_submit(self):
         try:
