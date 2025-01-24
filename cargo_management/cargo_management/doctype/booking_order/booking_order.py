@@ -8,6 +8,8 @@ from cargo_management.cargo_management.utils.getJobTypebyID import get_job_type_
 class SalesPersonNotFound(frappe.ValidationError):
 	pass
 
+class SalesOrderNotCreated(frappe.ValidationError):
+	pass
 
 class BookingOrder(Document):
     # begin: auto-generated types
@@ -63,14 +65,54 @@ class BookingOrder(Document):
         if not self.sales_person:
             frappe.throw(_("Cannot save, Please assign a sales person to customer."), exc=SalesPersonNotFound)
 
+    
+    def on_cancel(self):
+        self.cancel_and_delete_freight_orders()
+        self.cancel_and_delete_sales_order()
+        self.cancel_and_delete_Request()
+        
+    def cancel_and_delete_freight_orders(self):
+        # Fetch all related freight orders by the sales_order_number
+        freight_orders = frappe.get_list('FPL Freight Orders',
+                                        filters={'sales_order_number': self.name},
+                                        fields=['name', 'status'])
+        
+        for freight_order in freight_orders:
+            fo_doc = frappe.get_doc('FPL Freight Orders', freight_order.name)
+            if fo_doc.status != 'Draft':
+                frappe.throw(_("Cannot cancel Booking Order because related Freight Order {0} is not in 'Draft' status.".format(fo_doc.name)))
+
+        for freight_order in freight_orders:
+            fo_doc = frappe.get_doc('FPL Freight Orders', freight_order.name)
+            fo_doc.delete()
+
+    def cancel_and_delete_Request(self):
+        Requests = frappe.get_list('Container or Vehicle Request',
+                                filters={'booking_order_id': self.name},
+                                fields=['name', 'docstatus'])
+        for request in Requests:
+            if request.docstatus == 1:
+                frappe.throw(_("Cannot cancel Booking Order because related Requests are submitted."))
+            else:
+                req_doc = frappe.get_doc('Container or Vehicle Request', request.name)
+                req_doc.delete()
+
+    def cancel_and_delete_sales_order(self):
+        sales_order_name = frappe.db.get_value('Sales Order', {'custom_booking_order_id': self.name, 'docstatus': 0})
+        if sales_order_name:
+            so_doc = frappe.get_doc('Sales Order', sales_order_name)
+            if so_doc.docstatus == 1:
+                so_doc.cancel()
+            so_doc.delete()
+
     def on_submit(self):
         try:
-            self.create_freight_orders() 
             self.create_and_submit_sales_order()
             self.create_and_draft_CFO_request()
+            self.create_freight_orders() 
         except Exception as e:
-            frappe.db.rollback()  # Roll back changes if any error occurs
-            frappe.throw(f"Booking Order submission failed due to: {str(e)}")
+            frappe.db.rollback()
+            frappe.throw(f"Booking Order submission failed due to: {str(e)}", exc=SalesPersonNotFound)
 
     def create_freight_orders(self):
         cargo_details = self.get('cargo_details')  
@@ -283,8 +325,7 @@ class BookingOrder(Document):
             return sales_order.name  # Return Sales Order name if needed
 
         except Exception as e:
-            # Raise an error if the Sales Order submission fails
-            frappe.throw(f"Failed to create and save Sales Order: {str(e)}")
+            frappe.throw(f"Failed to create and save Sales Order: {str(e)}", exc=SalesOrderNotCreated)
 
 
     def get_sales_order_items(self):
@@ -360,7 +401,7 @@ class BookingOrder(Document):
     
     def reorder_Freight_orderJobs_after_crossStuff_insert(self, freight_order, initial_cross_stuff_index):
         # Log the initial index for troubleshooting
-        frappe.errprint(f"Initial cross_stuff_index: {initial_cross_stuff_index}")
+        # frappe.errprint(f"Initial cross_stuff_index: {initial_cross_stuff_index}")
         
         # Verify that the initial_cross_stuff_index is valid and within bounds
         if initial_cross_stuff_index is None or initial_cross_stuff_index >= len(freight_order.jobs):
@@ -381,7 +422,7 @@ class BookingOrder(Document):
         freight_order.jobs.insert(new_position, cross_stuff_job)
         
         # Log the adjusted positions for troubleshooting
-        frappe.errprint(f"New position for Cross Stuff job: {new_position}")
+        # frappe.errprint(f"New position for Cross Stuff job: {new_position}")
 
         # Update the indices for all jobs to maintain consistency
         for idx, job in enumerate(freight_order.jobs):
@@ -418,7 +459,7 @@ def get_sales_person(customer):
 
 @frappe.whitelist()
 def check_booking_order_status(doc, method):
-    frappe.errprint("SO Deleting")
+    # frappe.errprint("SO Deleting")
     # Fetch the Booking Order based on the custom_booking_order_id from the Sales Order
     if doc.custom_booking_order_id:
         booking_order = frappe.get_doc("Booking Order", doc.custom_booking_order_id)

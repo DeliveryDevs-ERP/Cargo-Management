@@ -43,7 +43,7 @@ class FPLFreightOrders(Document):
                 self.status = "Assigned"
     
     def after_delete(self):
-        frappe.errprint(f"After Delete Called")
+        # frappe.errprint(f"After Delete Called")
         if self.status == "Draft":
             self.delete_all_jobs_for_this_fo()
         elif self.status == "Assigned":
@@ -242,13 +242,13 @@ class FPLFreightOrders(Document):
             jobs = frappe.get_all(doctype, filters={'freight_order_id': self.name}, fields=['name'])
             for job in jobs:
                 frappe.delete_doc(doctype, job.name)
-                frappe.msgprint(f"{doctype} job {job.name} associated with this Freight Order has been deleted.")
+                # frappe.msgprint(f"{doctype} job {job.name} associated with this Freight Order has been deleted.")
 
     def delete_container_doc(self):
         containers = frappe.get_all('FPL Containers', filters={'freight_order_id': self.name}, fields=['name'])
         for container in containers:
             frappe.delete_doc('FPL Containers', container.name)
-            frappe.msgprint(f"Container {container.name} associated with this Freight Order has been deleted.")            
+            # frappe.msgprint(f"Container {container.name} associated with this Freight Order has been deleted.")            
 
     def verify_job_location_status(self):
         job_doctypes = ['FPLRailJob', 'FPLYardJob', 'FPLRoadJob', 'FPLCrossStuffJob']
