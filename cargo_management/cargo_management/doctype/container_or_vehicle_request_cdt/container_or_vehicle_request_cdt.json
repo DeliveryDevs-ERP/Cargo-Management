@@ -59,14 +59,14 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Empty Return Location ",
-   "link_filters": "[[\"Location\",\"location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
    "options": "Location"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-01-21 18:16:14.869547",
+ "modified": "2025-01-26 01:13:41.883268",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Container or Vehicle Request cdt",
