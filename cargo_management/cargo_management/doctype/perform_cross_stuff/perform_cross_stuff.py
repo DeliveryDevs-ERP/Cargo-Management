@@ -25,7 +25,10 @@ class PerformCrossStuff(Document):
     def on_submit(self):
         temp_jobs = self.amend_FOs()
         # frappe.msgprint(f"length of temp Job after: {len(temp_jobs)}")
+        #temp_jobs = list(set(temp_jobs))
+        # frappe.errprint(f"Temp Jobs before : {temp_jobs}")
         temp_jobs = self.remove_jobIds(temp_jobs)
+        frappe.errprint(f"Temp Jobs after : {temp_jobs}")
         # frappe.msgprint(f"length of temp Job before: {len(temp_jobs)}")
         self.amend_CFOs(temp_jobs)
         self.complete_crossStuffJob_in_FO()
@@ -148,24 +151,25 @@ class PerformCrossStuff(Document):
             if row.reference_container and row.reference_container not in processed_containers:
                 processed_containers.append(row.reference_container)
                 container_number = frappe.get_value("FPL Containers", {"name": row.reference_container}, "container_number")
+                FO_container_number = frappe.get_value("FPL Containers", {"name": row.container_number}, "container_number")
                 CFO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
+                FO = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "name")
                 # frappe.db.set_value("FPL Freight Orders",CFO.name, "weight", row.weight_to_transfer)
-                # Append each job individually
                 next_idx = len(CFO.jobs) + 1 
                 for job in temp_jobs:
-                    job.idx = next_idx
-                    CFO.append('jobs', {
-                        "job_name": job.job_name,
-                        "status": job.status,
-                        "start_location": job.start_location,
-                        "end_location": job.end_location,
-                        "idx": next_idx
-                    })
-                    next_idx += 1
+                    if job.parent == FO:
+                        job.idx = next_idx
+                        CFO.append('jobs', {
+                            "job_name": job.job_name,
+                            "status": job.status,
+                            "start_location": job.start_location,
+                            "end_location": job.end_location,
+                            "idx": next_idx
+                        })
+                        next_idx += 1
 
                 # Save the CFO document to persist changes
                 CFO.save()
-                # frappe.msgprint(f"Length of CFO jobs {len(CFO.jobs)}")
                 create_Job_withoutId(CFO.name)
                 
     def complete_crossStuffJob_in_FO(self):
