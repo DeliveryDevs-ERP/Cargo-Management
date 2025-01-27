@@ -4,6 +4,22 @@ frappe.ui.form.on("FPLRoadJob", {
         populate_expenses(frm, 'Truck Job'); 
     },
 
+    // after_save: function(frm){
+    //     // console.log("After save triggered")
+    //     frappe.call({
+    //         method: "cargo_management.cargo_management.doctype.fplroadjob.fplroadjob.sync_with_linked_job",
+    //         args: {
+    //             self: frm.doc.name 
+    //         },
+    //         callback: function(response) {
+    //             if (response.message) {
+    //                 frappe.msgprint(response.message);
+    //             }
+    //         }
+    //     });
+
+    // },
+
     setup: function(frm) {        
         set_container_name_filter(frm);
         set_cost_type_filter(frm, 'Truck Job');

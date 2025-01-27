@@ -6,8 +6,6 @@ def get_applicable_containers(*args, **kwargs):
     job_start_location = args[5].get('job_start_location')
     not_in_container_number = args[5].get('not_in_container_number')
     not_in_container_numbers = tuple(not_in_container_number.split(",")) if not_in_container_number else ()
-
-    frappe.errprint(f"This is job start : {job_start_location}")
     try:
         # Construct the base SQL query
         return frappe.db.sql("""

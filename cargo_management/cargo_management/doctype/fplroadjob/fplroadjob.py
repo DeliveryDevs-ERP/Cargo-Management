@@ -39,6 +39,7 @@ class FPLRoadJob(Document):
 
     def validate(self):
         self.validate_dates()
+        self.validate_expenses()
         if (self.vehicle_number and self.vehicle_supplier) and (self.pickup_arrival and self.pickup_departure) and (self.dropoff_arrival and self.dropoff_completed) and self.status != "Completed":
             if updateJobStatus(self.name, self.freight_order_id, self.container_number):
                 self.status = "Completed"
@@ -47,14 +48,34 @@ class FPLRoadJob(Document):
                 self.completePrevGateOut() 
                 updateJobStatus(self.name, self.freight_order_id, self.container_number)
                 self.status = "Completed"
-            
-
-        if self.container_number_to_link:
-            self.sync_with_linked_job()
-
+                
         if self.status == "Assigned":
             self.assigned_at = now_datetime()   
             
+        if self.container_number_to_link:
+            self.sync_with_linked_job()
+       
+    
+    def validate_expenses(self):
+        # Retrieve the container name only if there's a linked container number and freight order ID
+        if self.container_number and self.freight_order_id:
+            container_name = frappe.get_value("FPL Containers", {
+                "freight_order_id": self.freight_order_id,
+                "container_number": self.container_number
+            }, "name")
+
+            # Check if container_name was successfully retrieved
+            if container_name:
+                # Iterate through expenses to set the container_number where not already set
+                for expense in self.expenses:
+                    if not expense.container_number:
+                        expense.container_number = container_name
+            else:
+                frappe.msgprint(_("No container found with number {0} and freight order ID {1}").format(self.container_number, self.freight_order_id))
+        else:
+            frappe.msgprint(_("Container number or freight order ID not provided. Cannot validate expenses."))
+        
+    
     def completeNextGateIn(self):
         freight_order = frappe.get_doc("FPL Freight Orders", self.freight_order_id)
         jobs = freight_order.jobs  # Assuming 'jobs' is the child table of Freight Order containing job references
@@ -94,8 +115,7 @@ class FPLRoadJob(Document):
                 yard_job.gate_out = self.pickup_departure  # Assuming 'pickup_departure' is the correct field for setting Gate Out time
                 yard_job.save(ignore_permissions=True)
                 
-                
-
+                    
     def sync_with_linked_job(self):
         # Prevent recursion by setting a temporary flag
         if hasattr(self, "_is_syncing") and self._is_syncing:
@@ -113,23 +133,30 @@ class FPLRoadJob(Document):
 
             # List of fields to sync
             fields_to_sync = ["pickup_arrival", "pickup_departure", "dropoff_arrival", "dropoff_completed",
-                              "vehicle_number", "vehicle_supplier", "expenses"]
+                            "vehicle_number", "vehicle_supplier"]
 
             # Update the fields in the linked job to match the current document if they have values
             for field in fields_to_sync:
                 if self.get(field):
                     linked_job.set(field, self.get(field))
 
+            # Sync expenses separately without altering container_number
+            if self.expenses:
+                # Clear existing expenses and add new ones
+                linked_job.expenses = []
+                for expense in self.expenses:
+                    new_expense = frappe.get_doc("Expenses cdt", expense.name).as_dict()
+                    # frappe.errprint(f" Fetched expenses from self , {new_expense}")
+                    del new_expense["container_number"]
+                    del new_expense["name"]
+                    del new_expense["parent"]
+                    # frappe.errprint(f" Fetched expenses from self after del , {new_expense}")
+                    linked_job.append("expenses", new_expense)
+
             # Set a temporary flag in the linked job to prevent further recursion
             linked_job._is_syncing = True
-            
-            for expense in linked_job.expenses:
-                expense.container_number = linked_job.container_number
-                
             linked_job.save(ignore_permissions=True)
             del linked_job._is_syncing  # Remove the flag after save
-
-            # frappe.msgprint(f"Linked Road Job {linked_job_name} updated with changes from the current document.")
             
         # Clean up the flag after sync is done
         del self._is_syncing

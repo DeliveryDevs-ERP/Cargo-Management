@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{job_name}-{###{",
+ "autoname": "format:{job_name}-{###}",
  "creation": "2024-11-19 14:23:34.250228",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -88,7 +88,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-22 14:12:29.970067",
+ "modified": "2025-01-27 12:42:21.119245",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLCrossStuffJob",
