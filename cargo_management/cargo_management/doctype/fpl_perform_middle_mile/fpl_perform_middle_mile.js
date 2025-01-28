@@ -8,16 +8,6 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
     setup: function(frm) {
         set_container_name_filter(frm);
         set_container_filter(frm);
-        // frm.fields_dict['middle_mile'].grid.get_field('container').get_query = function(doc, cdt, cdn) {
-        //     return {
-        //         query: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_applicable_jobs',
-        //         filters: { 
-        //             'container_location': frm.doc.departure_location, 
-        //             "container_next_location": frm.doc.arrival_location,
-        //             "not_in_Container" : frm.doc.middle_mile
-        //         }
-        //     };
-        // };
     },
     
     onload: function(frm) {
@@ -202,33 +192,6 @@ function set_cost_type_filter(frm, job_mode) {
     };
 }
 
-
-// function populate_expenses(frm, job_mode) {
-//     frappe.call({
-//         method: "frappe.client.get_list",
-//         args: {
-//             doctype: "FPL Cost Type",
-//             filters: {
-//                 job_mode: job_mode
-//             },
-//             fields: ["*"]
-//         },
-//         callback: function(response) {
-//             if (response.message) {
-//                 frm.clear_table("expenses");
-//                 console.log('Fetched Cost Types:', response.message);
-
-//                 response.message.forEach(function(cost_obj) {
-//                     if (cost_obj.fixed_ == 1) {
-//                         let row = frm.add_child('expenses');
-//                         row.expense_type = cost_obj.name;
-//                         row.amount = cost_obj.cost;
-//                     }
-//                 });
-//             }
-//         }
-//     });
-// }
 
 function set_container_name_filter(frm) {
     let containersInCopy = frm.doc.middle_mile_copy

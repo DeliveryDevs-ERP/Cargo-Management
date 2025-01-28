@@ -5,7 +5,7 @@ frappe.ui.form.on("Perform Cross Stuff", {
     },
 
     setup: function(frm) {
-        // Set a query for job_before_cross_stuff to fetch unique name1 from Service Type
+        set_cost_type_filter(frm, 'Cross Stuff Job');
         frm.set_query('job_before_cross_stuff', function() {
             return {
                 query: 'cargo_management.cargo_management.doctype.perform_cross_stuff.query.get_unique_service_types'
@@ -13,8 +13,33 @@ frappe.ui.form.on("Perform Cross Stuff", {
         });
     },
 
+    refresh: function(frm) {
+        frm.set_query("container_number", "expenses", function(doc, cdt, cdn) {
+            console.log("Setting container number query");
+
+            let existingContainers = [];
+            frm.doc.grounded_filled_containers.forEach(function(row) {
+                if (row.container_number) {
+                    existingContainers.push(row.container_number);
+                }
+                if (row.reference_container) {
+                    existingContainers.push(row.reference_container);
+                }
+            });
+
+            let filters = { };
+            if (existingContainers.length > 0) {
+                filters["name"] = ["in", existingContainers];
+            }
+
+            return { filters: filters };
+        });    
+    },
+
+    
     onload: function(frm){
         console.log("Setting BO");
+        set_cost_type_filter(frm, 'Cross Stuff Job');
         frm.set_query('booking_order_id', function() {
             return {
                 query: 'cargo_management.cargo_management.doctype.perform_cross_stuff.query.get_BOs_name'
@@ -158,6 +183,7 @@ frappe.ui.form.on('Grounded Filled Cdt', {
         }
     },
 
+
     weight_to_transfer: function(frm) {
         // Recalculate remaining_weight when weight_to_transfer is updated
         recalculate_remaining_weight(frm);
@@ -225,4 +251,14 @@ function populate_expenses(frm, job_mode) {
             }
         }
     });
+}
+
+function set_cost_type_filter(frm, job_mode) {
+    frm.fields_dict['expenses'].grid.get_field('expense_type').get_query = function() {
+        return {
+            filters: {
+                job_mode: job_mode
+            }
+        };
+    };
 }
