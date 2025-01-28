@@ -185,7 +185,7 @@
    "link_fieldname": "freight_order_id"
   }
  ],
- "modified": "2025-01-03 17:31:20.466223",
+ "modified": "2025-01-28 14:15:27.117783",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Freight Orders",
@@ -215,6 +215,7 @@
    "write": 1
   }
  ],
+ "search_fields": "container_number",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
