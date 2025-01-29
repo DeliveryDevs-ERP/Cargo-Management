@@ -159,13 +159,13 @@ frappe.ui.form.on('Grounded Filled Cdt', {
                                 filters: {
                                     container_number: container_name  // Match the container name
                                 },
-                                fields: ['weight']  // Fetch the weight field
+                                fields: ['weight','bag_qty']  // Fetch the weight field
                             },
                             callback: function(weight_response) {
                                 if (weight_response.message && weight_response.message.length > 0) {
                                     // Set the weight value in the row
                                     frappe.model.set_value(cdt, cdn, 'weight', weight_response.message[0].weight);
-
+                                    frappe.model.set_value(cdt, cdn, 'fo_bags_qty', weight_response.message[0].bag_qty);
                                     // Recalculate total_weight after setting the weight
                                     recalculate_total_weight(frm);
 

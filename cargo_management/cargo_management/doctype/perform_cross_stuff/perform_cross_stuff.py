@@ -28,7 +28,7 @@ class PerformCrossStuff(Document):
         #temp_jobs = list(set(temp_jobs))
         # frappe.errprint(f"Temp Jobs before : {temp_jobs}")
         temp_jobs = self.remove_jobIds(temp_jobs)
-        frappe.errprint(f"Temp Jobs after : {temp_jobs}")
+        # frappe.errprint(f"Temp Jobs after : {temp_jobs}")
         # frappe.msgprint(f"length of temp Job before: {len(temp_jobs)}")
         self.amend_CFOs(temp_jobs)
         self.complete_crossStuffJob_in_FO()
@@ -152,10 +152,23 @@ class PerformCrossStuff(Document):
                 processed_containers.append(row.reference_container)
                 container_number = frappe.get_value("FPL Containers", {"name": row.reference_container}, "container_number")
                 FO_container_number = frappe.get_value("FPL Containers", {"name": row.container_number}, "container_number")
+                frappe.db.set_value("FPL Containers", row.reference_container, "status", "Filled")
                 CFO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
                 FO = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "name")
-                # frappe.db.set_value("FPL Freight Orders",CFO.name, "weight", row.weight_to_transfer)
+                # FO_size = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "size")
+                FO_rate_type = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "rate_type")
+                # FO_rate = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "rate")
+                CFO.rate_type = FO_rate_type
                 next_idx = len(CFO.jobs) + 1 
+                
+                # if FO_size == CFO.size:
+                #     CFO.rate = FO_rate
+                # else:
+                #     if CFO.size == 40:
+                #         CFO.rate = FO_rate*2
+                #     else:
+                #         CFO.rate = FO_rate/2
+                    
                 for job in temp_jobs:
                     if job.parent == FO:
                         job.idx = next_idx
@@ -168,10 +181,18 @@ class PerformCrossStuff(Document):
                         })
                         next_idx += 1
 
-                # Save the CFO document to persist changes
+                cum_weight = 0
+                cum_bag = 0
+                for row2 in self.grounded_filled_containers:
+                    if row2.reference_container == row.reference_container:
+                        cum_weight += row2.weight_to_transfer
+                        cum_bag += row2.bags_to_transfer
+
+                CFO.bag_qty = cum_bag
+                CFO.weight = cum_weight
                 CFO.save()
-                create_Job_withoutId(CFO.name)
-                
+                create_Job_withoutId(CFO.name)                
+                    
     def complete_crossStuffJob_in_FO(self):
         for row in self.grounded_filled_containers:
             if row.container_number:
@@ -188,13 +209,17 @@ class PerformCrossStuff(Document):
                 CFO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
                 
                 # Fetch the specific Empty Return job
-                EmptyReturn = frappe.get_doc("FPLRoadJob", {
-                    "container_number": container_number,
-                    "freight_order_id": CFO.name,
-                    "sales_order_number": self.booking_order_id,
-                    "job_type": "l5dbk4s5u4"
-                })
-                
+                EmptyReturn =  frappe.get_list("FPLRoadJob", 
+                    filters={
+                        "container_number": container_number,
+                        "freight_order_id": CFO.name,
+                        "sales_order_number": self.booking_order_id,
+                        "job_type": ["in", ["l5dbk4s5u4", "l5if4pva8b"]]
+                    }, 
+                    fields=["name"]
+                )
+                if EmptyReturn:
+                    EmptyReturn = frappe.get_doc("FPLRoadJob", EmptyReturn[0].name)
                 EmptyReturn.job_end_location = row.empty_return_location
                 EmptyReturn.save()
                 

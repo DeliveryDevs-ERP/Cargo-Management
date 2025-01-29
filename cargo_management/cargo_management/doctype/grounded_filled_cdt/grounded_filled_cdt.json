@@ -8,8 +8,10 @@
  "field_order": [
   "container_number",
   "weight",
+  "fo_bags_qty",
   "empty_return_location",
   "weight_to_transfer",
+  "bags_to_transfer",
   "reference_container"
  ],
  "fields": [
@@ -51,12 +53,26 @@
    "in_list_view": 1,
    "label": "Reference Container (CFO)",
    "options": "FPL Containers"
+  },
+  {
+   "fieldname": "fo_bags_qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "FO Bags Qty",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "bags_to_transfer",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Bags to Transfer",
+   "non_negative": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-11-18 19:50:02.288498",
+ "modified": "2025-01-28 17:23:42.092354",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Grounded Filled Cdt",

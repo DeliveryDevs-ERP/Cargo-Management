@@ -127,7 +127,7 @@ class BookingOrder(Document):
         # crossStuff_flag = any(service.service_name == "Cross Stuff" for service in applicable_services) # check if there is cross stuff present
         # if crossStuff_flag:
             # applicable_services = [service for service in applicable_services if service.service_name != "Cross Stuff"]
-        weight = item.avg_weight if item.avg_weight else item.bag_weight
+        weight = item.avg_weight if item.avg_weight else (item.bag_weight * item.bag_qty) / 1000
         size = item.size if item.size else None
         freight_order = frappe.get_doc({
             'doctype': 'FPL Freight Orders',
@@ -135,6 +135,9 @@ class BookingOrder(Document):
             'sales_order_number': self.name,
             'client': self.customer,
             'weight': weight, 
+            'bag_qty': item.bag_qty,
+            'rate': item.rate, 
+            'rate_type': item.rate_type, 
             'size':size,
             'jobs': [] 
         })
@@ -171,17 +174,6 @@ class BookingOrder(Document):
                 })
         
 
-        
-
-        # Cross Stuff adjustment in the jobs order:
-        # if crossStuff_flag:
-        #     cross_stuff_index = next((index for index, job in enumerate(freight_order.jobs) if job.job_name == self.location_of_cross_stuff), None)
-        #     freight_order.append('jobs', {
-        #         'job_name': self.get_service_type_name("Cross Stuff", self.transport_type),
-        #         'status': 'Draft',
-        #         'start_location': freight_order.jobs[cross_stuff_index - 1].end_location if cross_stuff_index > 0 else freight_order.jobs[0].start_location,
-        #         'end_location': None
-        #     })
 
         freight_order.insert()
         if freight_order.jobs:

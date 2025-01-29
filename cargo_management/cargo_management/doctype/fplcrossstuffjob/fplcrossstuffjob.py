@@ -29,7 +29,7 @@ class FPLCrossStuffJob(Document):
 	pass
 
 	def validate(self):
-			if self.performance_details:
+			if self.performance_details and self.status !="Completed":
 				if updateJobStatus(self.name, self.freight_order_id, self.container_number):
 					self.status = "Completed"
 				

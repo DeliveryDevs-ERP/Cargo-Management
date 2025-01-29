@@ -172,7 +172,10 @@ class FPLFreightOrders(Document):
             container = frappe.new_doc('FPL Containers')
             container.container_number = self.container_number
             container.container_type = self.container_type
-            container.status = "Filled"
+            if self.name.split("-")[0] == "CFO":
+                container.status = "Empty"
+            else:
+                container.status = "Filled"
             container.freight_order_id = self.name
             container.state = None
             container.active_job_id = self.jobs[0].job_id

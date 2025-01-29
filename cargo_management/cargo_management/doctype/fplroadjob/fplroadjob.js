@@ -11,11 +11,6 @@ frappe.ui.form.on("FPLRoadJob", {
                 args: {
                     docname: frm.doc.name 
                 },
-                callback: function(response) {
-                    if (response.message) {
-                        frappe.msgprint(response.message);
-                    }
-                }
             });
         }
     },

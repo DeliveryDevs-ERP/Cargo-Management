@@ -1,6 +1,8 @@
 import frappe
 from cargo_management.cargo_management.utils.getJobTypebyID import get_job_type_by_id
+# import sys
 
+# sys.setrecursionlimit(10**6)
 def updateJobStatus(job_id, freight_order_id, container_number):
     # Fetch the Freight Order document
     freight_order = frappe.get_doc("FPL Freight Orders", freight_order_id)
@@ -56,7 +58,7 @@ def updateJobStatus(job_id, freight_order_id, container_number):
     if not job_found:
         frappe.throw(f"No job found with job_id {job_id} in the FPL Freight Order document.")
         return False
-    
+    # frappe.errprint(f"Processing Job {job_id}")
     # Save the updated Freight Order document
     freight_order.save()
     
@@ -75,4 +77,3 @@ def updateJobStatus(job_id, freight_order_id, container_number):
         return False
     
     return True
-    # frappe.msgprint(f"Job {job_id} marked as completed. Container {container_number} is updated.")
