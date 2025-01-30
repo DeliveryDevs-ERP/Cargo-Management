@@ -161,6 +161,7 @@ class PerformCrossStuff(Document):
                 CFO.rate_type = FO_rate_type
                 next_idx = len(CFO.jobs) + 1 
                 
+                
                 # if FO_size == CFO.size:
                 #     CFO.rate = FO_rate
                 # else:
