@@ -155,20 +155,15 @@ class PerformCrossStuff(Document):
                 frappe.db.set_value("FPL Containers", row.reference_container, "status", "Filled")
                 CFO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
                 FO = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "name")
-                # FO_size = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "size")
                 FO_rate_type = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "rate_type")
-                # FO_rate = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "rate")
+                FO_rate = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "rate")
+                FO_weight = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "weight")
                 CFO.rate_type = FO_rate_type
                 next_idx = len(CFO.jobs) + 1 
                 
-                
-                # if FO_size == CFO.size:
-                #     CFO.rate = FO_rate
-                # else:
-                #     if CFO.size == 40:
-                #         CFO.rate = FO_rate*2
-                #     else:
-                #         CFO.rate = FO_rate/2
+                Per_weight_rate = 1
+                if FO_rate_type == "Per Container":
+                    Per_weight_rate = FO_rate / FO_weight 
                     
                 for job in temp_jobs:
                     if job.parent == FO:
@@ -191,6 +186,11 @@ class PerformCrossStuff(Document):
 
                 CFO.bag_qty = cum_bag
                 CFO.weight = cum_weight
+                if FO_rate_type == "Per Container":
+                    CFO.rate = cum_weight * Per_weight_rate
+                else:
+                    CFO.rate = FO_rate
+                    
                 CFO.save()
                 create_Job_withoutId(CFO.name)                
                     

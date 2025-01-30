@@ -58,12 +58,11 @@ def updateJobStatus(job_id, freight_order_id, container_number):
     if not job_found:
         frappe.throw(f"No job found with job_id {job_id} in the FPL Freight Order document.")
         return False
-    # frappe.errprint(f"Processing Job {job_id}")
     # Save the updated Freight Order document
     freight_order.save()
     
     # Fetch and update the Container document
-    container = frappe.get_doc("FPL Containers", {"container_number": container_number})
+    container = frappe.get_doc("FPL Containers", {"container_number": container_number, "freight_order_id": freight_order_id})
     
     if container:
         container.status = "Filled" if next_job_id else "Empty"
