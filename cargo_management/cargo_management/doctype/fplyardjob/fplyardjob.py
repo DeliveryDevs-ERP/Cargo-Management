@@ -1,6 +1,7 @@
 # Copyright (c) 2024, Osama and contributors
 # For license information, please see license.txt
 from cargo_management.cargo_management.utils.Update_JOB_Container_FO_Status import updateJobStatus
+from cargo_management.cargo_management.utils.api import create_invoice
 from frappe.utils import now_datetime
 import frappe
 from frappe.model.document import Document
@@ -37,4 +38,27 @@ class FPLYardJob(Document):
 				self.status = "Completed"
 		if self.status == "Assigned":
 			self.assigned_at = now_datetime()   
-				
+		
+		self.create_purchase_invoice()
+		
+
+
+	def create_purchase_invoice(self):
+		default_company = frappe.defaults.get_user_default("company")
+		for expense in self.expenses:
+			if expense.purchase_invoiced_created == 0:
+				item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
+				if item:
+					code = create_invoice(
+					container_number=expense.container_number,
+					FO= self.freight_order_id,
+					items=[{
+						"item_code": item,
+						"qty": 1,
+						"rate": expense.amount	
+					}],
+					supplier=expense.client,
+					company=default_company
+					)
+					if code == True:
+						expense.purchase_invoiced_created = 1

@@ -69,22 +69,9 @@ def get_data(filters, expense_types):
         LEFT JOIN
             `tabFPL Perform Middle Mile` pm on pm.name = e.parent
         WHERE
-            e.container_number IN (SELECT DISTINCT c.container_number 
-            FROM `tabFPL Perform Middle Mile` pm 
-            JOIN `tabExpenses cdt` c ON pm.name = c.parent
-            WHERE pm.departure_time BETWEEN %(from_date)s AND %(to_date)s
-
-            UNION ALL
-
-            SELECT DISTINCT cdt.container_number 
-            FROM `tabGrounded Filled Cdt` cdt
-            where cdt.reference_container in (SELECT DISTINCT c.container_number 
-            FROM `tabFPL Perform Middle Mile` pm 
-            JOIN `tabExpenses cdt` c ON pm.name = c.parent
-            WHERE pm.departure_time BETWEEN %(from_date)s AND %(to_date)s))
+            e.container_number IN (SELECT DISTINCT c.container_number FROM `tabBooking Order` BO JOIN `tabFPL Freight Orders` FO ON BO.name = FO.sales_order_number JOIN `tabFPL Containers` C ON FO.name = C.freight_order_id WHERE BO.sales_order_date BETWEEN %(from_date)s AND %(to_date)s AND BO.transport_type = 'Road (Truck)')
     """
     return frappe.db.sql(data_query, {'from_date': filters.get("from_date"), 'to_date': filters.get("to_date")}, as_dict=True)
-
 
 def process_data(data):
     # Initialize a dictionary to hold processed data
@@ -121,7 +108,6 @@ def process_data(data):
         processed_data[container_key]['total_cost'] += row['total_cost']
         processed_data[container_key]['profit'] = processed_data[container_key]['selling_cost'] - processed_data[container_key]['total_cost']
 
-    
     
     return list(processed_data.values())
 

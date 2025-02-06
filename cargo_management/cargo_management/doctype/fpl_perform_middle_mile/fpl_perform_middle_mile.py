@@ -6,7 +6,11 @@ import frappe
 from frappe import _
 from cargo_management.cargo_management.utils.Update_JOB_Container_FO_Status import updateJobStatus
 from cargo_management.cargo_management.utils.getJobTypebyID import get_job_type_by_id
+from cargo_management.cargo_management.utils.getSupplierForCostType import get_supplier
+from cargo_management.cargo_management.utils.api import create_invoice
 
+class MiddleMileWeightError(frappe.ValidationError):
+	pass
 
 class FPLPerformMiddleMile(Document):
     # begin: auto-generated types
@@ -52,35 +56,33 @@ class FPLPerformMiddleMile(Document):
         
         if self.finish_train_formation == 1 and self.finish_loading == 0: # formation is completed now completing loading
             self.fill_child_middle_mile_tables_with_WagonName_rows()
-            # self.status = "Train Formed"
         
         if self.finish_train_formation == 1 and self.finish_loading == 1 and self.finish_departure == 0: # formation & loading is completed now completing departure
-            self.carry_forward_the_specified_rows()    
-            # self.status = "Loaded"
-
+            self.carry_forward_the_specified_rows()
+            
         if self.finish_train_formation == 1 and self.finish_loading == 1 and self.finish_departure == 1 and self.finish_arrival==0: # formation, loading & departure is completed now completing arrival
             self.carry_forward_the_specified_row2()
             self.update_gate_out_jobs() # do gate out job
-            # self.bulk_update_container_status() # arrival completes
             
         if self.finish_arrival==1:
-            self.bulk_update_container_status()
-            self.calculate_expenses()
+            # self.bulk_update_container_status()
+            # self.calculate_expenses()
+            self.create_purchase_invoice()
 
 
     def fill_child_middle_mile_tables_with_WagonName_rows(self): # Loading of Containers
-        for wagon in self.get('wagons'):
-            wagon_doc = frappe.get_doc('FPL Wagons', wagon.wagon_type)
-            max_count = wagon_doc.max_count if wagon_doc else 0
-            for _ in range(max_count):
-                self.append('middle_mile', {
-                    'wagon_number': wagon.wagon_number,
-                    'job': 'Middle Mile',
-                    'mm_job_id': None,  
-                    'received_': 0,  
-                    'container': None,  
-                    'read_only': False  
-                })
+        if self.loading_time is None and self.loading_end_time is None: #this will only happen if loading times are not given
+            for wagon in self.get('wagons'):
+                wagon_doc = frappe.get_doc('FPL Wagons', wagon.wagon_type)
+                max_count = wagon_doc.max_count if wagon_doc else 0
+                for _ in range(max_count):
+                    self.append('middle_mile', {
+                        'wagon_number': wagon.wagon_number,
+                        'job': 'Middle Mile',
+                        'mm_job_id': None,  
+                        'container': None,  
+                        'read_only': False  
+                    })
 
     def carry_forward_the_specified_rows(self): # Departure of containers
         middle_mile_rows = self.get('middle_mile')
@@ -90,23 +92,27 @@ class FPLPerformMiddleMile(Document):
                 'wagon_number': row.wagon_number,
                 'job': row.job,
                 'mm_job_id': row.mm_job_id,
-                'received_': row.received_,
+                # 'received_': row.received_,
+                'loaded_':1,
                 'container': row.container,
+                'size': row.size,
+                'weight': row.weight,
                 'read_only': True  
             })
 
     def carry_forward_the_specified_row2(self):
         middle_mile_rows = self.get('middle_mile_in_loading')
-        for row in middle_mile_rows:
+        filtered_rows = [row for row in middle_mile_rows if (row.departed_ == 1)]
+        for row in filtered_rows:
             self.append('middle_mile_copy', {
                 'wagon_number': row.wagon_number,
                 'job': row.job,
                 'mm_job_id': row.mm_job_id,
-                'received_': row.received_,
+                # 'received_': row.received_,
                 'container': row.container,
                 'read_only': False  
             })
-    
+            
     def bulk_update_container_status(self):
         for row in self.middle_mile_copy:
             if row.container:
@@ -342,8 +348,6 @@ class FPLPerformMiddleMile(Document):
                 container_details[size]['count'] += 1
                 container_details[size]['total_weight'] += weight
 
-            # Step 4: Match and fetch Rail Freight Cost
-            #frappe.errprint(f"This is my container details: {wagon_doc_type} {container_details}")
             condition = ""
             params = [wagon_doc_type,
                     container_details.get(20, {}).get('count', 0),
@@ -363,9 +367,8 @@ class FPLPerformMiddleMile(Document):
                 container_count_40 = %s
                 {condition}
             """, params, as_dict=1)
-            #frappe.errprint(f"Fetches cost: {rail_freight_costs}")
             Fixed_exp = frappe.get_all('FPL Cost Type', 
-                                    filters={'job_mode': 'Train Job', 'fixed_': 1, 'cost': ['>', 0]},
+                                    filters={'job_mode': 'Train Job', 'fixed_': 1, 'cost': ['>', 0], 'movement_type': self.movement_type},
                                     fields=['name', 'cost'])
             for cost in rail_freight_costs:
                 for container in containers:
@@ -373,7 +376,8 @@ class FPLPerformMiddleMile(Document):
                     fo_doc = frappe.get_doc('FPL Freight Orders', container.fo)
                     size = fo_doc.size
                     self.append('expenses', {
-                        'expense_type': 'Train Freight',
+                        'expense_type': 'TRAIN FREIGHT',
+                        'client': get_supplier('TRAIN FREIGHT'),
                         'container_number': container.container,
                         'amount': cost['rate_20'] if size == 20 else cost['rate_40']
                     })
@@ -383,3 +387,61 @@ class FPLPerformMiddleMile(Document):
                             'container_number': container.container,
                             'amount': expense['cost']
                         })
+
+
+    def create_purchase_invoice(self):
+        default_company = frappe.defaults.get_user_default("company")
+        for expense in self.expenses:
+            if expense.purchase_invoiced_created == 0:
+                item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
+                if item:
+                    code = create_invoice(
+                        container_number=expense.container_number,
+                        train_no=self.rail_number,
+                        movement_type=self.movement_type,
+                        FO=frappe.get_value("FPL Containers", expense.container_number, 'freight_order_id'),
+                        crm_bill_no=expense.name,
+                        items=[{
+                            "item_code": item,
+                            "qty": 1,
+                            "rate": expense.amount
+                        }],
+                        supplier=expense.client,
+                        company=default_company
+                    )
+                    if code == True:
+                        expense.purchase_invoiced_created = 1
+
+
+
+@frappe.whitelist()
+def validate_weight_Loading(docname):
+    doc = frappe.get_doc('FPL Perform Middle Mile', docname)
+    
+    wagon_groups = {}
+    for row in doc.get('middle_mile'):
+        if row.wagon_number not in wagon_groups:
+            wagon_groups[row.wagon_number] = []
+        wagon_groups[row.wagon_number].append(row)
+
+    for wagon_number, rows in wagon_groups.items():
+        wagon_type = None
+        for wagon in doc.get('wagons'):
+            if wagon.wagon_number == wagon_number:
+                wagon_type = wagon.wagon_type
+                break
+
+        if not wagon_type:
+            return False
+
+        wagon_doc = frappe.get_doc('FPL Wagons', wagon_type)
+        max_weight_ton = wagon_doc.max_weight_ton if wagon_doc else 0
+        total_weight = sum(float(row.weight or 0) for row in rows)
+        frappe.errprint(f"Total Weight {total_weight} Max Weight {max_weight_ton}")
+        if total_weight > max_weight_ton:
+            # frappe.throw(_(f"Total weight of containers in wagon {wagon_number} exceeds the maximum allowed weight of {max_weight_ton} tons. Current total weight: {total_weight} tons"))
+            return False
+
+    return True
+
+

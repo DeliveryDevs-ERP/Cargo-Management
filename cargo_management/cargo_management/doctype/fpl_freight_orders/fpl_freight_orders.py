@@ -177,6 +177,7 @@ class FPLFreightOrders(Document):
             else:
                 container.status = "Filled"
             container.freight_order_id = self.name
+            container.booking_order_id = self.sales_order_number
             container.state = None
             container.active_job_id = self.jobs[0].job_id
             container.container_location = self.fetchLocationfromFOJobGrid()

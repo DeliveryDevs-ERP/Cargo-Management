@@ -8,6 +8,7 @@
  "field_order": [
   "cost_name",
   "job_mode",
+  "movement_type",
   "cost",
   "column_break_augo",
   "fixed_",
@@ -53,11 +54,18 @@
    "in_list_view": 1,
    "label": "Cost",
    "non_negative": 1
+  },
+  {
+   "depends_on": "eval: doc.job_mode === 'Train Job';",
+   "fieldname": "movement_type",
+   "fieldtype": "Select",
+   "label": "Movement Type",
+   "options": "\nUp\nDown"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-21 20:05:57.827912",
+ "modified": "2025-02-03 15:17:52.287293",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Cost Type",

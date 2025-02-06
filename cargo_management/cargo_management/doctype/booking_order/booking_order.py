@@ -338,7 +338,7 @@ class BookingOrder(Document):
                 "rate": cargo.rate, 
                 "amount" : cargo.amount,
                 "weight_per_unit": weight,
-                "description": f"Transport Mode: {self.transport_type}, Container Size: {cargo.size}, Avg Weight: {cargo.avg_weight or cargo.bag_weight} Tons, from {self.pickup_location} to {self.dropoff_location}, BOL: {self.bill_of_landing_number}"
+                "description": f"{cargo.cargo_type}: Transport Mode: {self.transport_type}, Container Size: {cargo.size}, Avg Weight: {cargo.avg_weight or cargo.bag_weight} Tons ,BOL: {self.bill_of_landing_number}, Location: " + self.get_str_location()
             })
         return sales_order_items
 
@@ -424,7 +424,35 @@ class BookingOrder(Document):
         freight_order.save()
         frappe.db.commit()
             
+    def get_str_location(self):
+        # Default values for start and end locations
+        start = None
+        end = None
+        start = self.fm_pickup_location
+        end = self.lm_dropoff_location
+        
+        #deciding start location of journey
+        if start is None:
+            start = self.long_haul_pickup_location
+        if start is None:
+            start = self.short_haul_pickup_location       
+        if start is None:
+            start = self.mm_loading_station
     
+        #deciding End location of journey
+        if end is None:
+            end = self.short_haul_dropoff_location
+        if end is None:
+            end = self.long_haul_dropoff_location
+        if end is None:
+            end = self.mm_offloading_station   
+            
+        if start and end:
+            return f"from {start} to {end}"
+        else:
+            return ""
+
+
 @frappe.whitelist()
 def get_sales_person(customer):
     """

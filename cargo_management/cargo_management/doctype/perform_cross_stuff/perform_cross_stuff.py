@@ -2,6 +2,7 @@ import frappe
 from frappe.model.document import Document
 
 from cargo_management.cargo_management.doctype.fpl_freight_orders.fpl_freight_orders import create_Job_withoutId
+from cargo_management.cargo_management.utils.api import create_invoice
 
 class PerformCrossStuff(Document):
     # begin: auto-generated types
@@ -34,6 +35,7 @@ class PerformCrossStuff(Document):
         self.complete_crossStuffJob_in_FO()
         self.change_empty_return_end_location_in_CFO()
         self.assign_performance_in_request()
+        self.create_purchase_invoice()
 
     def amend_FOs(self):
         temp_jobs = []
@@ -115,6 +117,26 @@ class PerformCrossStuff(Document):
             return "Rail (Train)"
         return None
 
+    def create_purchase_invoice(self):
+        default_company = frappe.defaults.get_user_default("company")
+        for expense in self.expenses:
+            if expense.purchase_invoiced_created == 0:
+                item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
+                if item:
+                    code = create_invoice(
+                        container_number=expense.container_number,
+                        FO=frappe.get_value("FPL Containers", expense.container_number, 'freight_order_id'),
+                        items=[{
+                            "item_code": item,
+                            "qty": 1,
+                            "rate": expense.amount
+                        }],
+                        supplier=expense.client,
+                        company=default_company
+                    )
+                    if code == True:
+                        expense.purchase_invoiced_created = 1
+                        
     def get_service_type_name(self, service_name, transport_mode):
         if service_name in ['Gate In', 'Gate Out']:
             service_type = frappe.get_value(

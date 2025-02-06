@@ -15,6 +15,7 @@ class FPLContainers(Document):
 		from frappe.types import DF
 
 		active_job_id: DF.Data | None
+		booking_order_id: DF.Data | None
 		container_location: DF.Link | None
 		container_next_location: DF.Link | None
 		container_number: DF.Data | None

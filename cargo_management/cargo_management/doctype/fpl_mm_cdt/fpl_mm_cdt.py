@@ -16,13 +16,14 @@ class FPLMMcdt(Document):
 
 		container: DF.Link | None
 		container_number: DF.Data | None
+		departed_: DF.Check
 		fo: DF.Data | None
 		job: DF.Data | None
+		loaded_: DF.Check
 		mm_job_id: DF.Link | None
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
-		received_: DF.Check
 		size: DF.Data | None
 		wagon_number: DF.Data | None
 		weight: DF.Data | None

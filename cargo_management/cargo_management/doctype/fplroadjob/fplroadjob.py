@@ -5,6 +5,9 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
+from cargo_management.cargo_management.utils.api import create_invoice
+
+
 class FPLRoadJob(Document):
     # begin: auto-generated types
     # This code is auto-generated. Do not modify anything in this block.
@@ -53,8 +56,8 @@ class FPLRoadJob(Document):
                 
         if self.status == "Assigned":
             self.assigned_at = now_datetime()   
-            
-       
+        
+        self.create_purchase_invoice()
     
     def validate_expenses(self):
         # Retrieve the container name only if there's a linked container number and freight order ID
@@ -71,7 +74,29 @@ class FPLRoadJob(Document):
                     if not expense.container_number:
                         expense.container_number = container_name
 
-    
+    def create_purchase_invoice(self):
+        default_company = frappe.defaults.get_user_default("company")
+        for expense in self.expenses:
+            if expense.purchase_invoiced_created == 0:
+                item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
+                if item:
+                    code = create_invoice(
+                        container_number=expense.container_number,
+                        # train_no=self.rail_number,
+                        # movement_type=self.movement_type,
+                        FO= self.freight_order_id,
+                        # crm_bill_no=expense.name,
+                        items=[{
+                            "item_code": item,
+                            "qty": 1,
+                            "rate": expense.amount
+                        }],
+                        supplier=expense.client,
+                        company=default_company
+                    )
+                    if code == True:
+                        expense.purchase_invoiced_created = 1
+
     def completeNextGateIn(self):
         freight_order = frappe.get_doc("FPL Freight Orders", self.freight_order_id)
         jobs = freight_order.jobs  # Assuming 'jobs' is the child table of Freight Order containing job references
@@ -239,3 +264,4 @@ def sync_with_linked_job(docname):
             
     # Clean up the flag after sync is done
     # del self._is_syncing
+    

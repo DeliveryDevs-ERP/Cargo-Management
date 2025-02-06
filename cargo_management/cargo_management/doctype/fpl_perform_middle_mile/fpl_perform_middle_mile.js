@@ -13,16 +13,26 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
     onload: function(frm) {
         frm.get_field('middle_mile_copy').grid.cannot_add_rows = true; 
         frm.get_field('middle_mile_in_loading').grid.cannot_add_rows = true; 
+        // toggle_read_only_for_container(frm);
     },
 
     refresh: function(frm) {
         // Add "Receive All" button only if `finish_departure` is 1
-        if (frm.doc.finish_departure == 1) {
+        if (frm.doc.finish_departure == 1 && frm.doc.finish_arrival == 0) {
             frm.add_custom_button(__('Receive All'), function() {
                 frm.doc.middle_mile_copy.forEach(row => {
                     row.received_ = 1;
                 });
                 frm.refresh_field("middle_mile_copy");
+            });
+        }
+
+        if (frm.doc.finish_loading == 1 && frm.doc.finish_departure == 0) {
+            frm.add_custom_button(__('Depart All'), function() {
+                frm.doc.middle_mile_in_loading.forEach(row => {
+                    row.departed_ = 1;
+                });
+                frm.refresh_field("middle_mile_in_loading");
             });
         }
 
@@ -121,11 +131,26 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
         }
 
         if (frm.doc.finish_train_formation == 1 && frm.doc.finish_loading == 0) {
-            frm.set_value('finish_loading', 1);
-            frm.set_value('status', "Loaded");
-            frm.set_df_property("departure_tab", "hidden", false);
-            console.log('Loading Completed');
-            return;
+            frappe.call({
+                method: "cargo_management.cargo_management.doctype.fpl_perform_middle_mile.fpl_perform_middle_mile.validate_weight_Loading",
+                args: {
+                    docname: frm.doc.name
+                },
+                callback: function(r) {
+                    if (r.message === true) {
+                        frm.set_value('finish_loading', 1);
+                        frm.set_value('status', "Loaded");
+                        frm.set_df_property("departure_tab", "hidden", false);
+                        console.log('Loading Completed');
+                    }else{
+                        frappe.msgprint({
+                            title: 'Loading Weight Error',
+                            message: 'Unable to complete loading as the weight exceeds the maximum limit.',
+                            indicator: 'red'
+                        });
+                    }
+                }
+            });
         }
         
         if (frm.doc.finish_train_formation == 0) {
@@ -252,3 +277,17 @@ function set_container_filter(frm) {
         };
     };
 }
+
+// Utility function to toggle read-only status
+// function toggle_read_only_for_container(frm) {
+//     const rows = frm.doc.middle_mile_in_loading || [];
+//     rows.forEach(function(row) {
+//         // Check if loaded_ is 1 and then set read-only
+//         let readOnly = row.loaded_ === 1;
+//         console.log("Read only value ? ",readOnly);
+//         // console.log("cont 1",frm.fields_dict['middle_mile_in_loading'].grid)
+//         // console.log("cont 2",frm.fields_dict['middle_mile_in_loading'].grid.fields_map.container)
+//         frm.fields_dict['middle_mile_in_loading'].grid.fields_map['container'].grid.set_df_property('container', 'read_only', readOnly, row.name);
+//     });
+//     // frm.refresh_field('middle_mile_in_loading');
+// }

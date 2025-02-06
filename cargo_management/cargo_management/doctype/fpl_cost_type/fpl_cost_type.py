@@ -19,5 +19,6 @@ class FPLCostType(Document):
 		fixed_: DF.Check
 		item_id: DF.Link | None
 		job_mode: DF.Literal["", "Train Job", "Truck Job", "Yard Job", "Cross Stuff Job"]
+		movement_type: DF.Literal["", "Up", "Down"]
 	# end: auto-generated types
 	pass

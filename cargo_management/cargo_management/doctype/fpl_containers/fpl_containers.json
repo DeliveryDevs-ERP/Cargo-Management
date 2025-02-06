@@ -7,6 +7,7 @@
   "container_number",
   "container_type",
   "freight_order_id",
+  "booking_order_id",
   "active_job_id",
   "column_break_vrgt",
   "status",
@@ -65,11 +66,16 @@
    "fieldtype": "Link",
    "label": "Container next Location",
    "options": "Location"
+  },
+  {
+   "fieldname": "booking_order_id",
+   "fieldtype": "Data",
+   "label": "Booking Order ID"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-14 13:11:17.741279",
+ "modified": "2025-02-04 16:30:59.840674",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Containers",
