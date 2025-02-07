@@ -60,7 +60,6 @@ def get_CFO_containers(doctype, txt, searchfield, start, page_len, filters):
             ON container.freight_order_id = freight_order.name
         WHERE 
             freight_order.sales_order_number = %(booking_order_id)s
-            AND container.status = 'Empty'
             AND freight_order.name LIKE 'CFO-%%'
     """, {
         'booking_order_id': booking_order_id
