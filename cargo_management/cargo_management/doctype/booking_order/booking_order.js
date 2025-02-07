@@ -1,5 +1,8 @@
 frappe.ui.form.on('Booking Order', {
-    onload: function(frm) { frm.get_field('services').grid.cannot_add_rows = true; 
+    onload: function(frm) { 
+        
+        frm.get_field('services').grid.cannot_add_rows = true; 
+        frm.get_field('miscellaneous_services').grid.cannot_add_rows = true;         
         frm.toggle_display('transport_type', false);
         frm.toggle_display('location_of_cross_stuff', false);
         frm.set_query('location_of_cross_stuff', function(doc) {

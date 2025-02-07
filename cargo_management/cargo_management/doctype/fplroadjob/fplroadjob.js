@@ -1,5 +1,19 @@
 frappe.ui.form.on("FPLRoadJob", {
 
+
+    refresh: function(frm) {
+        if (frm.doc.freight_order_id) {
+            frappe.db.get_value('FPL Freight Orders', frm.doc.freight_order_id, 'size')
+                .then(r => {
+                    if (r.message.size === 20) {
+                        frm.set_df_property('double_20_', 'hidden', false);
+                    } else {
+                        frm.set_df_property('double_20_', 'hidden', true);
+                    }
+                });
+        }
+    },
+
     before_insert: function(frm){
         populate_expenses(frm, 'Truck Job'); 
     },

@@ -11,13 +11,87 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
     },
     
     onload: function(frm) {
+        frm.get_field('middle_mile').grid.cannot_add_rows = true; 
         frm.get_field('middle_mile_copy').grid.cannot_add_rows = true; 
         frm.get_field('middle_mile_in_loading').grid.cannot_add_rows = true; 
-        // toggle_read_only_for_container(frm);
     },
 
     refresh: function(frm) {
-        // Add "Receive All" button only if `finish_departure` is 1
+        
+        if (frm.doc.finish_train_formation == 0) {
+            frm.add_custom_button(__('Fetch Wagons from Undeparted Trains'), function() {
+
+
+                if (frm.doc.movement_type && frm.doc.departure_location){
+                    // Make the frappe.call to the Python function
+                frappe.call({
+                    method: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.fetch_wagons_from_undeparted_trains',
+                    args: {
+                        departure_location: frm.doc.departure_location,
+                        movement_type: frm.doc.movement_type
+                    },
+                    callback: function(r) {
+                        if (r.message) {
+                            // Prepare to track existing wagon numbers
+                            let existingWagons = {};
+                            let existingContainers = {};
+                            frm.doc.wagons.forEach(function(w) {
+                                existingWagons[w.wagon_number] = true;
+                            });
+
+                            frm.doc.middle_mile.forEach(function(m) {
+                                existingContainers[m.container] = true; 
+                            });
+
+                            // Clear the existing rows in the wagons table
+                            frm.clear_table('wagons');
+                            frm.clear_table('middle_mile');
+
+                            // Add new rows based on the fetched data, ensuring they are distinct
+                            r.message.forEach(function(wagon) {
+                                if (!existingWagons[wagon.wagon_number]) {
+                                    var row = frm.add_child('wagons');
+                                    row.wagon_number = wagon.wagon_number;
+                                    row.wagon_type = wagon.wagon_type;
+                                    row.loaded_ = 1;
+                                    existingWagons[wagon.wagon_number] = true; 
+                                }
+
+                                // Check if the container has already been added
+                                if (!existingContainers[wagon.container]) {
+                                    var row2 = frm.add_child('middle_mile');
+                                    row2.wagon_number = wagon.wagon_number;
+                                    row2.container = wagon.container;
+                                    row2.size = wagon.size;
+                                    row2.weight = wagon.weight;
+                                    row2.loaded_ = 1;      
+                                    row2.departed_ = 0;
+                                    existingContainers[wagon.container] = true; 
+                                }
+                            });
+
+                            // Refresh the child table to show new data
+                            frm.refresh_field('wagons');
+                            frm.refresh_field('middle_mile');
+
+                                }
+                            }
+                        });
+                }
+                else {
+                    if (!frm.doc.departure_location && !frm.doc.movement_type) {
+                        frappe.msgprint(__('Please specify both the departure location and the movement type.'));
+                    } else if (!frm.doc.departure_location) {
+                        frappe.msgprint(__('Missing departure location.'));
+                    } else if (!frm.doc.movement_type) {
+                        frappe.msgprint(__('Missing movement type.'));
+                    }
+                }
+                
+                
+            });
+        }
+       
         if (frm.doc.finish_departure == 1 && frm.doc.finish_arrival == 0) {
             frm.add_custom_button(__('Receive All'), function() {
                 frm.doc.middle_mile_copy.forEach(row => {

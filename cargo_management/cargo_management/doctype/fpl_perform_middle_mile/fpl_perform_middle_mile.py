@@ -73,16 +73,17 @@ class FPLPerformMiddleMile(Document):
     def fill_child_middle_mile_tables_with_WagonName_rows(self): # Loading of Containers
         if self.loading_time is None and self.loading_end_time is None: #this will only happen if loading times are not given
             for wagon in self.get('wagons'):
-                wagon_doc = frappe.get_doc('FPL Wagons', wagon.wagon_type)
-                max_count = wagon_doc.max_count if wagon_doc else 0
-                for _ in range(max_count):
-                    self.append('middle_mile', {
-                        'wagon_number': wagon.wagon_number,
-                        'job': 'Middle Mile',
-                        'mm_job_id': None,  
-                        'container': None,  
-                        'read_only': False  
-                    })
+                if wagon.loaded_ == 0: #only create rows for the wagon that is not already loaded
+                    wagon_doc = frappe.get_doc('FPL Wagons', wagon.wagon_type)
+                    max_count = wagon_doc.max_count if wagon_doc else 0
+                    for _ in range(max_count):
+                        self.append('middle_mile', {
+                            'wagon_number': wagon.wagon_number,
+                            'job': 'Middle Mile',
+                            'mm_job_id': None,  
+                            'container': None,  
+                            'read_only': False  
+                        })
 
     def carry_forward_the_specified_rows(self): # Departure of containers
         middle_mile_rows = self.get('middle_mile')
@@ -420,9 +421,10 @@ def validate_weight_Loading(docname):
     
     wagon_groups = {}
     for row in doc.get('middle_mile'):
-        if row.wagon_number not in wagon_groups:
-            wagon_groups[row.wagon_number] = []
-        wagon_groups[row.wagon_number].append(row)
+        if row.container:
+            if row.wagon_number not in wagon_groups:
+                wagon_groups[row.wagon_number] = []
+            wagon_groups[row.wagon_number].append(row)
 
     for wagon_number, rows in wagon_groups.items():
         wagon_type = None
@@ -437,7 +439,7 @@ def validate_weight_Loading(docname):
         wagon_doc = frappe.get_doc('FPL Wagons', wagon_type)
         max_weight_ton = wagon_doc.max_weight_ton if wagon_doc else 0
         total_weight = sum(float(row.weight or 0) for row in rows)
-        frappe.errprint(f"Total Weight {total_weight} Max Weight {max_weight_ton}")
+        # frappe.errprint(f"Total Weight {total_weight} Max Weight {max_weight_ton}")
         if total_weight > max_weight_ton:
             # frappe.throw(_(f"Total weight of containers in wagon {wagon_number} exceeds the maximum allowed weight of {max_weight_ton} tons. Current total weight: {total_weight} tons"))
             return False

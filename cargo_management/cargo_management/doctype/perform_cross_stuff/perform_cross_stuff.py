@@ -11,12 +11,14 @@ class PerformCrossStuff(Document):
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
+        from cargo_management.cargo_management.doctype.expenses_cdt.expenses_cdt import Expensescdt
         from cargo_management.cargo_management.doctype.grounded_filled_cdt.grounded_filled_cdt import GroundedFilledCdt
         from frappe.types import DF
 
         amended_from: DF.Link | None
         booking_order_id: DF.Link | None
         date: DF.Datetime | None
+        expenses: DF.Table[Expensescdt]
         grounded_filled_containers: DF.Table[GroundedFilledCdt]
         grounded_yard_location: DF.Link | None
         job_before_cross_stuff: DF.Link | None

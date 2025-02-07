@@ -41,8 +41,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Container",
-   "options": "FPL Containers",
-   "read_only_depends_on": "eval: doc.loaded_ === 1;"
+   "options": "FPL Containers"
   },
   {
    "fetch_from": "container.container_number",
@@ -88,7 +87,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-02-04 14:50:11.508374",
+ "modified": "2025-02-07 19:01:30.950154",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL MM cdt",

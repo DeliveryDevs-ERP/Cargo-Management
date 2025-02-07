@@ -1,5 +1,7 @@
 {
  "actions": [],
+ "allow_auto_repeat": 1,
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "format:{booking_order_id}-CS-{###}",
  "creation": "2024-11-18 15:41:02.099418",
@@ -95,7 +97,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-21 16:26:42.490551",
+ "modified": "2025-02-07 15:35:53.716463",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Perform Cross Stuff",

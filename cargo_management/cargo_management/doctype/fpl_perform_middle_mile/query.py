@@ -76,3 +76,38 @@ def get_containers_from_Loading(*args, **kwargs):
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Failed to execute SQL query in get_containers_from_Loading")
         frappe.throw(("Error fetching container data: {0}").format(str(e)))
+        
+        
+import frappe
+
+@frappe.whitelist()
+def fetch_wagons_from_undeparted_trains(departure_location, movement_type):
+    query = """
+        SELECT 
+            D.wagon_number,
+            D.container,
+            D.container_number,
+            D.weight,
+            D.size,
+            D.parent,
+            W.wagon_type
+        FROM 
+            `tabFPL MM cdt` D
+        LEFT JOIN 
+            `tabFPL Wagon cdt` W ON D.wagon_number = W.wagon_number AND W.parent = D.parent
+        LEFT JOIN 
+            `tabFPL Perform Middle Mile` PM ON PM.name = D.parent
+        WHERE 
+            D.parentfield = 'middle_mile_in_loading'
+            AND D.loaded_ = 1
+            AND D.departed_ = 0
+            AND PM.departure_location = %s
+            AND PM.movement_type = %s
+            AND D.wagon_number NOT IN (
+                SELECT DISTINCT wagon_number 
+                FROM `tabFPL MM cdt`
+                WHERE departed_ = 1
+            )
+    """
+    wagons = frappe.db.sql(query, (departure_location, movement_type), as_dict=True)
+    return wagons

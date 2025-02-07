@@ -7,7 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "wagon_number",
-  "wagon_type"
+  "wagon_type",
+  "loaded_"
  ],
  "fields": [
   {
@@ -22,12 +23,18 @@
    "in_list_view": 1,
    "label": "Wagon Type",
    "options": "FPL Wagons"
+  },
+  {
+   "default": "0",
+   "fieldname": "loaded_",
+   "fieldtype": "Check",
+   "label": "Loaded ?"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-11-01 19:33:10.754871",
+ "modified": "2025-02-07 14:38:21.678888",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Wagon cdt",
