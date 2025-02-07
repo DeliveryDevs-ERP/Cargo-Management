@@ -19,7 +19,7 @@ def create_invoice(**kwargs):
         
         #
         if data.get("container_number"):
-            invoice_doc.custom_container_no = data.get("container_number")
+            invoice_doc.remarks = frappe.get_value('FPL Containers', data.get("container_number"), 'container_number')
         if data.get("train_no"):
             invoice_doc.custom_train_number = data.get("train_no")
         if data.get("movement_type"):
