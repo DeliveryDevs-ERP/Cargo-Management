@@ -65,8 +65,8 @@ class FPLPerformMiddleMile(Document):
             self.update_gate_out_jobs() # do gate out job
             
         if self.finish_arrival==1:
-            # self.bulk_update_container_status()
-            # self.calculate_expenses()
+            self.bulk_update_container_status()
+            self.calculate_expenses()
             self.create_purchase_invoice()
 
 
