@@ -48,17 +48,17 @@
   {
    "fieldname": "tare_weight_kg",
    "fieldtype": "Int",
-   "label": "Tare Weight (kg)"
+   "label": "Tare Weight (Ton)"
   },
   {
    "fieldname": "max_cargo_weight_kg",
    "fieldtype": "Int",
-   "label": "Max Cargo Weight (kg)"
+   "label": "Max Cargo Weight (Ton)"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-21 15:51:09.351213",
+ "modified": "2025-02-08 16:40:05.870472",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Container Type",

@@ -26,7 +26,8 @@ def create_invoice(**kwargs):
             invoice_doc.custom_movement_type = data.get("movement_type")  
         if data.get("FO"):
             invoice_doc.freight_order = data.get("FO")  
-        
+        if data.get("BO"):
+            invoice_doc.booking_order = data.get("BO")
         
         # if invoice_doc.get("sales_partner"):
         #     if not frappe.db.exists("Sales Partner", invoice_doc.get("sales_partner")):
@@ -112,12 +113,12 @@ def create_invoice(**kwargs):
             res.total_commission = data.get("total_commission")
         # res.submit()
         gen_response(200, "Invoice Created Successfully", res)
-        return True
+        return invoice_doc.name
     except Exception as exec:
         frappe.db.rollback()
         frappe.log_error(title="Midway Error Log", message=frappe.get_traceback())
         gen_response(500, cstr(exec))
-        return False
+        return None
 
 
 

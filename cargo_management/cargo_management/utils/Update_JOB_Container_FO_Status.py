@@ -65,7 +65,8 @@ def updateJobStatus(job_id, freight_order_id, container_number):
     container = frappe.get_doc("FPL Containers", {"container_number": container_number, "freight_order_id": freight_order_id})
     
     if container:
-        container.status = "Filled" if next_job_id else "Empty"
+        if get_job_type_by_id(job_id) == "Last Mile":
+            container.status = "Empty" if next_job_id else "Filled" 
         container.state = "In transit" if next_job_id else "Delivered"
         container.active_job_id = next_job_id if next_job_id else None
         container.container_location = next_job_start_location if next_job_start_location else last_job_end_location

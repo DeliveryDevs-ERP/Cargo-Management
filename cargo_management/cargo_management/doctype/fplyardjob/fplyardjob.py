@@ -48,10 +48,12 @@ class FPLYardJob(Document):
 		for expense in self.expenses:
 			if expense.purchase_invoiced_created == 0:
 				item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
+				BO = frappe.get_value("FPL Freight Orders",self.freight_order_id,'sales_order_number')
 				if item:
 					code = create_invoice(
 					container_number=expense.container_number,
 					FO= self.freight_order_id,
+					BO = BO,
 					items=[{
 						"item_code": item,
 						"qty": 1,

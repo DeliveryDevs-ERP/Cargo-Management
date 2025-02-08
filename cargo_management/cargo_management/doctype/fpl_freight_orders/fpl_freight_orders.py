@@ -6,6 +6,10 @@ from frappe.utils import now
 class ContainerNumberFormatError(frappe.ValidationError):
 	pass
 
+class ContainerWeightError(frappe.ValidationError):
+	pass
+
+
 class FPLFreightOrders(Document):
     # begin: auto-generated types
     # This code is auto-generated. Do not modify anything in this block.
@@ -166,6 +170,12 @@ class FPLFreightOrders(Document):
 
 
     def create_or_update_container(self):
+        
+        max_weight = frappe.get_value("Container Type", self.container_type, "max_cargo_weight_kg")
+        if self.weight >= max_weight:
+            frappe.throw(_(f"Container Weight must be less than {max_weight}."),exc=ContainerWeightError,) 
+            return
+        
         existing_container = frappe.get_all('FPL Containers', filters={'container_number': self.container_number, "freight_order_id": self.name}, fields=['*'])
 
         if not existing_container: # will be called only once on creation

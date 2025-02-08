@@ -128,6 +128,7 @@ class PerformCrossStuff(Document):
                     code = create_invoice(
                         container_number=expense.container_number,
                         FO=frappe.get_value("FPL Containers", expense.container_number, 'freight_order_id'),
+                        BO = self.booking_order_id,
                         items=[{
                             "item_code": item,
                             "qty": 1,
@@ -181,7 +182,8 @@ class PerformCrossStuff(Document):
                 FO = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "name")
                 FO_rate_type = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "rate_type")
                 FO_rate = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "rate")
-                FO_weight = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "weight")
+                # FO_weight = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "weight")
+                FO_weight = row.weight
                 CFO.rate_type = FO_rate_type
                 next_idx = len(CFO.jobs) + 1 
                 

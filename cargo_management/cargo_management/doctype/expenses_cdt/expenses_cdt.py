@@ -23,6 +23,7 @@ class Expensescdt(Document):
 		parent: DF.Data
 		parentfield: DF.Data
 		parenttype: DF.Data
+		purchase_invoice_no: DF.Data | None
 		purchase_invoiced_created: DF.Check
 		remarks: DF.SmallText | None
 		sales_invoice_no: DF.Link | None

@@ -16,6 +16,20 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
         frm.get_field('middle_mile_in_loading').grid.cannot_add_rows = true; 
     },
 
+    cancel_loading(frm){
+        frm.clear_table("middle_mile_in_loading");
+        frm.set_value('finish_loading', 0);
+        frm.set_value('status', "Train Formed");
+        frm.refresh_field("middle_mile_in_loading");
+    },
+
+    depart_all(frm){
+                        frm.doc.middle_mile_in_loading.forEach(row => {
+                    row.departed_ = 1;
+                });
+                frm.refresh_field("middle_mile_in_loading");
+    },
+
     refresh: function(frm) {
         
         if (frm.doc.finish_train_formation == 0) {
@@ -101,14 +115,6 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
             });
         }
 
-        if (frm.doc.finish_loading == 1 && frm.doc.finish_departure == 0) {
-            frm.add_custom_button(__('Depart All'), function() {
-                frm.doc.middle_mile_in_loading.forEach(row => {
-                    row.departed_ = 1;
-                });
-                frm.refresh_field("middle_mile_in_loading");
-            });
-        }
 
         set_cost_type_filter(frm, 'Train Job');
 
@@ -365,3 +371,55 @@ function set_container_filter(frm) {
 //     });
 //     // frm.refresh_field('middle_mile_in_loading');
 // }
+
+
+frappe.ui.form.on('Expenses cdt', {
+    before_expenses_remove: function(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        console.log("Attempting to delete row:", row);
+
+        if (row.purchase_invoice_no) {
+            frappe.db.get_doc("Purchase Invoice", row.purchase_invoice_no)
+                .then(PI => {
+                    console.log("Fetched PI:", PI);
+                    if (PI.docstatus === 0) {
+                        frappe.db.delete_doc('Purchase Invoice', PI.name)
+                            .then(() => {
+                                // frappe.msgprint(__('Purchase Invoice deleted successfully.'));
+                                frm.save_or_update();
+                            })
+                            .catch(err => {
+                                console.error('Error deleting Purchase Invoice:', err);
+                                frappe.msgprint(__('Row with Purchase Invoice No cannot be deleted.'), __('Not Allowed'));
+                                throw new frappe.ValidationError();
+                            });
+                    } else if (PI.docstatus === 1) {
+                        frappe.call({
+                            method: 'frappe.client.cancel',
+                            args: { doctype: 'Purchase Invoice', name: PI.name }
+                        }).then(() => {
+                            frappe.db.delete_doc('Purchase Invoice', PI.name)
+                                .then(() => {
+                                    // frappe.msgprint(__('Purchase Invoice cancelled and deleted successfully.'));
+                                    frm.save_or_update();
+                                })
+                                .catch(err => {
+                                    frappe.msgprint(__('Row with Purchase Invoice No cannot be deleted.'), __('Not Allowed'));
+                                    console.error('Error deleting Purchase Invoice:', err);
+                                    throw new frappe.ValidationError();
+                                });
+                        }).catch(err => {
+                            console.error('Error cancelling Purchase Invoice:', err);
+                            throw new frappe.ValidationError();
+
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching Purchase Invoice:", err);
+                    throw new frappe.ValidationError();
+                });
+        }
+        frm.save_or_update();
+    }
+});

@@ -79,12 +79,14 @@ class FPLRoadJob(Document):
         for expense in self.expenses:
             if expense.purchase_invoiced_created == 0:
                 item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
+                BO = frappe.get_value("FPL Freight Orders",self.freight_order_id,'sales_order_number')
                 if item:
                     code = create_invoice(
                         container_number=expense.container_number,
                         # train_no=self.rail_number,
                         # movement_type=self.movement_type,
                         FO= self.freight_order_id,
+                        BO=BO,
                         # crm_bill_no=expense.name,
                         items=[{
                             "item_code": item,
@@ -94,8 +96,9 @@ class FPLRoadJob(Document):
                         supplier=expense.client,
                         company=default_company
                     )
-                    if code == True:
+                    if code:
                         expense.purchase_invoiced_created = 1
+                        expense.purchase_invoice_no = code
 
     def completeNextGateIn(self):
         freight_order = frappe.get_doc("FPL Freight Orders", self.freight_order_id)

@@ -395,12 +395,15 @@ class FPLPerformMiddleMile(Document):
         for expense in self.expenses:
             if expense.purchase_invoiced_created == 0:
                 item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
+                FO = frappe.get_value("FPL Containers", expense.container_number, 'freight_order_id')
+                BO = frappe.get_value("FPL Freight Orders",FO,'sales_order_number')
                 if item:
                     code = create_invoice(
                         container_number=expense.container_number,
                         train_no=self.rail_number,
                         movement_type=self.movement_type,
-                        FO=frappe.get_value("FPL Containers", expense.container_number, 'freight_order_id'),
+                        FO=FO,
+                        BO=BO,
                         crm_bill_no=expense.name,
                         items=[{
                             "item_code": item,

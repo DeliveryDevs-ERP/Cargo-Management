@@ -283,10 +283,10 @@ frappe.ui.form.on('FPL Servicess', {
 
 
 frappe.ui.form.on('Cargo Detail cdt', {
-    // qty: function(frm, cdt, cdn) {
-    //     calculate_amount(frm, cdt, cdn);
-    //     calculate_total(frm); // Recalculate total when qty changes
-    // },
+    avg_weight: function(frm, cdt, cdn) {
+        validate_weight(frm, cdt, cdn);
+        // calculate_total(frm); // Recalculate total when qty changes
+    },
     rate: function(frm, cdt, cdn) {
         calculate_amount(frm, cdt, cdn);
         calculate_total(frm); // Recalculate total when rate changes
@@ -327,3 +327,40 @@ function calculate_total(frm) {
     frm.set_value('total', total);
 }
 
+function validate_weight(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    // Check if size is defined before making a database call
+    if (child.size) {
+        // Fetch container types with the same size as the child row
+        frappe.db.get_list('Container Type', {
+            fields: ['name', 'size', 'max_cargo_weight_kg'],
+            filters: {
+                'size': child.size
+            }
+        }).then(containers => {
+            if (containers && containers.length > 0) {
+                // Assume the first matched container type is the relevant one
+                containers.sort((a, b) => b.max_cargo_weight_kg - a.max_cargo_weight_kg);
+
+                // Use the container with the highest max_cargo_weight_kg
+                let container = containers[0];
+                
+                if (child.avg_weight > container.max_cargo_weight_kg) {
+                    // If the weight is greater than the max cargo weight, warn the user
+                    frappe.msgprint(__('The weight entered exceeds the maximum limit for the selected container size.'));
+                    frappe.model.set_value(cdt, cdn, 'avg_weight', 0);
+                }
+            } else {
+                // If no container type matches the size
+                frappe.msgprint(__('No container found with the specified size.'));
+            }
+        }).catch(err => {
+            console.error('Error fetching container types:', err);
+            frappe.msgprint(__('Failed to validate weight.'));
+        });
+    } else {
+        // If size is not defined in the child row
+        frappe.msgprint(__('Please enter the size of the cargo first.'));
+    }
+}
