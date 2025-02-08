@@ -142,29 +142,6 @@ function set_container_name_filter(frm) {
     };
 }
 
-// frappe.ui.form.on('Expenses cdt', {
-//     before_expenses_remove: function(frm, cdt, cdn) {
-//         const row = locals[cdt][cdn];
-//         console.log("Attempting to delete row:", row);
-
-//         // Check if the purchase_invoice_no is present
-//         if (row.purchase_invoice_no) {
-//             PI = frappe.get_doc("chase Invoice", row.purchase_invoice_no);
-//             console.log("Fetched PI : ",PI);
-//             frappe.msgprint(__('Row with Purchase Invoice No cannot be deleted.'), __('Not Allowed'));
-            
-//             // // Option 1: Re-insert the deleted row if deletion needs to be prevented (requires refresh)
-//             // setTimeout(() => {
-//             //     const newRow = frm.add_child('expenses');
-//             //     Object.assign(newRow, row);
-//             //     frm.refresh_field('expenses');
-//             // }, 100);
-            
-//         }
-//     }
-// });
-
-
 frappe.ui.form.on('Expenses cdt', {
     before_expenses_remove: function(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
