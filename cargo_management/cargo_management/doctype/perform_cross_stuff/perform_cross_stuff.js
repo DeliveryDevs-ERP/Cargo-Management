@@ -264,7 +264,6 @@ function set_cost_type_filter(frm, job_mode) {
 }
 
 
-
 frappe.ui.form.on('Expenses cdt', {
     before_expenses_remove: function(frm, cdt, cdn) {
         const row = locals[cdt][cdn];
@@ -277,7 +276,6 @@ frappe.ui.form.on('Expenses cdt', {
                     if (PI.docstatus === 0) {
                         frappe.db.delete_doc('Purchase Invoice', PI.name)
                             .then(() => {
-                                // frappe.msgprint(__('Purchase Invoice deleted successfully.'));
                                 frm.save_or_update();
                             })
                             .catch(err => {
@@ -286,25 +284,9 @@ frappe.ui.form.on('Expenses cdt', {
                                 throw new frappe.ValidationError();
                             });
                     } else if (PI.docstatus === 1) {
-                        frappe.call({
-                            method: 'frappe.client.cancel',
-                            args: { doctype: 'Purchase Invoice', name: PI.name }
-                        }).then(() => {
-                            frappe.db.delete_doc('Purchase Invoice', PI.name)
-                                .then(() => {
-                                    // frappe.msgprint(__('Purchase Invoice cancelled and deleted successfully.'));
-                                    frm.save_or_update();
-                                })
-                                .catch(err => {
-                                    frappe.msgprint(__('Row with Purchase Invoice No cannot be deleted.'), __('Not Allowed'));
-                                    console.error('Error deleting Purchase Invoice:', err);
-                                    throw new frappe.ValidationError();
-                                });
-                        }).catch(err => {
-                            console.error('Error cancelling Purchase Invoice:', err);
-                            throw new frappe.ValidationError();
-
-                        });
+                        frappe.msgprint(__('Row with Purchase Invoice No cannot be deleted.'), __('Not Allowed'));
+                        console.error('Attempted to delete a submitted Purchase Invoice');
+                        throw new frappe.ValidationError();
                     }
                 })
                 .catch(err => {
@@ -312,6 +294,5 @@ frappe.ui.form.on('Expenses cdt', {
                     throw new frappe.ValidationError();
                 });
         }
-        frm.save_or_update();
     }
 });
