@@ -156,6 +156,7 @@ class FPLPerformMiddleMile(Document):
                         gate_in_job = frappe.get_doc({
                             'doctype': 'FPLYardJob',
                             'freight_order_id': freight_order_id,
+                            'name': "Gate In-" + str(int(frappe.get_last_doc('FPLYardJob').name.split('-')[-1]) + 1),
                             'job_type': gate_in_type_name,
                             'status': 'Assigned',
                             'sales_order_number': freight_order.sales_order_number,
@@ -179,6 +180,7 @@ class FPLPerformMiddleMile(Document):
                         # Prepare the "Gate Out" job document with status as "Draft"
                         gate_out_job = frappe.get_doc({
                             'doctype': 'FPLYardJob',
+                            'name': "Gate Out-" + str(int(frappe.get_last_doc('FPLYardJob').name.split('-')[-1]) + 1),
                             'freight_order_id': freight_order_id,
                             'job_type': gate_out_type_name,
                             'status': 'Assigned',
