@@ -73,6 +73,7 @@
    "fieldname": "container_number",
    "fieldtype": "Data",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Container Number",
    "read_only": 1
   },
@@ -103,7 +104,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-22 14:11:49.008696",
+ "modified": "2025-02-12 13:28:13.410235",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLRailJob",

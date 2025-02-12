@@ -48,6 +48,7 @@
    "fieldname": "container_number",
    "fieldtype": "Data",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Container Number"
   },
   {
@@ -88,7 +89,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-27 12:42:21.119245",
+ "modified": "2025-02-12 13:28:29.929051",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLCrossStuffJob",

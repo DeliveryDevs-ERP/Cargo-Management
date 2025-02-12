@@ -11,6 +11,11 @@ class SalesPersonNotFound(frappe.ValidationError):
 class SalesOrderNotCreated(frappe.ValidationError):
 	pass
 
+class JobLocationMissing(frappe.ValidationError):
+	pass
+
+
+
 class BookingOrder(Document):
     # begin: auto-generated types
     # This code is auto-generated. Do not modify anything in this block.
@@ -145,6 +150,12 @@ class BookingOrder(Document):
         ordered_services = self.get_ordered_services(applicable_services)
 
         for service in ordered_services:
+            
+            start_location = self.get_Job_LocationPickup(service.service_name)
+            if start_location is None:
+                frappe.throw(_("Start location for service {0} is missing.".format(service.service_name)), exc=JobLocationMissing)
+                return
+            
             if service.service_name == 'Middle Mile':
                 freight_order.append('jobs', {
                 'job_name': self.get_service_type_name('Gate In', self.transport_type), 

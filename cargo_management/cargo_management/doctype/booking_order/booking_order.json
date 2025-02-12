@@ -109,7 +109,7 @@
   {
    "fieldname": "bill_of_landing_number",
    "fieldtype": "Data",
-   "label": "Bill of Landing Number"
+   "label": "Bill of Lading Number"
   },
   {
    "fieldname": "shipping_line",
@@ -398,7 +398,7 @@
    "link_fieldname": "booking_order_id"
   }
  ],
- "modified": "2025-01-20 14:13:13.449184",
+ "modified": "2025-02-12 13:29:48.721857",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Booking Order",

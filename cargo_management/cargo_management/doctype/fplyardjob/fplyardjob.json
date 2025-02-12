@@ -95,6 +95,7 @@
    "fieldname": "container_number",
    "fieldtype": "Data",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Container Number",
    "read_only": 1
   },
@@ -132,7 +133,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-22 14:10:24.719129",
+ "modified": "2025-02-12 13:28:48.819398",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLYardJob",
