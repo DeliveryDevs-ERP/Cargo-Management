@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{job_name}-{###}",
+ "autoname": "format:{job_name}-{#####}",
  "creation": "2024-10-29 13:18:19.690206",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -133,7 +133,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-12 13:28:48.819398",
+ "modified": "2025-02-12 17:05:16.798751",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLYardJob",
