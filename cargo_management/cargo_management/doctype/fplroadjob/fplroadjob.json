@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{job_name}-{###}",
+ "autoname": "format:{job_name}-{#####}",
  "creation": "2024-10-29 13:02:36.497523",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -183,7 +183,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-12 13:27:46.894325",
+ "modified": "2025-02-13 12:58:59.041437",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLRoadJob",
