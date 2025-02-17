@@ -30,7 +30,6 @@ def get_columns(data, expense_types):
     for uc in unique_columns:
         columns.append({"label": _(uc), "fieldname": uc.replace(" ", "_").lower(), "fieldtype": "Currency", "width": 120})
 
-    
     columns.extend([
         {"label": _("Cost"), "fieldname": "total_cost", "fieldtype": "Currency", "width": 150},
         {"label": _("Selling"), "fieldname": "selling_cost", "fieldtype": "Currency", "width": 150},
@@ -39,9 +38,7 @@ def get_columns(data, expense_types):
     return columns
 
 def get_data(filters, expense_types):
-    
-    # total_cost_field = ", SUM(e.amount) as total_row_cost"
-    
+      
     selling_cost_calculation = """
     ,   CASE
             WHEN F.rate_type = 'Per Bag' THEN F.rate * F.bag_qty
@@ -89,12 +86,10 @@ def get_data(filters, expense_types):
 
 
 def process_data(data):
-    # Initialize a dictionary to hold processed data
     processed_data = {}
     for row in data:
         container_key = row['CName']
         if container_key not in processed_data:
-            # Initialize the container entry with the basic info and zero total cost
             processed_data[container_key] = {
                 'CName': row['CName'],
                 'container_number': row['container_number'],
