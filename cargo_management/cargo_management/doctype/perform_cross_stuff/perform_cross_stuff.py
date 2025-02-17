@@ -214,6 +214,7 @@ class PerformCrossStuff(Document):
                 CFO.weight = cum_weight
                 if FO_rate_type == "Per Container":
                     CFO.rate = cum_weight * Per_weight_rate
+                    CFO.rate_type = "Per Weight(Ton)"
                 else:
                     CFO.rate = FO_rate
                     

@@ -45,6 +45,7 @@ def get_data(filters, expense_types):
     selling_cost_calculation = """
     ,   CASE
             WHEN F.rate_type = 'Per Bag' THEN F.rate * F.bag_qty
+            WHEN F.rate_type = 'Per Container' THEN F.rate 
             ELSE F.rate * F.weight
         END as selling_cost
     """
