@@ -25,7 +25,8 @@
    "fieldtype": "Link",
    "label": "Booking Order ID",
    "link_filters": "[[\"Booking Order\",\"docstatus\",\"=\",\"1\"]]",
-   "options": "Booking Order"
+   "options": "Booking Order",
+   "search_index": 1
   },
   {
    "fieldname": "cargo_type",
@@ -36,9 +37,10 @@
   {
    "fieldname": "yard_location",
    "fieldtype": "Link",
-   "label": "Yard Location ",
-   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
-   "options": "Location"
+   "in_list_view": 1,
+   "label": "CrossStuff Location ",
+   "options": "Location",
+   "reqd": 1
   },
   {
    "fieldname": "table_ktch",
@@ -67,7 +69,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-21 14:05:22.297960",
+ "modified": "2025-02-17 13:44:57.762139",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Container or Vehicle Request",

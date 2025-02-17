@@ -15,7 +15,7 @@ def get_unique_service_types(*args, **kwargs):
 def get_FO_containers(doctype, txt, searchfield, start, page_len, filters):
     """
     Fetch containers associated with FPL Freight Orders for the given booking_order_id
-    where container status is 'Filled' and name starts with 'FPL-FP%'.
+    where container status is 'Filled' and name starts with 'FO-%%'.
     """
     booking_order_id = filters.get('booking_order_id')
     
@@ -43,7 +43,7 @@ def get_FO_containers(doctype, txt, searchfield, start, page_len, filters):
 def get_CFO_containers(doctype, txt, searchfield, start, page_len, filters):
     """
     Fetch containers associated with FPL Freight Orders for the given booking_order_id
-    where container status is 'Filled' and name starts with 'FPL-CFO%'.
+    where container status is 'Empty' and name starts with 'CFO-%%'.
     """
     booking_order_id = filters.get('booking_order_id')
     

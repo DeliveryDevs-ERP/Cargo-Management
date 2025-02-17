@@ -260,16 +260,37 @@ class PerformCrossStuff(Document):
                 CFO.save()
 
 
+    # def assign_performance_in_request(self):
+    #     requests = frappe.get_all("Container or Vehicle Request",
+    #                             filters={
+    #                                 "booking_order_id": self.booking_order_id,
+    #                                 "cross_stuff_performance": ["is", "not set"],
+    #                                 "docstatus": 1
+    #                             },
+    #                             fields=["name"])
+
+    #     for request in requests:
+    #         frappe.db.set_value("Container or Vehicle Request", request["name"], "cross_stuff_performance", self.name)
+            
+    #     frappe.db.commit()
+    
+    
     def assign_performance_in_request(self):
+        ref_container_count = sum(1 for x in self.grounded_filled_containers if x.reference_container == row.reference_container)
         requests = frappe.get_all("Container or Vehicle Request",
                                 filters={
                                     "booking_order_id": self.booking_order_id,
                                     "cross_stuff_performance": ["is", "not set"],
                                     "docstatus": 1
                                 },
-                                fields=["name"])
+                                fields=["name", "table_ktch"])
 
         for request in requests:
-            frappe.db.set_value("Container or Vehicle Request", request["name"], "cross_stuff_performance", self.name)
-            
-        frappe.db.commit()
+            count_req = 0
+            request_doc = frappe.get_doc("Container or Vehicle Request", request["name"])
+            for row in request_doc.table_ktch:
+                count_req += row.qty
+
+            if ref_container_count == count_req:
+                frappe.db.set_value("Container or Vehicle Request", request["name"], "cross_stuff_performance", self.name)
+                frappe.db.commit()

@@ -24,7 +24,7 @@ class ContainerorVehicleRequest(Document):
         cross_stuff_performance: DF.Link | None
         request_date: DF.Datetime | None
         table_ktch: DF.Table[ContainerorVehicleRequestcdt]
-        yard_location: DF.Link | None
+        yard_location: DF.Link
     # end: auto-generated types
 
     def on_submit(self):
