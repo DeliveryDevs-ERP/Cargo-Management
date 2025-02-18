@@ -88,6 +88,7 @@ def get_data(filters, expense_types):
     return frappe.db.sql(data_query, {'from_date': filters.get("from_date"), 'to_date': filters.get("to_date")}, as_dict=True)
 
 
+
 def process_data(data):
     processed_data = {}
     for row in data:

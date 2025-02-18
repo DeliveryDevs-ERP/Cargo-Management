@@ -1,7 +1,7 @@
 // Copyright (c) 2025, Osama and contributors
 // For license information, please see license.txt
 
-frappe.query_reports["Rail PNL"] = {
+frappe.query_reports["RAIL PNL NEW"] = {
 	"filters": [
 		{
             "fieldname": "from_date",
