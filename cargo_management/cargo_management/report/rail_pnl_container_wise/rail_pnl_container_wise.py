@@ -43,7 +43,7 @@ def get_data(filters, expense_types):
     ,   CASE
             WHEN F.rate_type = 'Per Bag' THEN F.rate * F.bag_qty
             WHEN F.rate_type = 'Per Container' THEN F.rate 
-            ELSE F.rate * F.weight
+            ELSE F.rate_type = 'Per Weight(Ton)' THEN F.rate * F.weight
         END as selling_cost
     """
     
