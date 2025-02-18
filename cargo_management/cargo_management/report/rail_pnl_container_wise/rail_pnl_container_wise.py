@@ -17,7 +17,8 @@ def get_columns(data, expense_types):
         {"label": _("Container Name"), "fieldname": "CName", "fieldtype": "Data", "width": 150, "hidden": True},
         {"label": _("Container Number"), "fieldname": "container_number", "fieldtype": "Data", "width": 150},
         {"label": _("Size"), "fieldname": "size", "fieldtype": "Data", "width": 60},
-        {"label": _("Wagon"), "fieldname": "loco_number", "fieldtype": "Data", "width": 100},
+        {"label": _("Loco"), "fieldname": "loco_number", "fieldtype": "Data", "width": 100},
+        {"label": _("Wagon"), "fieldname": "wagon_number", "fieldtype": "Data", "width": 100},
         {"label": _("Category"), "fieldname": "sales_order_type", "fieldtype": "Data", "width": 100},
         {"label": _("Shipper"), "fieldname": "bill_to", "fieldtype": "Data", "width": 100},
         {"label": _("Booking #"), "fieldname": "BOName", "fieldtype": "Data", "width": 100},
@@ -49,7 +50,7 @@ def get_data(filters, expense_types):
     
     data_query = f"""
         SELECT 
-           c.name as CName, c.container_number, F.size, pm.loco_number, BO.name as BOName, BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
+           c.name as CName, AR.wagon_number, c.container_number, F.size, pm.loco_number, BO.name as BOName, BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
             CASE
                 WHEN e.parenttype = 'FPLRoadJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
                 WHEN e.parenttype = 'FPLYardJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
@@ -67,6 +68,8 @@ def get_data(filters, expense_types):
             `tabBooking Order` BO on BO.name = F.sales_order_number
         LEFT JOIN
             `tabFPL Perform Middle Mile` pm on pm.name = e.parent
+        JOIN
+            `tabNew MM cdt` AR on AR.parent = pm.name and AR.container = c.name
         WHERE
             e.container_number IN (SELECT DISTINCT c.container_number 
             FROM `tabFPL Perform Middle Mile` pm 
@@ -93,6 +96,7 @@ def process_data(data):
             processed_data[container_key] = {
                 'CName': row['CName'],
                 'container_number': row['container_number'],
+                'wagon_number' : row['wagon_number'],
                 'size': row['size'],
                 'loco_number': row['loco_number'],
                 'sales_order_type': row['sales_order_type'],
