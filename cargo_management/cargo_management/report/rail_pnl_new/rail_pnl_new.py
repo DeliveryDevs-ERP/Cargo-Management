@@ -45,6 +45,7 @@ def get_data(filters, expense_types):
             WHEN F.rate_type = 'Per Bag' THEN F.rate * F.bag_qty
             WHEN F.rate_type = 'Per Container' THEN F.rate 
             WHEN F.rate_type = 'Per Weight(Ton)' THEN F.rate * F.weight
+            ELSE 0
         END as selling_cost
     """
     
@@ -105,8 +106,8 @@ def process_data(data):
                 'BOName': row['BOName'],
                 'movement_type': row['movement_type'],
                 'rail_number': row['rail_number'],
-                'total_cost': 0,  # Initialize as 0 to start aggregation
-                'selling_cost': row.get('selling_cost', 0)  # Safe access with default if key might not exist
+                'total_cost': 0,  
+                'selling_cost': row['selling_cost'] 
             }
         else:
             if processed_data[container_key]['loco_number'] is None and row.get('loco_number') is not None:
