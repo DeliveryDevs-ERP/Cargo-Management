@@ -69,7 +69,7 @@ def get_data(filters, expense_types):
             `tabBooking Order` BO on BO.name = F.sales_order_number
         LEFT JOIN
             `tabFPL Perform Middle Mile` pm on pm.name = e.parent
-        JOIN
+        LEFT JOIN
             `tabNew MM cdt` AR on AR.parent = pm.name and AR.container = c.name
         WHERE
             e.container_number IN (SELECT DISTINCT c.container_number 
