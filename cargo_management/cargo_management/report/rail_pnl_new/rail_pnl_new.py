@@ -22,6 +22,7 @@ def get_columns(data, expense_types):
         {"label": _("Category"), "fieldname": "sales_order_type", "fieldtype": "Data", "width": 100},
         {"label": _("Shipper"), "fieldname": "bill_to", "fieldtype": "Data", "width": 100},
         {"label": _("Booking #"), "fieldname": "BOName", "fieldtype": "Data", "width": 100},
+        {"label": _("Cargo Owner"), "fieldname": "cargo_owner", "fieldtype": "Data", "width": 100},
         {"label": _("Movement Type"), "fieldname": "movement_type", "fieldtype": "Data", "width": 100},
         {"label": _("Rail"), "fieldname": "rail_number", "fieldtype": "Data", "width": 100},
     ]
@@ -51,7 +52,7 @@ def get_data(filters, expense_types):
     
     data_query = f"""
         SELECT 
-           c.name as CName, AR.wagon_number, c.container_number, F.size, pm.loco_number, BO.name as BOName, BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
+           c.name as CName, AR.wagon_number, c.container_number, F.size, pm.loco_number, BO.name as BOName, BO.cargo_owner , BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
             CASE
                 WHEN e.parenttype = 'FPLRoadJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
                 WHEN e.parenttype = 'FPLYardJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
@@ -107,6 +108,7 @@ def process_data(data):
                 'movement_type': row['movement_type'],
                 'rail_number': row['rail_number'],
                 'total_cost': 0,  
+                'cargo_owner': row['cargo_owner'],
                 'selling_cost': row['selling_cost'] 
             }
         else:
