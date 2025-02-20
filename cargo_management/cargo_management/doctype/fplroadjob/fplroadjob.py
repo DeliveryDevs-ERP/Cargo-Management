@@ -257,6 +257,8 @@ def sync_with_linked_job(docname):
                 del new_expense["container_number"]
                 del new_expense["name"]
                 del new_expense["parent"]
+                del new_expense["purchase_invoiced_created"]
+                del new_expense["purchase_invoice_no"]
                 # frappe.errprint(f" Fetched expenses from self after del , {new_expense}")
                 linked_job.append("expenses", new_expense)
 
