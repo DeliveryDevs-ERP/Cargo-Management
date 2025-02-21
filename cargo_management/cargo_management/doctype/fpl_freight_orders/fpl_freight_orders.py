@@ -205,7 +205,7 @@ class FPLFreightOrders(Document):
             return None  
 
     def fetchNextLocationfromFOJobGrid(self):
-        if self.jobs and self.jobs[1].start_location:
+        if self.jobs and len(self.jobs) > 1 and self.jobs[1].start_location:
             return self.jobs[1].start_location
         else:
             frappe.msgprint("No start location found in the second job entry.")

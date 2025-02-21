@@ -28,7 +28,16 @@ def create_invoice(**kwargs):
             invoice_doc.freight_order = data.get("FO")  
         if data.get("BO"):
             invoice_doc.booking_order = data.get("BO")
-        
+        if data.get("Road"):
+            invoice_doc.fplroadjob = data.get("Road")
+        if data.get("yard"):
+            invoice_doc.fplyardjob = data.get("yard")
+        if data.get("CS"):
+            invoice_doc.perform_cross_stuff = data.get("CS")
+        if data.get("PM"):
+            invoice_doc.fpl_perform_middle_mile = data.get("PM")
+            
+            
         # if invoice_doc.get("sales_partner"):
         #     if not frappe.db.exists("Sales Partner", invoice_doc.get("sales_partner")):
         #         sales_partner = frappe.get_all(

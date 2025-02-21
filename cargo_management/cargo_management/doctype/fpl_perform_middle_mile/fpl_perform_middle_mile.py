@@ -371,7 +371,10 @@ class FPLPerformMiddleMile(Document):
                 {condition}
             """, params, as_dict=1)
             Fixed_exp = frappe.get_all('FPL Cost Type', 
-                                    filters={'job_mode': 'Train Job', 'fixed_': 1, 'cost': ['>', 0], 'movement_type': self.movement_type},
+                                    filters={'job_mode': 'Train Job', 'fixed_': 1, 'cost': ['>', 0], 'movement_type': self.movement_type, 'location': self.departure_location},
+                                    fields=['name', 'cost'])
+            Fixed_exp2 = frappe.get_all('FPL Cost Type', 
+                                    filters={'job_mode': 'Train Job', 'fixed_': 1, 'cost': ['>', 0], 'movement_type': self.movement_type, 'location': self.arrival_location},
                                     fields=['name', 'cost'])
             for cost in rail_freight_costs:
                 for container in containers:
@@ -385,6 +388,12 @@ class FPLPerformMiddleMile(Document):
                         'amount': cost['rate_20'] if size == 20 else cost['rate_40']
                     })
                     for expense in Fixed_exp:
+                        self.append('expenses', {
+                            'expense_type': expense['name'],
+                            'container_number': container.container,
+                            'amount': expense['cost']
+                        })
+                    for expense in Fixed_exp2:
                         self.append('expenses', {
                             'expense_type': expense['name'],
                             'container_number': container.container,
@@ -404,6 +413,7 @@ class FPLPerformMiddleMile(Document):
                         container_number=expense.container_number,
                         train_no=self.rail_number,
                         movement_type=self.movement_type,
+                        PM = self.name,
                         FO=FO,
                         BO=BO,
                         crm_bill_no=expense.name,

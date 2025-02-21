@@ -203,6 +203,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Departure Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "mandatory_depends_on": "eval: doc.finish_train_formation === 0",
    "options": "Location",
    "read_only_depends_on": "eval: doc.finish_train_formation === 1;"
@@ -271,6 +272,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Arrival Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "mandatory_depends_on": "eval: doc.finish_train_formation === 0",
    "options": "Location",
    "read_only_depends_on": "eval: doc.finish_train_formation === 1;"
@@ -309,7 +311,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-08 15:16:15.973229",
+ "modified": "2025-02-21 14:34:25.045246",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",

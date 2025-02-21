@@ -85,6 +85,7 @@ class FPLRoadJob(Document):
                         container_number=expense.container_number,
                         # train_no=self.rail_number,
                         # movement_type=self.movement_type,
+                        Road = self.name,
                         FO= self.freight_order_id,
                         BO=BO,
                         # crm_bill_no=expense.name,
@@ -250,7 +251,7 @@ def sync_with_linked_job(docname):
         # Sync expenses separately without altering container_number
         if self.expenses:
             # Clear existing expenses and add new ones
-            linked_job.expenses = []
+            existing_expenses = {(expense.client, expense.expense_type, expense.amount) for expense in linked_job.expenses}
             for expense in self.expenses:
                 new_expense = frappe.get_doc("Expenses cdt", expense.name).as_dict()
                 # frappe.errprint(f" Fetched expenses from self , {new_expense}")
@@ -260,8 +261,10 @@ def sync_with_linked_job(docname):
                 del new_expense["purchase_invoiced_created"]
                 del new_expense["purchase_invoice_no"]
                 # frappe.errprint(f" Fetched expenses from self after del , {new_expense}")
-                linked_job.append("expenses", new_expense)
-
+                expense_key = (new_expense.get("client"), new_expense.get("expense_type"), new_expense.get("amount"))
+                if expense_key not in existing_expenses:
+                    linked_job.append("expenses", new_expense)
+                    existing_expenses.add(expense_key)
         # Set a temporary flag in the linked job to prevent further recursion
         linked_job._is_syncing = True
         linked_job.save(ignore_permissions=True)

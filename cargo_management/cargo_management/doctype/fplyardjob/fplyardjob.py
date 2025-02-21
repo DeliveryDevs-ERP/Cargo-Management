@@ -53,6 +53,7 @@ class FPLYardJob(Document):
 					code = create_invoice(
 					container_number=expense.container_number,
 					FO= self.freight_order_id,
+					yard = self.name,
 					BO = BO,
 					items=[{
 						"item_code": item,

@@ -74,6 +74,7 @@
    "reqd": 1
   },
   {
+   "depends_on": "eval: doc.sales_order_type;",
    "description": "Choose BO-Type before selecting Transport Type",
    "fieldname": "transport_type",
    "fieldtype": "Link",
@@ -158,6 +159,7 @@
    "fieldname": "dropoff_location",
    "fieldtype": "Link",
    "label": "Destination Point",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location",
    "read_only": 1
   },
@@ -169,6 +171,7 @@
    "fieldname": "pickup_location",
    "fieldtype": "Link",
    "label": "Pickup Point",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location",
    "read_only": 1
   },
@@ -201,14 +204,14 @@
    "fieldname": "mm_loading_station",
    "fieldtype": "Link",
    "label": "MM Loading Location",
-   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"],[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
    "fieldname": "mm_offloading_station",
    "fieldtype": "Link",
    "label": "MM Offloading Location",
-   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"]]",
+   "link_filters": "[[\"Location\",\"custom_location_type\",\"=\",\"Yard\"],[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
@@ -219,24 +222,28 @@
    "fieldname": "fm_pickup_location",
    "fieldtype": "Link",
    "label": "FM Pickup Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
    "fieldname": "fm_dropoff_location",
    "fieldtype": "Link",
    "label": "FM Dropoff Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
    "fieldname": "lm_pickup_location",
    "fieldtype": "Link",
    "label": "LM Pickup Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
    "fieldname": "lm_dropoff_location",
    "fieldtype": "Link",
    "label": "LM Dropoff Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
@@ -252,6 +259,7 @@
    "fieldname": "empty_pickup_location",
    "fieldtype": "Link",
    "label": "Empty Pickup Pickup Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
@@ -259,6 +267,7 @@
    "fieldname": "empty_pickup_dropoff_location",
    "fieldtype": "Link",
    "label": "Empty Pickup Dropoff Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
@@ -270,6 +279,7 @@
    "fieldname": "empty_return_dropoff_location",
    "fieldtype": "Link",
    "label": "Empty Return Dropoff Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
@@ -283,6 +293,7 @@
    "fieldname": "empty_return_pickup_location",
    "fieldtype": "Link",
    "label": "Empty Return Pickup Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
@@ -322,12 +333,14 @@
    "fieldname": "long_haul_pickup_location",
    "fieldtype": "Link",
    "label": "Long Haul Pickup Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
    "fieldname": "long_haul_dropoff_location",
    "fieldtype": "Link",
    "label": "Long Haul Dropoff Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
@@ -338,12 +351,14 @@
    "fieldname": "short_haul_pickup_location",
    "fieldtype": "Link",
    "label": "Short Haul Pickup Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
    "fieldname": "short_haul_dropoff_location",
    "fieldtype": "Link",
    "label": "Short Haul Dropoff Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location"
   },
   {
@@ -398,7 +413,7 @@
    "link_fieldname": "booking_order_id"
   }
  ],
- "modified": "2025-02-12 13:29:48.721857",
+ "modified": "2025-02-21 14:31:48.102227",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Booking Order",

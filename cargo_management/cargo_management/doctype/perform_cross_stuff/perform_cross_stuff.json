@@ -36,6 +36,7 @@
    "fieldname": "grounded_yard_location",
    "fieldtype": "Link",
    "label": "Grounded Yard Location",
+   "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
    "options": "Location",
    "read_only": 1
   },
@@ -97,7 +98,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-02-07 15:35:53.716463",
+ "modified": "2025-02-21 14:36:17.971156",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Perform Cross Stuff",

@@ -129,6 +129,7 @@ class PerformCrossStuff(Document):
                         container_number=expense.container_number,
                         FO=frappe.get_value("FPL Containers", expense.container_number, 'freight_order_id'),
                         BO = self.booking_order_id,
+                        CS = self.name,
                         items=[{
                             "item_code": item,
                             "qty": 1,
