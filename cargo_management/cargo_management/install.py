@@ -4,6 +4,9 @@ import frappe
 from frappe import _
 
 
+def before_install():
+    frappe.msgprint("Before Install: Setting up Cargo Management.")
+
 
 def after_install():
     initialize_trasnport_mode()
