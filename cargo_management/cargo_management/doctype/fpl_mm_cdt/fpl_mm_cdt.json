@@ -76,6 +76,7 @@
    "default": "0",
    "fieldname": "departed_",
    "fieldtype": "Check",
+   "in_list_view": 1,
    "label": "Departed ?"
   },
   {
@@ -88,7 +89,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-02-08 15:27:42.670827",
+ "modified": "2025-02-25 12:56:42.798601",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL MM cdt",
