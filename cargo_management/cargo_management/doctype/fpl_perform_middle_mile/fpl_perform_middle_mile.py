@@ -323,7 +323,7 @@ class FPLPerformMiddleMile(Document):
         wagon_groups = {}
         # Step 1: Group containers by wagon number
         for entry in self.middle_mile_copy:  # Arrival Grid
-            if entry.wagon_number not in wagon_groups:
+            if entry.received_ == 1 and entry.wagon_number not in wagon_groups:
                 wagon_groups[entry.wagon_number] = []
             wagon_groups[entry.wagon_number].append(entry)
 
@@ -332,7 +332,6 @@ class FPLPerformMiddleMile(Document):
 
         # Step 3: Fetch container details and calculate expenses
         for wagon_number, containers in wagon_groups.items():
-            #frappe.errprint(f"This is my wagon groups: {wagon_groups}")
             wagon_type = wagon_types.get(wagon_number)
             if not wagon_type:
                 frappe.throw(_("Wagon type for wagon number {0} not found.").format(wagon_number))

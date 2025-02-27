@@ -71,7 +71,7 @@ def get_data(filters, expense_types):
         LEFT JOIN
             `tabFPL Perform Middle Mile` pm on pm.name = e.parent
         LEFT JOIN
-            `tabNew MM cdt` AR on AR.parent = pm.name and AR.container = c.name
+            `tabNew MM cdt` AR on AR.container = c.name
         WHERE
             e.container_number IN (SELECT DISTINCT c.container_number 
             FROM `tabFPL Perform Middle Mile` pm 
