@@ -12,16 +12,29 @@ def execute(filters=None):
 def get_job_types(filters):
     # Fetching all expense types from the `FPL Cost Type` DocType
     job_types = []
-    booking_type = filters.get("booking_type")
+    # booking_type = filters.get("booking_type")
     transport_mode = filters.get("transport_mode")
-    Jobs = frappe.get_all('FPL Jobs Sequence', filters= {"transport_mode":transport_mode, "sales_order_type": booking_type }, fields=['*'])
+    Jobs = frappe.get_all('FPL Jobs Sequence', filters= {"transport_mode":transport_mode, "sales_order_type": "Domestic" }, fields=['*'])
     for job in Jobs:
         service_types = frappe.get_doc('Service Type', job.service_name)
         job_types.append(service_types.name1)
+    # frappe.errprint(f"job_types {job_types}")
     return job_types
- 
+
  
 def get_columns(data, job_types):
+    """
+    Transit duration : sum of all jobs durations,
+    detention days: booking free date - empty return end (only if data present in collumn)
+    Customer BO
+    Cargo Owner BO
+    Booking Date BO
+    Delivery Date BO
+    FO status
+    FO name
+    Booking Type BO
+    Delivery Delay : if FO status is completed and result -ve (Delivery date - Last Job perform date) in days else 0
+    """
     columns = [
         # {"label": _("Container Name"), "fieldname": "CName", "fieldtype": "Data", "width": 150, "hidden": True},
         {"label": _("Container Number"), "fieldname": "CName", "fieldtype": "Data", "width": 150},
@@ -133,11 +146,10 @@ def get_data(filters, expense_types):
             `tabFPL Perform Middle Mile` pm on RL.train_number = pm.name
         WHERE
             BO.sales_order_date BETWEEN %(from_date)s AND %(to_date)s and
-            BO.sales_order_type = %(booking_type)s and
             BO.transport_type = %(transport_mode)s and
             FO.status != "Draft"
     """
-    return frappe.db.sql(data_query, {'from_date': filters.get("from_date"), 'to_date': filters.get("to_date"), 'booking_type': filters.get("booking_type"), 'transport_mode': filters.get("transport_mode")}, as_dict=True)
+    return frappe.db.sql(data_query, {'from_date': filters.get("from_date"), 'to_date': filters.get("to_date"), 'transport_mode': filters.get("transport_mode")}, as_dict=True)
 
 
 
@@ -191,12 +203,16 @@ def process_data(data, job_types):
                 'CName': row['CName'],
                 'BOName': row['BOName'],
                 'middle_mile_start' : row['middle_mile_start'],
-                'middle_mile_end' : row['middle_mile_end'],
-                'Job_name' : row['Job_name']
-            }
-        else:   
+                'middle_mile_end' : row['middle_mile_end']
+            }            
+            if row['middle_mile_start'] and row['middle_mile_end']:
+                duration2 = row['middle_mile_end'] - row['middle_mile_start']
+                processed_data[container_key]["middle_mile_duration"] = duration2.total_seconds() / 3600
+            else:
+                processed_data[container_key]["middle_mile_duration"] = 0
+            
             for job in job_types:
-                if processed_data[container_key]['Job_name'] == job:
+                if row['Job_name'] == job:
                     index = row['Job_name'].lower().replace(" ", "_")
                     
                     processed_data[container_key][f"{index}_start"] = row['pickup_arrival']
@@ -207,13 +223,20 @@ def process_data(data, job_types):
                         processed_data[container_key][f"{index}_duration"] = duration.total_seconds() / 3600
                     else:
                         processed_data[container_key][f"{index}_duration"] = 0
+        
+        else:   
+            for job in job_types:
+                if row['Job_name'] == job:
+                    index = row['Job_name'].lower().replace(" ", "_")
                     
-                    
-                    if row['middle_mile_start'] and row['middle_mile_end']:
-                        duration2 = row['middle_mile_end'] - row['middle_mile_start']
-                        processed_data[container_key]["middle_mile_duration"] = duration2.total_seconds() / 3600
+                    processed_data[container_key][f"{index}_start"] = row['pickup_arrival']
+                    processed_data[container_key][f"{index}_end"] = row['dropoff_completed']
+
+                    if row['dropoff_completed'] and row['pickup_arrival']:
+                        duration = row['dropoff_completed'] - row['pickup_arrival']
+                        processed_data[container_key][f"{index}_duration"] = duration.total_seconds() / 3600
                     else:
-                        processed_data[container_key]["middle_mile_duration"] = 0
+                        processed_data[container_key][f"{index}_duration"] = 0
                             
     
     return list(processed_data.values())

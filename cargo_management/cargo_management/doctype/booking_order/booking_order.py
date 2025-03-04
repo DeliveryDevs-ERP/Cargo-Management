@@ -199,11 +199,18 @@ class BookingOrder(Document):
 
     def create_and_draft_CFO_request(self):
         MiscServices = self.get('miscellaneous_services')
+        if self.location_of_cross_stuff == "oagb0ddmuo":
+            location = self.mm_loading_station
+        elif self.location_of_cross_stuff == "vg2osur4ei":
+            location = self.fm_pickup_location
+        elif self.location_of_cross_stuff == "oalds7gjs7":
+            location = self.lm_pickup_location
         for service in MiscServices:
             if service.applicable == 1:
                 Request = frappe.get_doc({
                     'doctype': 'Container or Vehicle Request',
-                    'booking_order_id': self.name
+                    'booking_order_id': self.name,
+                    'yard_location' : location                    
                 })
                 Request.insert()
         

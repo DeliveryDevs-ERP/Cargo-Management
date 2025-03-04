@@ -18,13 +18,6 @@ frappe.query_reports["Delivery report"] = {
             "reqd": 0 
         },
 		{
-            "fieldname": "booking_type",
-            "label": __("Booking Type"),
-            "fieldtype": "Select", 
-			"options": ["", "Import", "Export", "Domestic"],
-            "reqd": 1 
-        },
-		{
             "fieldname": "transport_mode",
             "label": __("Transport Mode"),
             "fieldtype": "Link", 
