@@ -210,7 +210,8 @@ class BookingOrder(Document):
                 Request = frappe.get_doc({
                     'doctype': 'Container or Vehicle Request',
                     'booking_order_id': self.name,
-                    'yard_location' : location                    
+                    'yard_location' : location,
+                    'request_date' : self.sales_order_date         
                 })
                 Request.insert()
         
