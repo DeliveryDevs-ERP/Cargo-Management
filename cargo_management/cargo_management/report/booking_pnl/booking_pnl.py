@@ -6,6 +6,7 @@ def execute(filters=None):
     data = get_data(filters, expense_types)
     columns = get_columns(data, expense_types)
     data = process_data(data)
+    data = calculate_bo_summary(data)
     return columns, data
 
 def get_expense_types():
@@ -52,7 +53,7 @@ def get_data(filters, expense_types):
     
     data_query = f"""
         SELECT 
-           c.name as CName, AR.wagon_number, c.container_number, F.size, pm.loco_number, BO.name as BOName, BO.cargo_owner , BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
+           c.name as CName, AR.wagon_number, c.container_number, F.name as FOname, F.size, pm.loco_number, BO.name as BOName, BO.cargo_owner , BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
             CASE
                 WHEN e.parenttype = 'FPLRoadJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
                 WHEN e.parenttype = 'FPLYardJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
@@ -73,23 +74,12 @@ def get_data(filters, expense_types):
         LEFT JOIN
             `tabNew MM cdt` AR on AR.container = c.name
         WHERE
-            e.container_number IN (SELECT DISTINCT c.container_number 
-            FROM `tabFPL Perform Middle Mile` pm 
-            JOIN `tabExpenses cdt` c ON pm.name = c.parent
-            WHERE pm.departure_time BETWEEN %(from_date)s AND %(to_date)s
-
-            UNION ALL
-
-            SELECT DISTINCT cdt.container_number 
-            FROM `tabGrounded Filled Cdt` cdt
-            where cdt.reference_container in (SELECT DISTINCT c.container_number 
-            FROM `tabFPL Perform Middle Mile` pm 
-            JOIN `tabExpenses cdt` c ON pm.name = c.parent
-            WHERE pm.departure_time BETWEEN %(from_date)s AND %(to_date)s))
+            BO.sales_order_date BETWEEN %(from_date)s AND %(to_date)s
+            AND BO.transport_type = %(transport_mode)s 
         ORDER BY
             BO.name
     """
-    return frappe.db.sql(data_query, {'from_date': filters.get("from_date"), 'to_date': filters.get("to_date")}, as_dict=True)
+    return frappe.db.sql(data_query, {'from_date': filters.get("from_date"), 'to_date': filters.get("to_date"), 'transport_mode': filters.get("transport_mode")}, as_dict=True)
 
 
 
@@ -100,6 +90,7 @@ def process_data(data):
         if container_key not in processed_data:
             processed_data[container_key] = {
                 'CName': row['CName'],
+                'FOname': row['FOname'],
                 'container_number': row['container_number'],
                 'wagon_number' : row['wagon_number'],
                 'size': row['size'],
@@ -133,3 +124,14 @@ def process_data(data):
     
     return list(processed_data.values())
 
+def calculate_bo_summary(data):
+    cost = 0
+    selling = 0
+    profit = 0
+    BOid = data[0]['BOName']
+    for row in data:
+        if row['BOName'] == BOid:
+            cost += row["total_cost"]
+            selling += row['selling_cost']
+        
+    

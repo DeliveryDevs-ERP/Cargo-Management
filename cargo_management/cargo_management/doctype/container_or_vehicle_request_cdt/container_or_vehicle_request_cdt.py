@@ -22,6 +22,6 @@ class ContainerorVehicleRequestcdt(Document):
 		pickup_location: DF.Link | None
 		qty: DF.Int
 		size: DF.Literal["", "20", "40", "45"]
-		type: DF.Link | None
+		type: DF.Link
 	# end: auto-generated types
 	pass

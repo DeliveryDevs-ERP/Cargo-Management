@@ -182,12 +182,15 @@ frappe.ui.form.on('Expenses cdt', {
         if (row.purchase_invoice_no) {
             frappe.db.get_doc("Purchase Invoice", row.purchase_invoice_no)
                 .then(PI => {
-                    console.log("Fetched PI:", PI);
+                    // console.log("Fetched PI:", PI);
                     if (PI.docstatus === 0) {
                         // If the PI is in draft status, allow deletion
                         frappe.db.delete_doc('Purchase Invoice', PI.name)
                             .then(() => {
-                                frm.save_or_update();
+                                if (frm.doc.double_20_ === 1) {
+                                    frappe.msgprint("Please remove this row manually from other double 20 Road Job");
+                                } 
+                                frm.save_or_update();                        
                             })
                             .catch(err => {
                                 console.error('Error deleting Purchase Invoice:', err);
