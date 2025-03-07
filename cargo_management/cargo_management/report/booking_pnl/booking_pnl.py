@@ -17,6 +17,7 @@ def get_columns(data, expense_types):
     columns = [
         {"label": _("Container Name"), "fieldname": "CName", "fieldtype": "Data", "width": 150, "hidden": True},
         {"label": _("Container Number"), "fieldname": "container_number", "fieldtype": "Data", "width": 150},
+        {"label": _("Freight Order Number"), "fieldname": "FOname", "fieldtype": "Data", "width": 150},
         {"label": _("Size"), "fieldname": "size", "fieldtype": "Data", "width": 60},
         {"label": _("Loco"), "fieldname": "loco_number", "fieldtype": "Data", "width": 100},
         {"label": _("Wagon"), "fieldname": "wagon_number", "fieldtype": "Data", "width": 100},
@@ -118,6 +119,9 @@ def process_data(data):
         processed_data[container_key][collumn_key] = row['total_cost']
         # Accumulate total cost
         processed_data[container_key]['total_cost'] += row['total_cost']
+        frappe.errprint(f"FO Name {processed_data[container_key]['FOname']}")
+        if processed_data[container_key]['FOname'].split("-")[0] == 'CFO':
+            processed_data[container_key]['selling_cost'] = 0
         processed_data[container_key]['profit'] = processed_data[container_key]['selling_cost'] - processed_data[container_key]['total_cost']
 
     
@@ -125,13 +129,31 @@ def process_data(data):
     return list(processed_data.values())
 
 def calculate_bo_summary(data):
-    cost = 0
-    selling = 0
-    profit = 0
-    BOid = data[0]['BOName']
+    processed_data = {}
     for row in data:
-        if row['BOName'] == BOid:
-            cost += row["total_cost"]
-            selling += row['selling_cost']
-        
+        BO_key = row['BOName']
+        if BO_key not in processed_data:
+            processed_data[BO_key] = {
+                'data': [],
+                'total_selling_cost': 0,
+                'total_cost': 0,
+                'total_profit': 0
+            }
+        processed_data[BO_key]['data'].append(row)
+        processed_data[BO_key]['total_selling_cost'] += row['selling_cost']
+        processed_data[BO_key]['total_cost'] += row['total_cost']
+        processed_data[BO_key]['total_profit'] += row['profit']
+
+    summary_data = []
+    for BO_key, values in processed_data.items():
+        summary = {
+            'BOName': f"<b>{BO_key}</b>",
+            'selling_cost': values['total_selling_cost'],
+            'total_cost': values['total_cost'],
+            'profit': values['total_profit']
+        }
+        summary_data.extend(values['data'])
+        summary_data.append(summary)
+
+    return summary_data
     
