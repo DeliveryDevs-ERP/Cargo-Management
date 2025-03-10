@@ -18,25 +18,35 @@ def get_FO_containers(doctype, txt, searchfield, start, page_len, filters):
     where container status is 'Filled' and name starts with 'FO-%%'.
     """
     booking_order_id = filters.get('booking_order_id')
-    
+
     if not booking_order_id:
         frappe.throw("Booking Order ID is required to fetch containers.")
-    
-    return frappe.db.sql("""
-        SELECT 
-            container.name, container.container_number
-        FROM 
-            `tabFPL Containers` AS container
-        JOIN 
-            `tabFPL Freight Orders` AS freight_order 
-            ON container.freight_order_id = freight_order.name
-        WHERE 
-            freight_order.sales_order_number = %(booking_order_id)s
-            AND container.status = 'Filled'
-            AND freight_order.name LIKE 'FO-%%'
-    """, {
-        'booking_order_id': booking_order_id
-    })
+
+    try:
+        sql_query = f"""
+            SELECT 
+                container.name, container.container_number
+            FROM 
+                `tabFPL Containers` AS container
+            JOIN 
+                `tabFPL Freight Orders` AS freight_order 
+                ON container.freight_order_id = freight_order.name
+            WHERE 
+                freight_order.sales_order_number = %s
+                AND container.status = 'Filled'
+                AND freight_order.name LIKE 'FO-%%'
+        """
+
+        if txt and searchfield:
+            sql_query += f" AND container.container_number LIKE %s"
+            search_value = f"%{txt}%"
+            return frappe.db.sql(sql_query, (booking_order_id, search_value))
+        else:
+            return frappe.db.sql(sql_query, (booking_order_id,))
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Failed to execute SQL query in get_filled_containers")
+        frappe.throw(f"Error fetching container data: {str(e)}")
 
 
 @frappe.whitelist()
@@ -46,25 +56,35 @@ def get_CFO_containers(doctype, txt, searchfield, start, page_len, filters):
     where container status is 'Empty' and name starts with 'CFO-%%'.
     """
     booking_order_id = filters.get('booking_order_id')
-    
+
     if not booking_order_id:
         frappe.throw("Booking Order ID is required to fetch containers.")
-    
-    return frappe.db.sql("""
-        SELECT 
-            container.name, container.container_number
-        FROM 
-            `tabFPL Containers` AS container
-        JOIN 
-            `tabFPL Freight Orders` AS freight_order 
-            ON container.freight_order_id = freight_order.name
-        WHERE 
-            freight_order.sales_order_number = %(booking_order_id)s
-            AND container.status = 'Empty'
-            AND freight_order.name LIKE 'CFO-%%'
-    """, {
-        'booking_order_id': booking_order_id
-    })
+
+    try:
+        sql_query = f"""
+            SELECT 
+                container.name, container.container_number
+            FROM 
+                `tabFPL Containers` AS container
+            JOIN 
+                `tabFPL Freight Orders` AS freight_order 
+                ON container.freight_order_id = freight_order.name
+            WHERE 
+                freight_order.sales_order_number = %s
+                AND container.status = 'Empty'
+                AND freight_order.name LIKE 'CFO-%%'
+        """
+
+        if txt and searchfield:
+            sql_query += f" AND container.container_number LIKE %s"
+            search_value = f"%{txt}%"
+            return frappe.db.sql(sql_query, (booking_order_id, search_value))
+        else:
+            return frappe.db.sql(sql_query, (booking_order_id,))
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Failed to execute SQL query in get_empty_containers")
+        frappe.throw(f"Error fetching container data: {str(e)}")
 
 
 @frappe.whitelist()
