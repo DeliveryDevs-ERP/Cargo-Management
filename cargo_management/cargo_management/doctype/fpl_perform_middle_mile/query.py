@@ -114,7 +114,7 @@ def fetch_wagons_from_undeparted_trains(departure_location, movement_type):
                         ROW_NUMBER() OVER (PARTITION BY wagon_number ORDER BY creation DESC) AS rn
                     FROM `tabFPL MM cdt`
                 ) A
-                WHERE A.rn = 1 AND A.departed_ = 1;
+                WHERE A.rn = 1 AND A.departed_ = 1
             )
     """
     wagons = frappe.db.sql(query, (departure_location, movement_type), as_dict=True)
