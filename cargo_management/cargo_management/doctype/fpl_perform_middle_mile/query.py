@@ -105,9 +105,11 @@ def fetch_wagons_from_undeparted_trains(departure_location, movement_type):
             AND PM.departure_location = %s
             AND PM.movement_type = %s
             AND D.wagon_number NOT IN (
-                SELECT DISTINCT wagon_number 
+                select Distinct A.wagon_number from (SELECT wagon_number, creation, departed_
                 FROM `tabFPL MM cdt`
-                WHERE departed_ = 1
+                group by wagon_number
+                ORDER BY Creation DESC) as A
+                where A.departed_ = 1
             )
     """
     wagons = frappe.db.sql(query, (departure_location, movement_type), as_dict=True)

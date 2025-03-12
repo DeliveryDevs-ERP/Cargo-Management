@@ -88,6 +88,7 @@ class FPLPerformMiddleMile(Document):
     def carry_forward_the_specified_rows(self): # Departure of containers
         middle_mile_rows = self.get('middle_mile')
         filtered_rows = [row for row in middle_mile_rows if row.container and row.wagon_number]
+        self.middle_mile_in_loading = []
         for row in filtered_rows:
             self.append('middle_mile_in_loading', {
                 'wagon_number': row.wagon_number,
@@ -104,6 +105,7 @@ class FPLPerformMiddleMile(Document):
     def carry_forward_the_specified_row2(self):
         middle_mile_rows = self.get('middle_mile_in_loading')
         filtered_rows = [row for row in middle_mile_rows if (row.departed_ == 1)]
+        self.middle_mile_copy = []
         for row in filtered_rows:
             self.append('middle_mile_copy', {
                 'wagon_number': row.wagon_number,

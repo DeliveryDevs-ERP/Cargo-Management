@@ -196,21 +196,44 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
         console.log('Finish Departure:',frm.doc.finish_departure);
 
         if (frm.doc.finish_train_formation == 1 && frm.doc.finish_loading == 1 && frm.doc.finish_departure == 1 && frm.doc.finish_arrival == 0) {
-            frm.set_value('finish_arrival', 1);
-            frm.set_value('status', "Arrived");
-            console.log('Arrival Completed');
-            return;
+            
+            boolreturn =  validate_arrival_tick(frm);
+            if (boolreturn) {
+                frm.set_value('finish_arrival', 1);
+                frm.set_value('status', "Arrived");
+                console.log('Arrival Completed');
+            }
+            else {
+                frappe.msgprint({
+                                     title: 'Arrival Tick Error',
+                                    message: 'Unable to complete Arrival as the none of the containers are selected to receive.',
+                                     indicator: 'red'
+                                 });
+            }
+
         }
 
         if (frm.doc.finish_train_formation == 1 && frm.doc.finish_loading == 1 && frm.doc.finish_departure == 0) {
-            frm.set_value('finish_departure', 1);
-            frm.set_value('status', "Departed");
-            frm.set_df_property("tab_5_tab", "hidden", false);
-            console.log('Departure Completed');
-            return;
+
+            boolreturn =  validate_depart_tick(frm);
+            if (boolreturn) {
+                        frm.set_value('finish_departure', 1);
+                        frm.set_value('status', "Departed");
+                        frm.set_df_property("tab_5_tab", "hidden", false);
+                        console.log('Departure Completed');
+            }
+            else {
+                frappe.msgprint({
+                                     title: 'Depart Tick Error',
+                                    message: 'Unable to complete departure as the none of the containers are selected to depart.',
+                                     indicator: 'red'
+                                 });
+            }
         }
 
         if (frm.doc.finish_train_formation == 1 && frm.doc.finish_loading == 0) {
+
+            
             frappe.call({
                 method: "cargo_management.cargo_management.doctype.fpl_perform_middle_mile.fpl_perform_middle_mile.validate_weight_Loading",
                 args: {
@@ -418,3 +441,33 @@ frappe.ui.form.on('Expenses cdt', {
     }
 });
 
+
+
+function validate_depart_tick(frm) {
+    let hasDeparted = false; // Flag to track if any row has departed
+
+    // Loop through each row in the child table
+    $.each(frm.doc.middle_mile_in_loading || [], function(i, row) {
+        if(row.departed_ === 1) {
+            hasDeparted = true;
+            return false; // Exit the loop early as we found a match
+        }
+    });
+
+    return hasDeparted;
+}
+
+
+function validate_arrival_tick(frm) {
+    let hasArrived = false; // Flag to track if any row has departed
+
+    // Loop through each row in the child table
+    $.each(frm.doc.middle_mile_copy || [], function(i, row) {
+        if(row.received_ === 1) {
+            hasArrived = true;
+            return false; 
+        }
+    });
+
+    return hasArrived;
+}
