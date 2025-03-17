@@ -23,6 +23,70 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
         frm.refresh_field("middle_mile_in_loading");
     },
 
+    cancel_departure(frm){
+
+        frappe.call({
+            method: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.fpl_perform_middle_mile.cancel_departure',
+            args: {
+                docname: frm.doc.name
+            },
+            // callback: function(r) {
+            //     if (r.message) {
+            //         // Prepare to track existing wagon numbers
+            //         let existingWagons = {};
+            //         let existingContainers = {};
+            //         frm.doc.wagons.forEach(function(w) {
+            //             existingWagons[w.wagon_number] = true;
+            //         });
+
+            //         frm.doc.middle_mile.forEach(function(m) {
+            //             existingContainers[m.container] = true; 
+            //         });
+
+            //         // Clear the existing rows in the wagons table
+            //         frm.clear_table('wagons');
+            //         frm.clear_table('middle_mile');
+
+            //         // Add new rows based on the fetched data, ensuring they are distinct
+            //         r.message.forEach(function(wagon) {
+            //             if (!existingWagons[wagon.wagon_number]) {
+            //                 var row = frm.add_child('wagons');
+            //                 row.wagon_number = wagon.wagon_number;
+            //                 row.wagon_type = wagon.wagon_type;
+            //                 row.loaded_ = 1;
+            //                 existingWagons[wagon.wagon_number] = true; 
+            //             }
+
+            //             // Check if the container has already been added
+            //             if (!existingContainers[wagon.container]) {
+            //                 var row2 = frm.add_child('middle_mile');
+            //                 row2.wagon_number = wagon.wagon_number;
+            //                 row2.container = wagon.container;
+            //                 row2.size = wagon.size;
+            //                 row2.weight = wagon.weight;
+            //                 row2.loaded_ = 1;      
+            //                 row2.departed_ = 0;
+            //                 existingContainers[wagon.container] = true; 
+            //             }
+            //         });
+
+            //         // Refresh the child table to show new data
+            //         frm.refresh_field('wagons');
+            //         frm.refresh_field('middle_mile');
+
+            //             }
+            //         }
+                });
+        frm.clear_table("middle_mile_copy");
+        frm.set_value('finish_departure', 0);
+        frm.set_value('status', "Loaded");
+        frm.refresh_field("middle_mile_copy");
+
+        
+
+
+    },
+
     depart_all(frm){
                         frm.doc.middle_mile_in_loading.forEach(row => {
                     row.departed_ = 1;
@@ -197,20 +261,16 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
 
         if (frm.doc.finish_train_formation == 1 && frm.doc.finish_loading == 1 && frm.doc.finish_departure == 1 && frm.doc.finish_arrival == 0) {
             
-            boolreturn =  validate_arrival_tick(frm);
-            if (boolreturn) {
-                frm.set_value('finish_arrival', 1);
-                frm.set_value('status', "Arrived");
-                console.log('Arrival Completed');
-            }
-            else {
-                frappe.msgprint({
-                                     title: 'Arrival Tick Error',
-                                    message: 'Unable to complete Arrival as the none of the containers are selected to receive.',
-                                     indicator: 'red'
-                                 });
-            }
-
+            frappe.msgprint({
+                title: __('Notification'),
+                message: __('Are you sure you want to proceed? Cannot be reverted !!'),
+                primary_action: {
+                    label: 'Yes',
+                    action() {
+                        validate_arrival_tick(frm); 
+                    }
+                }
+            });
         }
 
         if (frm.doc.finish_train_formation == 1 && frm.doc.finish_loading == 1 && frm.doc.finish_departure == 0) {
@@ -469,5 +529,16 @@ function validate_arrival_tick(frm) {
         }
     });
 
-    return hasArrived;
+    if (hasArrived) {
+        frm.set_value('finish_arrival', 1);
+        frm.set_value('status', "Arrived");
+        frm.save();
+    }
+    else {
+        frappe.msgprint({
+                             title: 'Arrival Tick Error',
+                            message: 'Unable to complete Arrival as the none of the containers are selected to receive.',
+                             indicator: 'red'
+                         });
+    }
 }

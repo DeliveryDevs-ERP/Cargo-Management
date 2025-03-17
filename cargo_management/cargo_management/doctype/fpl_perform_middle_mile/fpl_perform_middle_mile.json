@@ -39,6 +39,8 @@
   "section_break_vfmj",
   "middle_mile_in_loading",
   "tab_5_tab",
+  "cancel_departure",
+  "section_break_uvaf",
   "actual_arrival_datetime",
   "finish_arrival",
   "column_break_gcyp",
@@ -307,11 +309,20 @@
   {
    "fieldname": "section_break_trxk",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "cancel_departure",
+   "fieldtype": "Button",
+   "label": "Cancel Departure"
+  },
+  {
+   "fieldname": "section_break_uvaf",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-25 12:53:42.628460",
+ "modified": "2025-03-17 14:40:35.566624",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",

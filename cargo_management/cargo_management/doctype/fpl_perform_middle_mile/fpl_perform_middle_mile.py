@@ -428,7 +428,52 @@ class FPLPerformMiddleMile(Document):
                     )
                     if code == True:
                         expense.purchase_invoiced_created = 1
+                            
+@frappe.whitelist()
+def cancel_departure(docname):
+    
+    doc = frappe.get_doc('FPL Perform Middle Mile', docname)
+    for row in doc.get("middle_mile_copy"): 
+        if row.container:
+            # Get the container number associated with the container ID
+            container_number = frappe.db.get_value("FPL Containers", {"name": row.container}, "container_number")
+            gate_out_job_id = frappe.db.get_value("FPLYardJob", {"container_number": container_number, "job_name": "Gate Out"}, "name")
+            frappe.db.set_value("FPL Containers", row.container , "active_job_id", gate_out_job_id)
+            frappe.db.set_value("FPL Containers", row.container , "state", "Loaded")
+            # Get the Freight Order ID associated with the container
+            freight_order_id = frappe.db.get_value("FPL Freight Orders", {"container_number": container_number}, "name")
 
+            if freight_order_id:
+                # Fetch the Freight Order document
+                freight_order = frappe.get_doc("FPL Freight Orders", freight_order_id)
+                needs_save = False  # Flag to indicate if save is needed
+                # First pass: Update all Middle Mile jobs to Assigned
+                for job in freight_order.jobs:
+                    job_type = get_job_type_by_id(job.job_id)
+                    if job_type == "Gate Out" and job.status == "Completed":
+                        job.status = "Assigned" 
+                        needs_save = True 
+                    if job_type == "Middle Mile":
+                        job.status = "Assigned"   
+                        needs_save = True  
+
+                # Save changes if any Middle Mile jobs were updated
+                if needs_save:
+                    freight_order.save()
+                    frappe.db.commit()  
+
+                # Second pass: Process Gate Out jobs
+                for job in freight_order.jobs:
+                    job_type = get_job_type_by_id(job.job_id)
+                    if job_type == "Gate Out":
+                        try:
+                            gate_out_job_doc = frappe.get_doc("FPLYardJob", job.job_id)
+                            gate_out_job_doc.gate_out = None 
+                            gate_out_job_doc.status = 'Assigned' 
+                            gate_out_job_doc.save()
+                            frappe.db.commit()  
+                        except Exception as e:
+                            frappe.msgprint(f"Error updating Gate Out job {job.job_id} for container {row.container}: {str(e)}")
 
 
 @frappe.whitelist()
