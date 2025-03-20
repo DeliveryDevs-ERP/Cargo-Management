@@ -459,6 +459,8 @@ def cancel_departure(docname):
 
                 # Save changes if any Middle Mile jobs were updated
                 if needs_save:
+                    freight_order.last_job = "Gate In"
+                    freight_order.next_job = "Gate Out"
                     freight_order.save()
                     frappe.db.commit()  
 

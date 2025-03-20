@@ -311,6 +311,7 @@
    "fieldtype": "Section Break"
   },
   {
+   "depends_on": "eval: doc.finish_arrival === 0;",
    "fieldname": "cancel_departure",
    "fieldtype": "Button",
    "label": "Cancel Departure"
@@ -322,7 +323,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-17 14:40:35.566624",
+ "modified": "2025-03-20 12:55:38.768430",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",
