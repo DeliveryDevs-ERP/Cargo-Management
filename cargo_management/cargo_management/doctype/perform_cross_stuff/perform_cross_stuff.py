@@ -111,10 +111,10 @@ class PerformCrossStuff(Document):
         })
 
     def determine_transport_mode(self):
-        rail_truck_jobs = ["giml5efmsh", "oasikqkqg2"]
+        rail_truck_jobs = ["giml5efmsh", "oasikqkqg2", "82ghk3ttss"]
         rail_train_jobs = ["oalds7gjs7", "oagb0ddmuo", "vg2osur4ei"]
         if self.job_before_cross_stuff in rail_truck_jobs:
-            return "Rail (Truck)"
+            return "Road (Truck)"
         elif self.job_before_cross_stuff in rail_train_jobs:
             return "Rail (Train)"
         return None

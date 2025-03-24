@@ -64,7 +64,7 @@ class FPLPerformMiddleMile(Document):
             self.carry_forward_the_specified_row2()
             self.update_gate_out_jobs() # do gate out job
             
-        if self.finish_arrival==1:
+        if self.finish_train_formation == 1 and self.finish_loading == 1 and self.finish_departure == 1 and self.finish_arrival==1 and len(self.get('expenses')) == 0: # this will only work when there are no expenses in the expenses grid
             self.bulk_update_container_status()
             self.calculate_expenses()
             self.create_purchase_invoice()
@@ -382,12 +382,14 @@ class FPLPerformMiddleMile(Document):
                     # Determine the size and apply the correct rate
                     fo_doc = frappe.get_doc('FPL Freight Orders', container.fo)
                     size = fo_doc.size
-                    self.append('expenses', {
-                        'expense_type': 'TRAIN FREIGHT',
-                        'client': get_supplier('TRAIN FREIGHT'),
-                        'container_number': container.container,
-                        'amount': cost['rate_20'] if size == 20 else cost['rate_40']
-                    })
+                    traindoc = frappe.get_doc("FPL Cost Type", "TRAIN FREIGHT")
+                    if traindoc.movement_type == self.movement_type and (traindoc.location == self.arrival_location or traindoc.location == self.departure_location):
+                        self.append('expenses', {
+                            'expense_type': 'TRAIN FREIGHT',
+                            'client': get_supplier('TRAIN FREIGHT'),
+                            'container_number': container.container,
+                            'amount': cost['rate_20'] if size == 20 else cost['rate_40']
+                        })
                     for expense in Fixed_exp:
                         self.append('expenses', {
                             'expense_type': expense['name'],
