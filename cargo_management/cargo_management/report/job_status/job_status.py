@@ -64,26 +64,29 @@ def get_columns(data, job_types):
     ])
     return columns
 
-def get_data_rail_trains(filters, expense_types):      
-    data_query = f"""
-        SELECT 
-            BO.name as BOName, BO.workflow_state as BO_status, FO.status as FO_status, FO.name as Fname, FO.container_number as CName, RD.status as RD_status, RD.job_name as Job_name, pm.status as middle_mile_status
-        FROM
-            `tabBooking Order` BO
-        JOIN 
-            `tabFPL Freight Orders` FO on BO.name = FO.sales_order_number
-        LEFT JOIN
-            `tabFPLRoadJob` RD on RD.freight_order_id = FO.name and RD.sales_order_number = BO.name and RD.container_number = FO.container_number
-        LEFT JOIN
-            `tabFPLRailJob` RL on RL.freight_order_id = FO.name and RL.sales_order_number = BO.name and RL.container_number = FO.container_number
-        LEFT JOIN
-            `tabFPL Perform Middle Mile` pm on RL.train_number = pm.name
-        WHERE
-			pm.name in %(train_nos)s and
-            BO.transport_type = %(transport_mode)s and
-            FO.status != "Draft"
-    """
-    return frappe.db.sql(data_query, {'transport_mode': filters.get("transport_mode"), 'train_nos': filters.get("train_nos")}, as_dict=True)
+def get_data_rail_trains(filters, expense_types):  
+    if len(filters.get("train_nos")) > 0:    
+        data_query = f"""
+            SELECT 
+                BO.name as BOName, BO.workflow_state as BO_status, FO.status as FO_status, FO.name as Fname, FO.container_number as CName, RD.status as RD_status, RD.job_name as Job_name, pm.status as middle_mile_status
+            FROM
+                `tabBooking Order` BO
+            JOIN 
+                `tabFPL Freight Orders` FO on BO.name = FO.sales_order_number
+            LEFT JOIN
+                `tabFPLRoadJob` RD on RD.freight_order_id = FO.name and RD.sales_order_number = BO.name and RD.container_number = FO.container_number
+            LEFT JOIN
+                `tabFPLRailJob` RL on RL.freight_order_id = FO.name and RL.sales_order_number = BO.name and RL.container_number = FO.container_number
+            LEFT JOIN
+                `tabFPL Perform Middle Mile` pm on RL.train_number = pm.name
+            WHERE
+                pm.name in %(train_nos)s and
+                BO.transport_type = %(transport_mode)s and
+                FO.status != "Draft"
+        """
+        return frappe.db.sql(data_query, {'transport_mode': filters.get("transport_mode"), 'train_nos': filters.get("train_nos")}, as_dict=True)
+    else:
+        return []
 
 def get_data_rail_bookings(filters, expense_types):      
     data_query = f"""
