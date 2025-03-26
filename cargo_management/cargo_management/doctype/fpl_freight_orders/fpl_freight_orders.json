@@ -6,6 +6,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "section_break_pmrs",
   "freight_order_number",
   "sales_order_number",
   "client",
@@ -72,13 +73,15 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Container Number"
+   "label": "Container Number",
+   "read_only_depends_on": "eval: doc.mm_completed_;"
   },
   {
    "description": "(Tons)",
    "fieldname": "weight",
    "fieldtype": "Float",
-   "label": "Weight"
+   "label": "Weight",
+   "read_only_depends_on": "eval: doc.mm_completed_;"
   },
   {
    "fieldname": "section_break_eays",
@@ -93,7 +96,8 @@
    "fieldname": "container_type",
    "fieldtype": "Link",
    "label": "Container Type",
-   "options": "Container Type"
+   "options": "Container Type",
+   "read_only_depends_on": "eval: doc.mm_completed_;"
   },
   {
    "fieldname": "column_break_mbvl",
@@ -187,7 +191,13 @@
    "depends_on": "eval: doc.bag_qty > 0;",
    "fieldname": "bag_qty",
    "fieldtype": "Int",
-   "label": "Bag Qty"
+   "label": "Bag Qty",
+   "read_only_depends_on": "eval: doc.mm_completed_;"
+  },
+  {
+   "fieldname": "section_break_pmrs",
+   "fieldtype": "Section Break",
+   "read_only_depends_on": "eval: doc.mm_completed_;"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -211,7 +221,7 @@
    "link_fieldname": "freight_order_id"
   }
  ],
- "modified": "2025-02-17 19:18:44.758329",
+ "modified": "2025-03-26 13:06:38.233728",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Freight Orders",
@@ -244,5 +254,6 @@
  "search_fields": "container_number",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }

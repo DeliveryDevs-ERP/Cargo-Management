@@ -183,7 +183,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-13 12:58:59.041437",
+ "modified": "2025-03-26 12:55:44.125622",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPLRoadJob",
@@ -216,5 +216,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
- "title_field": "job_name"
+ "title_field": "job_name",
+ "track_changes": 1
 }
