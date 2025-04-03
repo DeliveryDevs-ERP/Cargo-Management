@@ -51,8 +51,8 @@ class FPLRoadJob(Document):
                 self.completeNextGateIn()
             else:
                 self.completePrevGateOut() 
-                updateJobStatus(self.name, self.freight_order_id, self.container_number)
-                self.status = "Completed"
+                if updateJobStatus(self.name, self.freight_order_id, self.container_number):
+                    self.status = "Completed"
                 
         if self.status == "Assigned":
             self.assigned_at = now_datetime()   
