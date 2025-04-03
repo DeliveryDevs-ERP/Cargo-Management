@@ -17,5 +17,14 @@ frappe.query_reports["RAIL PNL NEW"] = {
             "default": frappe.datetime.now_datetime(), 
             "reqd": 0 
         },
+        {
+            "fieldname": "train_nos",
+            "label": __("Train Number"),
+            "fieldtype": "MultiSelectList",
+            "reqd": 1,
+            "get_data": function(txt) {
+                return frappe.db.get_link_options("FPL Perform Middle Mile", txt);
+            }
+        },
 	]
 };

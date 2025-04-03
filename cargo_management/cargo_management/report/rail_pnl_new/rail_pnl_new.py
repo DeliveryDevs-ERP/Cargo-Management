@@ -50,6 +50,48 @@ def get_data(filters, expense_types):
         END as selling_cost
     """
     
+    data_query1 = f"""
+        SELECT 
+           c.name as CName, AR.wagon_number, c.container_number, F.size, pm.loco_number, BO.name as BOName, BO.cargo_owner , BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
+            CASE
+                WHEN e.parenttype = 'FPLRoadJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
+                WHEN e.parenttype = 'FPLYardJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
+                WHEN e.parenttype = 'FPL Perform Middle Mile' THEN CONCAT('Middle Mile', '-', e.expense_type)
+                WHEN e.parenttype = 'Perform Cross Stuff' THEN CONCAT('Cross Stuff', '-', e.expense_type)
+            END as collumn
+            {selling_cost_calculation}
+        FROM 
+            `tabExpenses cdt` e
+        JOIN
+            `tabFPL Containers` c ON c.name = e.container_number
+        JOIN
+            `tabFPL Freight Orders` F ON c.freight_order_id = F.name
+        JOIN
+            `tabBooking Order` BO on BO.name = F.sales_order_number
+        LEFT JOIN
+            `tabFPL Perform Middle Mile` pm on pm.name = e.parent
+        LEFT JOIN
+            `tabNew MM cdt` AR on AR.container = c.name
+        WHERE
+        pm.name in %(train_nos)s
+        AND
+            e.container_number IN (SELECT DISTINCT c.container_number 
+            FROM `tabFPL Perform Middle Mile` pm 
+            JOIN `tabExpenses cdt` c ON pm.name = c.parent
+            WHERE pm.departure_time BETWEEN %(from_date)s AND %(to_date)s
+
+            UNION ALL
+
+            SELECT DISTINCT cdt.container_number 
+            FROM `tabGrounded Filled Cdt` cdt
+            where cdt.reference_container in (SELECT DISTINCT c.container_number 
+            FROM `tabFPL Perform Middle Mile` pm 
+            JOIN `tabExpenses cdt` c ON pm.name = c.parent
+            WHERE pm.departure_time BETWEEN %(from_date)s AND %(to_date)s))
+        ORDER BY
+            BO.name
+    """
+    
     data_query = f"""
         SELECT 
            c.name as CName, AR.wagon_number, c.container_number, F.size, pm.loco_number, BO.name as BOName, BO.cargo_owner , BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
@@ -89,7 +131,10 @@ def get_data(filters, expense_types):
         ORDER BY
             BO.name
     """
-    return frappe.db.sql(data_query, {'from_date': filters.get("from_date"), 'to_date': filters.get("to_date")}, as_dict=True)
+    if len(filters.get("train_nos")) > 0:
+        return frappe.db.sql(data_query1, {'from_date': filters.get("from_date"), 'to_date': filters.get("to_date"), 'train_nos': filters.get("train_nos")}, as_dict=True)
+    else:
+        return frappe.db.sql(data_query, {'from_date': filters.get("from_date"), 'to_date': filters.get("to_date")}, as_dict=True)
 
 
 
