@@ -5,7 +5,7 @@
 from frappe.model.document import Document
 
 
-class NewMMcdt(Document):
+class Wagons(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
 
@@ -14,15 +14,10 @@ class NewMMcdt(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		container: DF.Link | None
-		container_number: DF.Data | None
-		fo: DF.Data | None
-		job: DF.Data | None
-		mm_job_id: DF.Link | None
-		parent: DF.Data
-		parentfield: DF.Data
-		parenttype: DF.Data
-		received_: DF.Check
-		wagon_number: DF.Link | None
+		loaded_: DF.Check
+		status: DF.Literal["", "Loaded", "In Transit", "Received", "Derailed"]
+		train_no: DF.Link | None
+		type: DF.Link
+		wagon_number: DF.Data
 	# end: auto-generated types
 	pass

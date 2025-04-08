@@ -8,16 +8,20 @@
  "field_order": [
   "wagon_number",
   "wagon_type",
-  "loaded_"
+  "loaded_",
+  "status"
  ],
  "fields": [
   {
    "fieldname": "wagon_number",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Wagon Number"
+   "label": "Wagon Number",
+   "link_filters": "[[\"Wagons\",\"status\",\"in\",[\"Received\",null]]]",
+   "options": "Wagons"
   },
   {
+   "fetch_from": "wagon_number.type",
    "fieldname": "wagon_type",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -28,13 +32,19 @@
    "default": "0",
    "fieldname": "loaded_",
    "fieldtype": "Check",
+   "in_list_view": 1,
    "label": "Loaded ?"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-02-07 14:38:21.678888",
+ "modified": "2025-04-08 16:54:54.370957",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Wagon cdt",

@@ -1,0 +1,76 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:wagon_number",
+ "creation": "2025-04-08 14:31:23.732890",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "wagon_number",
+  "type",
+  "train_no",
+  "loaded_",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "wagon_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Wagon Number",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "FPL Wagons",
+   "reqd": 1
+  },
+  {
+   "fieldname": "train_no",
+   "fieldtype": "Link",
+   "label": "Train No",
+   "options": "FPL Perform Middle Mile"
+  },
+  {
+   "default": "0",
+   "fieldname": "loaded_",
+   "fieldtype": "Check",
+   "label": "loaded ?"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nLoaded\nIn Transit\nReceived\nDerailed"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-04-08 14:36:35.716591",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Wagons",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

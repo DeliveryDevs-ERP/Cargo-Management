@@ -65,6 +65,7 @@ class FPLPerformMiddleMile(Document):
             self.update_gate_out_jobs() # do gate out job
             
         if self.finish_train_formation == 1 and self.finish_loading == 1 and self.finish_departure == 1 and self.finish_arrival==1 and len(self.get('expenses')) == 0: # this will only work when there are no expenses in the expenses grid
+            self.arrival_update_wagon()
             self.bulk_update_container_status()
             self.calculate_expenses()
             self.create_purchase_invoice()
@@ -84,8 +85,9 @@ class FPLPerformMiddleMile(Document):
                             'container': None,  
                             'read_only': False  
                         })
+                frappe.db.set_value("Wagons", wagon, "train_no", self.name)
 
-    def carry_forward_the_specified_rows(self): # Departure of containers
+    def carry_forward_the_specified_rows(self): # loading completed of containers
         middle_mile_rows = self.get('middle_mile')
         filtered_rows = [row for row in middle_mile_rows if row.container and row.wagon_number]
         self.middle_mile_in_loading = []
@@ -101,21 +103,36 @@ class FPLPerformMiddleMile(Document):
                 'weight': row.weight,
                 'read_only': True  
             })
+            frappe.db.set_value("Wagons", row.wagon_number, "loaded_", "1")
+            frappe.db.set_value("Wagons", row.wagon_number, "train_no", self.name)
+            frappe.db.set_value("Wagons", row.wagon_number, "status", "Loaded")
+            for row2 in self.get('wagons'):
+                if row2.wagon_number == row.wagon_number:
+                    row2.loaded_ = 1
+        frappe.db.commit()
+            
 
     def carry_forward_the_specified_row2(self):
         middle_mile_rows = self.get('middle_mile_in_loading')
         filtered_rows = [row for row in middle_mile_rows if (row.departed_ == 1)]
+        derailed_rows = [row for row in middle_mile_rows if (row.departed_ == 0)]
         self.middle_mile_copy = []
         for row in filtered_rows:
             self.append('middle_mile_copy', {
                 'wagon_number': row.wagon_number,
                 'job': row.job,
                 'mm_job_id': row.mm_job_id,
-                # 'received_': row.received_,
                 'container': row.container,
                 'read_only': False  
             })
-            
+            # doc = frappe.get_doc("Wagons", row.wagon_number)
+            frappe.db.set_value("Wagons", row.wagon_number, "status", "In Transit")
+        for wagon in self.get('wagons'):
+            frappe.db.set_value("Wagons", wagon, "status", "In Transit")
+        for row in derailed_rows:
+            frappe.db.set_value("Wagons", row.wagon_number, "status", "Derailed")
+        frappe.db.commit()        
+                
     def bulk_update_container_status(self):
         for row in self.middle_mile_copy:
             if row.container:
@@ -218,6 +235,19 @@ class FPLPerformMiddleMile(Document):
                         gate_in_job.save()
                         freight_order.reload()
 
+    def arrival_update_wagon(self):
+        for row in self.middle_mile_copy:
+            if row.container:
+                if row.received_:
+                    frappe.db.set_value("Wagons", row.wagon_number, "status", "Received")
+                    frappe.db.set_value("Wagons", row.wagon_number, "loaded_", "0")
+                else:
+                    frappe.db.set_value("Wagons", row.wagon_number, "status", "Derailed")
+        for row2 in self.get('wagons'):
+            if row2.wagon_number:
+                frappe.db.set_value("Wagons", row2.wagon_number, "status", "Received")
+        frappe.db.commit()   
+                
     def fix_job_sequence_onGateInGateOut_insert(self, freight_order_id):
         # Fetch the freight order document
         freight_order = frappe.get_doc("FPL Freight Orders", freight_order_id)
@@ -435,6 +465,13 @@ class FPLPerformMiddleMile(Document):
 def cancel_departure(docname):
     
     doc = frappe.get_doc('FPL Perform Middle Mile', docname)
+    for row in doc.get("wagons"): 
+        doc2 = frappe.get_doc("Wagons", row.wagon_number)
+        if doc2.loaded_:
+            frappe.db.set_value("Wagons", row.wagon_number, "status", "Loaded")
+        else:
+            frappe.db.set_value("Wagons", row.wagon_number, "status", "Received")
+    frappe.db.commit()
     for row in doc.get("middle_mile_copy"): 
         if row.container:
             # Get the container number associated with the container ID
@@ -512,3 +549,12 @@ def validate_weight_Loading(docname):
     return True
 
 
+@frappe.whitelist()
+def cancel_loading(docname):
+    doc = frappe.get_doc('FPL Perform Middle Mile', docname)
+    for row in doc.get("wagons"): 
+        frappe.db.set_value("Wagons", row.wagon_number, "status", "")
+        frappe.db.set_value("Wagons", row.wagon_number, "loaded_", 0)
+        frappe.db.set_value("Wagons", row.wagon_number, "train_no", "")
+        frappe.db.set_value("FPL Wagon cdt", row.name, "loaded_", 0)
+    frappe.db.commit()

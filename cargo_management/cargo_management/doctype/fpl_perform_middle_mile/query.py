@@ -119,3 +119,19 @@ def fetch_wagons_from_undeparted_trains(departure_location, movement_type):
     """
     wagons = frappe.db.sql(query, (departure_location, movement_type), as_dict=True)
     return wagons
+
+@frappe.whitelist()
+def get_wagons_from_train(train_number):
+    # SQL query to fetch wagons associated with a specified train number
+    query = """
+        SELECT
+            wagons.wagon_number,
+            wagons.wagon_type,
+            wagons.loaded_
+        FROM
+            `tabFPL Wagon cdt` AS wagons
+        WHERE
+            wagons.parent = %s
+    """
+    wagons = frappe.db.sql(query, train_number, as_dict=True)
+    return wagons

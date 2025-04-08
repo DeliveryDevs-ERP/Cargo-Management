@@ -19,6 +19,7 @@
   "arrival_location",
   "expected_time_of_arrival_eta",
   "section_break_qyfj",
+  "fetch_wagons_from_train",
   "wagons",
   "loading_tab",
   "loading_time",
@@ -319,11 +320,16 @@
   {
    "fieldname": "section_break_uvaf",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "fetch_wagons_from_train",
+   "fieldtype": "Button",
+   "label": "Fetch Wagons from Train"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-20 12:55:38.768430",
+ "modified": "2025-04-08 14:44:07.287151",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",

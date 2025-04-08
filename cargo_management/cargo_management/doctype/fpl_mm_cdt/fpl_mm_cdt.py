@@ -25,7 +25,7 @@ class FPLMMcdt(Document):
 		parentfield: DF.Data
 		parenttype: DF.Data
 		size: DF.Data | None
-		wagon_number: DF.Data | None
+		wagon_number: DF.Link | None
 		weight: DF.Data | None
 	# end: auto-generated types
 	pass

@@ -26,9 +26,10 @@
   },
   {
    "fieldname": "wagon_number",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Wagon Number",
+   "options": "Wagons",
    "read_only": 1
   },
   {
@@ -89,7 +90,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-02-25 12:56:42.798601",
+ "modified": "2025-04-08 14:42:10.037543",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL MM cdt",

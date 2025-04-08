@@ -35,9 +35,10 @@
   },
   {
    "fieldname": "wagon_number",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Wagon Number"
+   "label": "Wagon Number",
+   "options": "Wagons"
   },
   {
    "default": "0",
@@ -62,7 +63,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-01-21 19:28:45.777882",
+ "modified": "2025-04-08 14:42:40.883568",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "New MM cdt",

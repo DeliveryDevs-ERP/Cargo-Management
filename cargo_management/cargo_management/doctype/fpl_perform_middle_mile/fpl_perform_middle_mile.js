@@ -17,11 +17,60 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
     },
 
     cancel_loading(frm){
+
+        frappe.call({
+            method: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.fpl_perform_middle_mile.cancel_loading',
+            args: {
+                docname: frm.doc.name
+            },
+        });
         frm.clear_table("middle_mile_in_loading");
         frm.set_value('finish_loading', 0);
         frm.set_value('status', "Train Formed");
         frm.refresh_field("middle_mile_in_loading");
+        frm.refresh_field("wagons");
     },
+
+    fetch_wagons_from_train(frm){
+        frappe.prompt(
+            {
+                label: __("Please Specify Train Number"),
+                fieldname: "train_number",
+                fieldtype: "Link",
+                options: "FPL Perform Middle Mile", // Assuming 'Train' is a DocType that contains details about trains
+                get_query: () => ({
+                    filters: {
+                        status: "Arrived", // Only fetch trains that have arrived
+                    },
+                }),
+            },
+            (values) => {
+                // Make server call to fetch wagons from the specified train
+                frappe.call({
+                    method: 'cargo_management.cargo_management.doctype.fpl_perform_middle_mile.query.get_wagons_from_train',
+                    args: {
+                        train_number: values.train_number
+                    },
+                    callback: function(r) {
+                        if(r.message) {
+                            // Clear existing wagons
+                            frm.clear_table('wagons');
+                            // Add fetched wagons to the wagons table
+                            r.message.forEach(function(wagon) {
+                                var row = frm.add_child('wagons');
+                                row.wagon_number = wagon.wagon_number;
+                                row.wagon_type = wagon.wagon_type;
+                                row.loaded_ = 0;
+                            });
+                            frm.refresh_field('wagons');
+                        }
+                    }
+                });
+            },
+            __("Fetch Wagons")
+        );
+    },
+
 
     cancel_departure(frm){
 
@@ -281,6 +330,7 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
                         frm.set_value('status', "Departed");
                         frm.set_df_property("tab_5_tab", "hidden", false);
                         console.log('Departure Completed');
+                        frm.refresh_field('wagons');
             }
             else {
                 frappe.msgprint({
@@ -305,6 +355,7 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
                         frm.set_value('status', "Loaded");
                         frm.set_df_property("departure_tab", "hidden", false);
                         console.log('Loading Completed');
+                        frm.refresh_field('wagons');
                     }else{
                         frappe.msgprint({
                             title: 'Loading Weight Error',
@@ -321,6 +372,7 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
             frm.set_value('status', "Train Formed");
             frm.set_df_property("loading_tab", "hidden", false);
             console.log('Train Formation Completed');
+            frm.refresh_field('wagons');
             return;
         }
         
@@ -532,6 +584,7 @@ function validate_arrival_tick(frm) {
     if (hasArrived) {
         frm.set_value('finish_arrival', 1);
         frm.set_value('status', "Arrived");
+        frm.refresh_field('wagons');
         frm.save();
     }
     else {
