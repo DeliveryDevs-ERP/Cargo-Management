@@ -63,5 +63,6 @@ class FPLYardJob(Document):
 					supplier=expense.client,
 					company=default_company
 					)
-					if code == True:
+					if code:
 						expense.purchase_invoiced_created = 1
+						expense.purchase_invoice_no = code
