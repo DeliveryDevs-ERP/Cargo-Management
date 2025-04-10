@@ -146,14 +146,12 @@
    "fieldname": "loading_time",
    "fieldtype": "Datetime",
    "label": "Loading Start Time",
-   "mandatory_depends_on": "eval: doc.finish_train_formation === 1 && doc.finish_loading === 0;",
    "read_only_depends_on": "eval: doc.finish_loading === 1;"
   },
   {
    "fieldname": "loading_end_time",
    "fieldtype": "Datetime",
    "label": "Loading End Time",
-   "mandatory_depends_on": "eval: doc.finish_train_formation === 1 && doc.finish_loading === 0;",
    "read_only_depends_on": "eval: doc.finish_loading === 1;"
   },
   {
@@ -331,7 +329,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-10 13:06:44.226034",
+ "modified": "2025-04-10 18:19:47.407429",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",
