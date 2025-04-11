@@ -31,6 +31,13 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
         frm.refresh_field("wagons");
     },
 
+    cancel_formation(frm){
+        frm.clear_table("middle_mile");
+        frm.set_value('finish_train_formation', 0);
+        frm.set_value('status', "");
+        frm.refresh_field("wagons");
+    },
+
     fetch_wagons_from_train(frm){
         frappe.prompt(
             {
@@ -341,7 +348,7 @@ frappe.ui.form.on("FPL Perform Middle Mile", {
             }
         }
 
-        if (frm.doc.finish_train_formation == 1 && frm.doc.finish_loading == 0) {
+        if (frm.doc.finish_train_formation == 1 && frm.doc.finish_loading == 0 && frm.doc.loading_time && frm.doc.loading_end_time) {
 
             
             frappe.call({

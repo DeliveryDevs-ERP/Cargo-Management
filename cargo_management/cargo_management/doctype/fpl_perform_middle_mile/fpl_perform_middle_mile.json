@@ -22,6 +22,8 @@
   "fetch_wagons_from_train",
   "wagons",
   "loading_tab",
+  "cancel_formation",
+  "section_break_byhe",
   "loading_time",
   "loading_end_time",
   "finish_loading",
@@ -220,8 +222,7 @@
    "fieldtype": "Table",
    "label": "Wagons",
    "options": "FPL Wagon cdt",
-   "read_only_depends_on": "eval: doc.finish_train_formation === 1;",
-   "reqd": 1
+   "read_only_depends_on": "eval: doc.finish_train_formation === 1;"
   },
   {
    "default": "0",
@@ -325,11 +326,20 @@
    "fieldname": "fetch_wagons_from_train",
    "fieldtype": "Button",
    "label": "Fetch Wagons from Train"
+  },
+  {
+   "fieldname": "cancel_formation",
+   "fieldtype": "Button",
+   "label": "Cancel Formation"
+  },
+  {
+   "fieldname": "section_break_byhe",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-10 18:19:47.407429",
+ "modified": "2025-04-11 10:28:12.897727",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Perform Middle Mile",

@@ -69,9 +69,15 @@ class FPLPerformMiddleMile(Document):
             self.bulk_update_container_status()
             self.calculate_expenses()
             self.create_purchase_invoice()
-
+            
+    def on_trash(self):
+        if self.status == "" or self.status == "Train Formed":
+            for wagon in self.get('wagons'):
+                frappe.db.set_value("Wagons", wagon.wagon_number, "train_no", "")
+        frappe.db.commit()
 
     def fill_child_middle_mile_tables_with_WagonName_rows(self): # Loading of Containers
+        frappe.errprint(f"HEREHEEE")
         if self.loading_time is None and self.loading_end_time is None: #this will only happen if loading times are not given
             for wagon in self.get('wagons'):
                 if wagon.loaded_ == 0: #only create rows for the wagon that is not already loaded
@@ -85,7 +91,7 @@ class FPLPerformMiddleMile(Document):
                             'container': None,  
                             'read_only': False  
                         })
-                frappe.db.set_value("Wagons", wagon, "train_no", self.name)
+                frappe.db.set_value("Wagons", wagon.wagon_number, "train_no", self.name)
 
     def carry_forward_the_specified_rows(self): # loading completed of containers
         middle_mile_rows = self.get('middle_mile')
