@@ -77,7 +77,6 @@ class FPLPerformMiddleMile(Document):
         frappe.db.commit()
 
     def fill_child_middle_mile_tables_with_WagonName_rows(self): # Loading of Containers
-        frappe.errprint(f"HEREHEEE")
         if self.loading_time is None and self.loading_end_time is None: #this will only happen if loading times are not given
             for wagon in self.get('wagons'):
                 if wagon.loaded_ == 0: #only create rows for the wagon that is not already loaded
@@ -95,7 +94,10 @@ class FPLPerformMiddleMile(Document):
 
     def carry_forward_the_specified_rows(self): # loading completed of containers
         middle_mile_rows = self.get('middle_mile')
+        filtered_rows2 = [row for row in middle_mile_rows if row.wagon_number and not row.container]
+        seen_wagons = set()
         filtered_rows = [row for row in middle_mile_rows if row.container and row.wagon_number]
+        loaded_wagon_numbers = {row.wagon_number for row in filtered_rows}
         self.middle_mile_in_loading = []
         for row in filtered_rows:
             self.append('middle_mile_in_loading', {
@@ -115,6 +117,25 @@ class FPLPerformMiddleMile(Document):
             for row2 in self.get('wagons'):
                 if row2.wagon_number == row.wagon_number:
                     row2.loaded_ = 1
+            for row in filtered_rows2:
+                if row.wagon_number not in seen_wagons and row.wagon_number not in loaded_wagon_numbers:
+                    seen_wagons.add(row.wagon_number)
+                    self.append('middle_mile_in_loading', {
+                        'wagon_number': row.wagon_number,
+                        'job': "",
+                        'mm_job_id': "",
+                        'loaded_':0,
+                        'container': "",
+                        'size': row.size,
+                        'weight': row.weight,
+                        'read_only': True  
+                    })
+                    frappe.db.set_value("Wagons", row.wagon_number, "loaded_", "0")
+                    frappe.db.set_value("Wagons", row.wagon_number, "train_no", self.name)
+                    frappe.db.set_value("Wagons", row.wagon_number, "status", "Loaded")
+                    for row2 in self.get('wagons'):
+                        if row2.wagon_number == row.wagon_number:
+                            row2.loaded_ = 0
         frappe.db.commit()
             
 
