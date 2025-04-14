@@ -277,7 +277,7 @@ frappe.ui.form.on('Expenses cdt', {
                         // If the PI is in draft status, allow deletion
                         frappe.db.delete_doc('Purchase Invoice', PI.name)
                             .then(() => {
-                                frm.save_or_update();
+                                frm.save();
                             })
                             .catch(err => {
                                 console.error('Error deleting Purchase Invoice:', err);
@@ -307,6 +307,12 @@ frappe.ui.form.on('Expenses cdt', {
             // Prevent the default deletion action until the promise is resolved
             frappe.validated = false;
         }
+    },
+
+    expenses_move: function(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        console.log("Attempting to Move row:", row);
+        frm.save();
     }
 });
 

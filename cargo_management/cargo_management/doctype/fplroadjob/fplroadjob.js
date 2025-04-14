@@ -190,7 +190,7 @@ frappe.ui.form.on('Expenses cdt', {
                                 if (frm.doc.double_20_ === 1) {
                                     frappe.msgprint("Please remove this row manually from other double 20 Road Job");
                                 } 
-                                frm.save_or_update();                        
+                                frm.save();                        
                             })
                             .catch(err => {
                                 console.error('Error deleting Purchase Invoice:', err);
@@ -220,6 +220,13 @@ frappe.ui.form.on('Expenses cdt', {
             // Prevent the default deletion action until the promise is resolved
             frappe.validated = false;
         }
+    },
+
+
+    expenses_move: function(frm, cdt, cdn) {
+        const row = locals[cdt][cdn];
+        console.log("Attempting to Move row:", row);
+        frm.save();
     }
 });
 
