@@ -86,6 +86,7 @@ def get_data(filters, expense_types):
 
 def process_data(data):
     processed_data = {}
+    frappe.errprint(f"This is data in Process : {data}")
     for row in data:
         container_key = row['CName']
         if container_key not in processed_data:
@@ -119,7 +120,7 @@ def process_data(data):
         processed_data[container_key][collumn_key] = row['total_cost']
         # Accumulate total cost
         processed_data[container_key]['total_cost'] += row['total_cost']
-        frappe.errprint(f"FO Name {processed_data[container_key]['FOname']}")
+        # frappe.errprint(f"FO Name {processed_data[container_key]['FOname']}")
         if processed_data[container_key]['FOname'].split("-")[0] == 'CFO':
             processed_data[container_key]['selling_cost'] = 0
         processed_data[container_key]['profit'] = processed_data[container_key]['selling_cost'] - processed_data[container_key]['total_cost']
