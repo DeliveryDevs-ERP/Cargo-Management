@@ -77,6 +77,7 @@ def get_data(filters, expense_types):
         WHERE
             BO.sales_order_date BETWEEN %(from_date)s AND %(to_date)s
             AND BO.transport_type = %(transport_mode)s 
+            AND e.expense_type IS NOT NULL
         ORDER BY
             BO.name
     """
