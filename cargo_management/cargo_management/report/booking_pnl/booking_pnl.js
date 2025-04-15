@@ -24,5 +24,10 @@ frappe.query_reports["Booking PNL"] = {
 			"options": "Transport Mode",
             "reqd": 1
         },
+        {
+            "fieldname": "summaries",
+            "label": __("Summarize with AI"),
+            "fieldtype": "Check"
+        },
 	]
 };

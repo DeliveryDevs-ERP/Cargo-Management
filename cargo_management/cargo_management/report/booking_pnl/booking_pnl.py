@@ -6,7 +6,11 @@ def execute(filters=None):
     data = get_data(filters, expense_types)
     columns = get_columns(data, expense_types)
     data = process_data(data)
-    data = calculate_bo_summary(data)
+    if not filters.get("summaries"):
+        data = calculate_bo_summary(data)
+    elif filters.get("summaries"):
+        columns = summarised_collumns()
+        data = create_summary(data)
     return columns, data
 
 def get_expense_types():
@@ -54,7 +58,7 @@ def get_data(filters, expense_types):
     
     data_query = f"""
         SELECT 
-           c.name as CName, AR.wagon_number, c.container_number, F.name as FOname, F.size, pm.loco_number, BO.name as BOName, BO.cargo_owner , BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
+           c.name as CName, AR.wagon_number, c.container_number, F.name as FOname, F.size, F.weight as f_weight, pm.loco_number, BO.name as BOName, BO.sales_order_date as BOdate, BO.sales_person, BO.customer as BOcustomer, BO.commodity, BO.transport_type, BO.delivery_date as BODdate, BO.cargo_owner, BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
             CASE
                 WHEN e.parenttype = 'FPLRoadJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
                 WHEN e.parenttype = 'FPLYardJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
@@ -94,9 +98,16 @@ def process_data(data):
             processed_data[container_key] = {
                 'CName': row['CName'],
                 'FOname': row['FOname'],
+                'sales_person': row['sales_person'],
                 'container_number': row['container_number'],
                 'wagon_number' : row['wagon_number'],
                 'size': row['size'],
+                'commodity' : row['commodity'],
+                'transport_type' : row['transport_type'],
+                'BOdate': row['BOdate'],
+                'BOcustomer' : row['BOcustomer'],
+                'BODdate' : row['BODdate'],
+                'f_weight' : row['f_weight'],
                 'loco_number': row['loco_number'],
                 'sales_order_type': row['sales_order_type'],
                 'bill_to': row['bill_to'],
@@ -120,6 +131,8 @@ def process_data(data):
         # Add or update the expense under the correct column
         processed_data[container_key][collumn_key] = row['total_cost']
         # Accumulate total cost
+        processed_data[container_key]['pickup_location'] = get_pickup_location(processed_data[container_key]['BOName'],processed_data[container_key]['transport_type'])
+        processed_data[container_key]['dropoff_location'] = get_dropoff_location(processed_data[container_key]['BOName'],processed_data[container_key]['transport_type'])
         processed_data[container_key]['total_cost'] += row['total_cost']
         # frappe.errprint(f"FO Name {processed_data[container_key]['FOname']}")
         if processed_data[container_key]['FOname'].split("-")[0] == 'CFO':
@@ -159,3 +172,92 @@ def calculate_bo_summary(data):
 
     return summary_data
     
+
+def get_pickup_location(Booking_id, transport_mode):
+    doc = frappe.get_doc("Booking Order",Booking_id)
+    if transport_mode == "Rail (Train)":
+        if doc.empty_pickup_location:
+            return doc.empty_pickup_location
+        elif doc.fm_pickup_location:
+            return doc.fm_pickup_location
+        elif doc.mm_loading_station:
+            return doc.mm_loading_station
+    elif transport_mode == "Road (Truck)":
+        if doc.empty_pickup_location:
+            return doc.empty_pickup_location
+        elif doc.long_haul_pickup_location:
+            return doc.long_haul_pickup_location
+        elif doc.short_haul_pickup_location:
+            return doc.short_haul_pickup_location
+        
+                 
+
+
+def get_dropoff_location(Booking_id, transport_mode):
+    doc = frappe.get_doc("Booking Order",Booking_id)
+    if transport_mode == "Rail (Train)":
+        if doc.empty_return_dropoff_location:
+            return doc.empty_return_dropoff_location
+        elif doc.lm_dropoff_location:
+            return doc.lm_dropoff_location
+        elif doc.mm_offloading_station:
+            return doc.mm_offloading_station
+    elif transport_mode == "Road (Truck)":
+        if doc.empty_return_dropoff_location:
+            return doc.empty_return_dropoff_location
+        elif doc.long_haul_dropoff_location:
+            return doc.long_haul_dropoff_location
+        elif doc.short_haul_dropoff_location:
+            return doc.short_haul_dropoff_location
+    
+
+   
+def summarised_collumns():
+    return [
+        {"label": _("Booking #"), "fieldname": "BOName", "fieldtype": "Data", "width": 120},
+        {"label": _("Booking Date"), "fieldname": "BOdate", "fieldtype": "Date", "width": 100},
+        {"label": _("Delivery Date"), "fieldname": "BODdate", "fieldtype": "Date", "width": 100},
+        {"label": _("Customer"), "fieldname": "BOcustomer", "fieldtype": "Data", "width": 120},
+        {"label": _("Cargo Owner"), "fieldname": "cargo_owner", "fieldtype": "Data", "width": 120},
+        {"label": _("Sales Person"), "fieldname": "sales_person", "fieldtype": "Data", "width": 120},
+        {"label": _("Order Type"), "fieldname": "sales_order_type", "fieldtype": "Data", "width": 100},
+        {"label": _("Commodity"), "fieldname": "commodity", "fieldtype": "Data", "width": 100},
+        {"label": _("Transport Mode"), "fieldname": "transport_type", "fieldtype": "Data", "width": 110},
+        {"label": _("Pickup Location"), "fieldname": "pickup_location", "fieldtype": "Data", "width": 120},
+        {"label": _("Drop off Location"), "fieldname": "dropoff_location", "fieldtype": "Data", "width": 120},
+        {"label": _("Selling"), "fieldname": "selling_cost", "fieldtype": "Currency", "width": 100},
+        {"label": _("Cost"), "fieldname": "total_cost", "fieldtype": "Currency", "width": 100},
+        {"label": _("Profit"), "fieldname": "profit", "fieldtype": "Currency", "width": 100},
+    ]
+
+def create_summary(data):
+    summary_map = {}
+
+    for row in data:
+        bo = row.get('BOName')
+        if not bo:
+            continue
+
+        if bo not in summary_map:
+            summary_map[bo] = {
+                'BOName': bo,
+                'BOdate': row.get('BOdate'),
+                'BODdate': row.get('BODdate'),
+                'BOcustomer': row.get('BOcustomer'),
+                'cargo_owner': row.get('cargo_owner'),
+                'sales_person': row.get('sales_person'),
+                'sales_order_type': row.get('sales_order_type'),
+                'commodity': row.get('commodity'),
+                'transport_type': row.get('transport_type'),
+                'pickup_location': row.get('pickup_location'),
+                'dropoff_location': row.get('dropoff_location'),
+                'selling_cost': 0,
+                'total_cost': 0,
+                'profit': 0
+            }
+
+        summary_map[bo]['selling_cost'] += row.get('selling_cost', 0) or 0
+        summary_map[bo]['total_cost'] += row.get('total_cost', 0) or 0
+        summary_map[bo]['profit'] += row.get('profit', 0) or 0
+
+    return list(summary_map.values())
