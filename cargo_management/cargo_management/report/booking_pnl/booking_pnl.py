@@ -162,12 +162,13 @@ def calculate_bo_summary(data):
 
     summary_data = []
     for BO_key, values in processed_data.items():
+        extra = fetch_extra_invoice(BO_key, values['total_selling_cost']),
         summary = {
             'BOName': f"<b>{BO_key}</b>",
             'selling_cost': values['total_selling_cost'],
-            'extra_cost' : fetch_extra_invoice(BO_key, values['total_selling_cost']),
+            'extra_cost' : extra,
             'total_cost': values['total_cost'],
-            'profit': values['total_profit']
+            'profit': (values['total_selling_cost'] + extra) - values['total_cost']
         }
         summary_data.extend(values['data'])
         summary_data.append(summary)

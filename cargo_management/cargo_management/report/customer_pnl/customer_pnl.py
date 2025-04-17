@@ -148,7 +148,7 @@ def process_data(data):
         # frappe.errprint(f"FO Name {processed_data[container_key]['FOname']}")
         if processed_data[container_key]['FOname'].split("-")[0] == 'CFO':
             processed_data[container_key]['selling_cost'] = 0
-        processed_data[container_key]['profit'] = processed_data[container_key]['selling_cost'] - processed_data[container_key]['total_cost']
+        processed_data[container_key]['profit'] = (processed_data[container_key]['selling_cost']  + processed_data[container_key]['extra_cost']) - processed_data[container_key]['total_cost'] 
 
 
     return list(processed_data.values())
@@ -209,12 +209,13 @@ def calculate_bo_summary(data):
 
     summary_data = []
     for BO_key, values in processed_data.items():
+        extra = fetch_extra_invoice(BO_key, values['total_selling_cost']),
         summary = {
             'BOName': f"<b>{BO_key}</b>",
             'selling_cost': values['total_selling_cost'],
-            'extra_cost' : fetch_extra_invoice(BO_key, values['total_selling_cost']),
+            'extra_cost' : extra,
             'total_cost': values['total_cost'],
-            'profit': values['total_profit']
+            'profit': (values['total_selling_cost'] + extra) - values['total_cost']
         }
         summary_data.extend(values['data'])
         summary_data.append(summary)
