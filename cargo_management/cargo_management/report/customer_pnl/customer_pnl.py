@@ -267,7 +267,7 @@ def create_summary(data):
                 'total_cost': 0,
                 'profit': 0
             }
-        extra = fetch_extra_invoice(bo, summary_map[bo]['selling_cost'])
+        extra = fetch_extra_invoice(bo,  row.get('selling_cost', 0))
         summary_map[bo]['selling_cost'] += row.get('selling_cost', 0) or 0
         summary_map[bo]['extra_cost'] += extra
         summary_map[bo]['total_cost'] += row.get('total_cost', 0) or 0
