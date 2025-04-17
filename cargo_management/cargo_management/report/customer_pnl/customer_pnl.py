@@ -49,6 +49,7 @@ def get_columns(data, expense_types):
 
     columns.extend([
         {"label": _("Cost"), "fieldname": "total_cost", "fieldtype": "Currency", "width": 150},
+        {"label": _("Extra Invoice"), "fieldname": "extra_cost", "fieldtype": "Currency", "width": 150},
         {"label": _("Selling"), "fieldname": "selling_cost", "fieldtype": "Currency", "width": 150},
         {"label": _("Profit"), "fieldname": "profit", "fieldtype": "Currency", "width": 150},
     ])
@@ -67,7 +68,7 @@ def get_data(filters, expense_types):
     
     data_query = f"""
         SELECT 
-           c.name as CName, AR.wagon_number, c.container_number, F.name as FOname, F.size, F.weight as f_weight, pm.loco_number, BO.name as BOName, BO.sales_order_date as BOdate, BO.sales_person, BO.customer as BOcustomer, BO.commodity, BO.transport_type, BO.delivery_date as BODdate, BO.cargo_owner, BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
+           c.name as CName, AR.wagon_number, c.container_number, F.name as FOname, F.size, F.weight as f_weight, pm.loco_number, BO.name as BOName, BO.sales_order_date as BOdate, BO.sales_person, BO.customer as BOcustomer, BO.commodity, BO.transport_type, BO.delivery_date as BODdate, BO.cargo_owner, BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost, e.invoiced_ as invoice_tick,
             CASE
                 WHEN e.parenttype = 'FPLRoadJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
                 WHEN e.parenttype = 'FPLYardJob' THEN CONCAT(SUBSTRING_INDEX(e.parent, '-', 1), '-', e.expense_type)
@@ -122,7 +123,8 @@ def process_data(data):
                 'BOName': row['BOName'],
                 'movement_type': row['movement_type'],
                 'rail_number': row['rail_number'],
-                'total_cost': 0,  
+                'total_cost': 0, 
+                'extra_cost': 0, 
                 'cargo_owner': row['cargo_owner'],
                 'selling_cost': row['selling_cost'] 
             }
@@ -134,7 +136,8 @@ def process_data(data):
             if processed_data[container_key]['rail_number'] is None and row.get('rail_number') is not None:
                 processed_data[container_key]['rail_number'] = row['rail_number']
             
-        
+        if row['invoice_tick']:
+            processed_data[container_key]['extra_cost'] += row['total_cost']
         collumn_key = row['collumn'].replace(" ", "_").lower()
         # Add or update the expense under the correct column
         processed_data[container_key][collumn_key] = row['total_cost']
@@ -147,8 +150,7 @@ def process_data(data):
             processed_data[container_key]['selling_cost'] = 0
         processed_data[container_key]['profit'] = processed_data[container_key]['selling_cost'] - processed_data[container_key]['total_cost']
 
-    
-    
+
     return list(processed_data.values())
 
 def get_pickup_location(Booking_id, transport_mode):
@@ -210,6 +212,7 @@ def calculate_bo_summary(data):
         summary = {
             'BOName': f"<b>{BO_key}</b>",
             'selling_cost': values['total_selling_cost'],
+            'extra_cost' : fetch_extra_invoice(BO_key, values['total_selling_cost']),
             'total_cost': values['total_cost'],
             'profit': values['total_profit']
         }
@@ -232,6 +235,7 @@ def summarised_collumns():
         {"label": _("Pickup Location"), "fieldname": "pickup_location", "fieldtype": "Data", "width": 120},
         {"label": _("Drop off Location"), "fieldname": "dropoff_location", "fieldtype": "Data", "width": 120},
         {"label": _("Selling"), "fieldname": "selling_cost", "fieldtype": "Currency", "width": 100},
+        {"label": _("Extra Invoice"), "fieldname": "extra_cost", "fieldtype": "Currency", "width": 100},
         {"label": _("Cost"), "fieldname": "total_cost", "fieldtype": "Currency", "width": 100},
         {"label": _("Profit"), "fieldname": "profit", "fieldtype": "Currency", "width": 100},
     ]
@@ -258,12 +262,32 @@ def create_summary(data):
                 'pickup_location': row.get('pickup_location'),
                 'dropoff_location': row.get('dropoff_location'),
                 'selling_cost': 0,
+                'extra_cost' : 0,
                 'total_cost': 0,
                 'profit': 0
             }
 
         summary_map[bo]['selling_cost'] += row.get('selling_cost', 0) or 0
+        summary_map[bo]['extra_cost'] += fetch_extra_invoice(bo, summary_map[bo]['selling_cost'])
         summary_map[bo]['total_cost'] += row.get('total_cost', 0) or 0
         summary_map[bo]['profit'] += row.get('profit', 0) or 0
 
     return list(summary_map.values())
+
+
+def fetch_extra_invoice(booking_no, selling_amount):
+    try:
+        result = frappe.db.sql("""
+            SELECT SUM(sii.amount) AS total_sale_amount
+            FROM `tabSales Order` AS so
+            LEFT JOIN `tabSales Invoice Item` AS sii ON so.name = sii.sales_order
+            WHERE so.custom_booking_order_id = %s
+        """, (booking_no,), as_dict=True)
+
+        if result and result[0].get("total_sale_amount") is not None:
+            return result[0]["total_sale_amount"] - selling_amount
+        else:
+            return 0
+    except Exception as e:
+        frappe.log_error(f"Error fetching invoice for booking {booking_no}: {str(e)}")
+        return 0
