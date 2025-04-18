@@ -266,14 +266,17 @@ def create_summary(data):
                 'pickup_location': row.get('pickup_location'),
                 'dropoff_location': row.get('dropoff_location'),
                 'selling_cost': 0,
-                'extra_cost' : extra,
+                'extra_cost': extra,
                 'total_cost': 0,
                 'profit': 0
             }
+
         summary_map[bo]['selling_cost'] += row.get('selling_cost', 0) or 0
         summary_map[bo]['extra_cost'] += row.get('extra_cost', 0) or 0
         summary_map[bo]['total_cost'] += row.get('total_cost', 0) or 0
-        summary_map[bo]['profit'] += (row.get('selling_cost', 0) + extra) - row.get('total_cost', 0)
+
+    for bo, summary in summary_map.items():
+        summary['profit'] = (summary['selling_cost'] + summary['extra_cost']) - summary['total_cost']
 
     return list(summary_map.values())
 
