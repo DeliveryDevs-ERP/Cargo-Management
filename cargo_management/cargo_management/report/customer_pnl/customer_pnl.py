@@ -221,11 +221,12 @@ def calculate_bo_summary(data):
         }
         summary_extra = {
             'BOName': f"<b>{BO_key}</b>",
-            'extra_cost' : extra ,
+            'extra_cost' : extra,
             'profit':  extra
         }
         summary_data.extend(values['data'])
-        summary_data.append(summary_extra)
+        if extra > 0:
+            summary_data.append(summary_extra)
         summary_data.append(summary)
 
     return summary_data
