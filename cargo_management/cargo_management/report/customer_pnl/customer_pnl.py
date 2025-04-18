@@ -200,24 +200,32 @@ def calculate_bo_summary(data):
                 'data': [],
                 'total_selling_cost': 0,
                 'total_cost': 0,
+                'total_extra_cost': 0,
                 'total_profit': 0
             }
         processed_data[BO_key]['data'].append(row)
         processed_data[BO_key]['total_selling_cost'] += row['selling_cost']
+        processed_data[BO_key]['total_extra_cost'] += row['extra_cost']
         processed_data[BO_key]['total_cost'] += row['total_cost']
         processed_data[BO_key]['total_profit'] += row['profit']
 
     summary_data = []
     for BO_key, values in processed_data.items():
-        extra = fetch_extra_invoice(BO_key, values['total_selling_cost'])
+        extra = fetch_extra_invoice(BO_key)
         summary = {
             'BOName': f"<b>{BO_key}</b>",
             'selling_cost': values['total_selling_cost'],
-            'extra_cost' : extra,
+            'extra_cost' : extra + values['total_extra_cost'],
             'total_cost': values['total_cost'],
-            'profit': (values['total_selling_cost'] + extra) - values['total_cost']
+            'profit': (values['total_selling_cost'] + extra + values['total_extra_cost']) - values['total_cost']
+        }
+        summary_extra = {
+            'BOName': f"<b>{BO_key}</b>",
+            'extra_cost' : extra ,
+            'profit':  extra
         }
         summary_data.extend(values['data'])
+        summary_data.append(summary_extra)
         summary_data.append(summary)
 
     return summary_data
@@ -250,6 +258,7 @@ def create_summary(data):
             continue
 
         if bo not in summary_map:
+            extra = fetch_extra_invoice(bo)
             summary_map[bo] = {
                 'BOName': bo,
                 'BOdate': row.get('BOdate'),
@@ -263,30 +272,30 @@ def create_summary(data):
                 'pickup_location': row.get('pickup_location'),
                 'dropoff_location': row.get('dropoff_location'),
                 'selling_cost': 0,
-                'extra_cost' : 0,
+                'extra_cost' : extra,
                 'total_cost': 0,
                 'profit': 0
             }
-        extra = fetch_extra_invoice(bo,  row.get('selling_cost', 0))
+        
         summary_map[bo]['selling_cost'] += row.get('selling_cost', 0) or 0
-        summary_map[bo]['extra_cost'] += extra
+        summary_map[bo]['extra_cost'] += row.get('extra_cost', 0) or 0
         summary_map[bo]['total_cost'] += row.get('total_cost', 0) or 0
         summary_map[bo]['profit'] += (row.get('selling_cost', 0) + extra) - row.get('total_cost', 0)
 
     return list(summary_map.values())
 
 
-def fetch_extra_invoice(booking_no, selling_amount):
+def fetch_extra_invoice(booking_no):
     try:
         result = frappe.db.sql("""
             SELECT SUM(sii.amount) AS total_sale_amount
             FROM `tabSales Order` AS so
             LEFT JOIN `tabSales Invoice Item` AS sii ON so.name = sii.sales_order
-            WHERE so.custom_booking_order_id = %s
+            WHERE so.custom_booking_order_id = %s AND sii.qty = 0
         """, (booking_no,), as_dict=True)
 
         if result and result[0].get("total_sale_amount") is not None:
-            return result[0]["total_sale_amount"] - selling_amount
+            return result[0]["total_sale_amount"]
         else:
             return 0
     except Exception as e:
