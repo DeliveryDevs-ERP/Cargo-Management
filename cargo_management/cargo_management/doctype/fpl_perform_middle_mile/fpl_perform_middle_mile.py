@@ -381,7 +381,8 @@ class FPLPerformMiddleMile(Document):
     def calculate_expenses(self):
         wagon_groups = {}
         # Step 1: Group containers by wagon number
-        for entry in self.middle_mile_copy:  # Arrival Grid
+        filtered_rows = [row for row in self.middle_mile_copy if row.wagon_number and row.container]
+        for entry in filtered_rows:  # Arrival Grid
             if entry.received_ == 1 and entry.wagon_number not in wagon_groups:
                 wagon_groups[entry.wagon_number] = []
             wagon_groups[entry.wagon_number].append(entry)
@@ -389,7 +390,6 @@ class FPLPerformMiddleMile(Document):
         # Step 2: Fetch wagon types from the self.wagons child table
         wagon_types = {wagon.wagon_number: wagon.wagon_type for wagon in self.wagons}
 
-        # Step 3: Fetch container details and calculate expenses
         for wagon_number, containers in wagon_groups.items():
             wagon_type = wagon_types.get(wagon_number)
             if not wagon_type:
