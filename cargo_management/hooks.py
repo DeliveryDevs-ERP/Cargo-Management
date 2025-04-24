@@ -79,6 +79,14 @@ app_license = "mit"
 # 	"filters": "cargo_management.utils.jinja_filters"
 # }
 
+jinja = {
+	"methods": [
+        "cargo_management.cargo_management.utils.jinja.get_qr_code"
+    ],
+	# "filters": "rental_management.utils.jinja_filters
+}
+
+
 # Installation
 # ------------
 
