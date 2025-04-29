@@ -6,6 +6,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "change_container_number",
   "section_break_pmrs",
   "freight_order_number",
   "sales_order_number",
@@ -198,6 +199,11 @@
    "fieldname": "section_break_pmrs",
    "fieldtype": "Section Break",
    "read_only_depends_on": "eval: doc.mm_completed_;"
+  },
+  {
+   "fieldname": "change_container_number",
+   "fieldtype": "Button",
+   "label": "Change Container Number"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -221,7 +227,7 @@
    "link_fieldname": "freight_order_id"
   }
  ],
- "modified": "2025-04-24 18:00:02.069684",
+ "modified": "2025-04-29 13:47:22.402559",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "FPL Freight Orders",

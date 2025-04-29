@@ -1,7 +1,7 @@
 from frappe.model.document import Document
 import frappe
 from frappe import _
-from frappe.utils import getdate, random_string
+from frappe.utils import getdate, random_string, now_datetime, add_days
 
 from cargo_management.cargo_management.utils.getJobTypebyID import get_job_type_by_id
 
@@ -69,6 +69,14 @@ class BookingOrder(Document):
     def validate(self):
         if not self.sales_person:
             frappe.throw(_("Cannot save, Please assign a sales person to customer."), exc=SalesPersonNotFound)
+
+        current_date = getdate(now_datetime())
+
+        if self.sales_order_date > current_date:
+            frappe.throw(_("Sales Order Date cannot be in the future."))
+
+        if self.sales_order_date < add_days(current_date, -5):
+            frappe.throw(_("Sales Order Date cannot be older than 5 days."))
 
     
     def on_cancel(self):

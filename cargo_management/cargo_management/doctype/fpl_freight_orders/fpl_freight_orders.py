@@ -1,6 +1,7 @@
 from frappe.model.document import Document
 import frappe
 from frappe import _
+import re
 from frappe.utils import now
 
 class ContainerNumberFormatError(frappe.ValidationError):
@@ -319,3 +320,42 @@ def create_Job_withoutId(docname):
                 frappe.msgprint(f"No Service Type found for job {job.job_name}")
     doc.update_container_in_jobs()
     doc.save()
+
+
+@frappe.whitelist()
+def change_container_number(freight_order_id, new_container_number):
+    # Validate container number format
+    pattern = r'^[A-Z]{4}\d{7}$'
+    if not re.match(pattern, new_container_number):
+        frappe.throw(_("Container number must be 4 uppercase letters followed by 7 digits."))
+
+    freight_order = frappe.get_doc("FPL Freight Orders", freight_order_id)
+
+    container = frappe.get_doc("FPL Containers", {
+        "freight_order_id": freight_order_id,
+        "container_type": freight_order.container_type,
+        "booking_order_id": freight_order.sales_order_number
+    })
+
+    if not container:
+        frappe.throw(_("No matching container found for this Freight Order."))
+
+    # Update container number
+    old_container_number = container.container_number
+    container.container_number = new_container_number
+    container.save()
+    
+    freight_order.container_number = new_container_number
+    freight_order.save()
+
+    # Update related jobs
+    job_doctypes = ["FPLRoadJob", "FPLYardJob", "FPLRailJob", "FPLCrossStuffJob"]
+
+    for doctype in job_doctypes:
+        jobs = frappe.get_all(doctype, filters={"container_number": old_container_number, "freight_order_id": freight_order_id}, fields=["name"])
+        for job in jobs:
+            job_doc = frappe.get_doc(doctype, job.name)
+            job_doc.container_number = new_container_number
+            job_doc.save()
+
+    return True

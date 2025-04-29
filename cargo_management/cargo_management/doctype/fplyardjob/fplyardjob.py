@@ -1,6 +1,7 @@
 # Copyright (c) 2024, Osama and contributors
 # For license information, please see license.txt
 from cargo_management.cargo_management.utils.Update_JOB_Container_FO_Status import updateJobStatus
+from cargo_management.cargo_management.utils.revert_JOB_Container_FO_Status import revertJobStatus
 from cargo_management.cargo_management.utils.api import create_invoice
 from frappe.utils import now_datetime
 import frappe
@@ -33,6 +34,14 @@ class FPLYardJob(Document):
 	# end: auto-generated types
 
 	def validate(self):
+		if self.status == "Completed":
+			if self.job_name == "Gate In" and not self.gate_in:
+				if revertJobStatus(self.name , self.freight_order_id, self.container_number):
+					self.status = "Assigned"
+			if self.job_name == "Gate Out" and not self.gate_out:
+				if revertJobStatus(self.name , self.freight_order_id, self.container_number):
+					self.status = "Assigned"
+		
 		if (self.gate_in or self.gate_out) and self.status != "Completed":
 			if updateJobStatus(self.name , self.freight_order_id, self.container_number):
 				self.status = "Completed"
