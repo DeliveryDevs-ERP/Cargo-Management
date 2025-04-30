@@ -71,11 +71,12 @@ class BookingOrder(Document):
             frappe.throw(_("Cannot save, Please assign a sales person to customer."), exc=SalesPersonNotFound)
 
         current_date = getdate(now_datetime())
+        sales_order_date = getdate(self.sales_order_date)
 
-        if self.sales_order_date > current_date:
+        if sales_order_date > current_date:
             frappe.throw(_("Sales Order Date cannot be in the future."))
 
-        if self.sales_order_date < add_days(current_date, -5):
+        if sales_order_date < add_days(current_date, -5):
             frappe.throw(_("Sales Order Date cannot be older than 5 days."))
 
     
