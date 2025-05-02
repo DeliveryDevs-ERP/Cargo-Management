@@ -70,6 +70,9 @@ class FPLPerformMiddleMile(Document):
             self.bulk_update_container_status()
             self.calculate_expenses()
             self.create_purchase_invoice()
+        
+        if len(self.expenses) > 0:
+            self.send_expense_invoice_notification()
             
     def on_trash(self):
         if self.status == "" or self.status == "Train Formed":
@@ -380,8 +383,6 @@ class FPLPerformMiddleMile(Document):
                 frappe.throw(_("The expected time of arrival (ETA) cannot be before the expected departure time (EDA)."))
 
     def send_expense_invoice_notification(self):
-        # booking_order = frappe.db.get_value("FPL Containers", self.container_number, "booking_order_id")
-        # sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
         recipient_emails = [
             user["email"] for user in frappe.get_all(
                 "User",
@@ -398,8 +399,7 @@ class FPLPerformMiddleMile(Document):
         for expense in self.expenses:
             if expense.invoiced_ == 1 and not expense.sales_invoice_no:
                 pending_expenses.append(expense)
-        # booking_order = frappe.db.get_value("FPL Containers", expense.container_number, "booking_order_id")
-        # sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
+    
         if not pending_expenses:
             return  
         
@@ -407,12 +407,18 @@ class FPLPerformMiddleMile(Document):
 
         rows = ""
         for expense in pending_expenses:
+            booking_order = frappe.db.get_value("FPL Containers", expense.container_number, "booking_order_id")
+            cNumber = frappe.db.get_value("FPL Containers", expense.container_number, "container_number")
+            sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
             rows += f"""
-                <tr>
-                    <td>{expense.expense_type}</td>
-                    <td>{expense.amount}</td>
-                </tr>
-            """
+            <tr>
+                <td>{expense.expense_type}</td>
+                <td>{expense.amount}</td>
+                <td>{cNumber}</td>
+                <td>{booking_order}</td>
+                <td>{sales_order}</td>
+            </tr>
+        """
 
         table_html = f"""
             <table class="panel-header" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -444,6 +450,9 @@ class FPLPerformMiddleMile(Document):
                                     <tr>
                                         <th>Expense Type</th>
                                         <th>Amount</th>
+                                        <th>Container Number</th>
+                                        <th>Booking ID</th>
+                                        <th>Sales Order</th>
                                     </tr>
                                 </thead>
                                 <tbody>
