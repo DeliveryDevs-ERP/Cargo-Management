@@ -3,6 +3,8 @@ from frappe.model.document import Document
 
 from cargo_management.cargo_management.doctype.fpl_freight_orders.fpl_freight_orders import create_Job_withoutId
 from cargo_management.cargo_management.utils.api import create_invoice
+from frappe.utils import getdate, get_link_to_form
+
 
 class PerformCrossStuff(Document):
     # begin: auto-generated types
@@ -38,6 +40,8 @@ class PerformCrossStuff(Document):
         self.change_empty_return_end_location_in_CFO()
         self.assign_performance_in_request()
         self.create_purchase_invoice()
+        if len(self.expenses) > 0:
+            self.send_expense_invoice_notification()
 
     def amend_FOs(self):
         temp_jobs = []
@@ -81,7 +85,92 @@ class PerformCrossStuff(Document):
                 FO.save()
                 create_Job_withoutId(FO.name)
         return temp_jobs
+    
+    def send_expense_invoice_notification(self):
+        booking_order = self.sales_order_number or frappe.db.get_value("FPL Containers", self.container_number, "booking_order_id")
+        sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
+        recipient_emails = [
+            user["email"] for user in frappe.get_all(
+                "User",
+                filters={"role": "Accounts Manager"},
+                fields=["email"]
+            ) if user.get("email")
+        ]
 
+        if not recipient_emails:
+            frappe.msgprint("No Accounts Managers found with valid email addresses.")
+            return
+
+        pending_expenses = []
+        for expense in self.expenses:
+            if expense.invoiced_ == 1 and not expense.sales_invoice_no:
+                pending_expenses.append(expense)
+
+        if not pending_expenses:
+            return  
+        
+        job_link = get_link_to_form("Perform Cross Stuff", self.name)
+
+        rows = ""
+        for expense in pending_expenses:
+            rows += f"""
+                <tr>
+                    <td>{expense.expense_type}</td>
+                    <td>{expense.amount}</td>
+                </tr>
+            """
+
+        table_html = f"""
+            <table class="panel-header" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr height="10"></tr>
+                <tr>
+                    <td width="15"></td>
+                    <td>
+                        <div class="text-medium text-muted">
+                            <h2>Please create Sales Invoice for Job: {self.name}</h2>
+                        </div>
+                    </td>
+                    <td width="15"></td>
+                </tr>
+                <tr height="10"></tr>
+            </table>
+
+            <table class="panel-body" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr height="10"></tr>
+                <tr>
+                    <td width="15"></td>
+                    <td>
+                        <div>
+                            <ul class="list-unstyled" style="line-height: 1.7">
+                                <li><b>Sales Order:</b> {sales_order}</li>
+                                <li><b>Booking Order:</b> {booking_order}</li>
+                                <li><b>Job Document:</b> {job_link}</li>
+                            </ul>
+                            <br>
+                            <table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse: collapse;">
+                                <thead style="background: #f0f0f0;">
+                                    <tr>
+                                        <th>Expense Type</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {rows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                    <td width="15"></td>
+                </tr>
+                <tr height="10"></tr>
+            </table>
+    """
+
+        frappe.sendmail(
+            recipients=recipient_emails,
+            subject=f"Pending Sales Invoice for Job: {self.name}",
+            message=table_html
+        )
 
     def append_empty_return_job(self, FO, crossStuff_location,  row):
         transport_mode = self.determine_transport_mode()

@@ -1,0 +1,30 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.return_against and doc.custom_booking_order and doc.is_debit_note",
+ "creation": "2025-05-01 17:40:08.780688",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Sales Invoice",
+ "enabled": 1,
+ "event": "Submit",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<table class=\"panel-header\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n    <tr height=\"10\"></tr>\n    <tr>\n        <td width=\"15\"></td>\n        <td>\n            <div class=\"text-medium text-muted\">\n                <h2>{{ _(\"Invoice Generated:\") }} {{ doc.name }}</h2>\n            </div>\n        </td>\n        <td width=\"15\"></td>\n    </tr>\n    <tr height=\"10\"></tr>\n</table>\n\n<table class=\"panel-body\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n    <tr height=\"10\"></tr>\n    <tr>\n        <td width=\"15\"></td>\n        <td>\n            <div>\n                <ul class=\"list-unstyled\" style=\"line-height: 1.7\">\n    <li><b>{{ _(\"Sales Order\") }}:</b> {{ doc.items[0].sales_order }}</li>\n    <li><b>{{ _(\"Booking Order\") }}:</b> {{ doc.custom_booking_order }}</li>\n</ul>\n\n                <br>\n                <table class=\"table table-bordered\" style=\"width:100%; border-collapse: collapse;\">\n                    <thead style=\"background: #f0f0f0;\">\n                        <tr>\n                            <th>{{ _(\"Item\") }}</th>\n                            <th>{{ _(\"Qty\") }}</th>\n                            <th>{{ _(\"Rate\") }}</th>\n                            <th>{{ _(\"Amount\") }}</th>\n                            <th>{{ _(\"Doctype\") }}</th>\n                            <th>{{ _(\"Parent Name\") }}</th>\n                            <th>{{ _(\"Child Row Name\") }}</th>\n                            <th>{{ _(\"Parent Link\") }}</th>\n                        </tr>\n                    </thead>\n                    <tbody>\n                        {% for item in doc.items %}\n                            {% set parts = item.description and item.description.split(\" - \") %}\n                            {% set docname = parts and parts[0].replace(\"Expense from \", \"\") %}\n                            {% set parentname = parts and parts[1] %}\n                            {% set childname = parts and parts[2] %}\n                            <tr>\n                                <td>{{ item.item_name }}</td>\n                                <td>{{ item.qty }}</td>\n                                <td>{{ frappe.utils.fmt_money(item.rate, currency=doc.currency) }}</td>\n                                <td>{{ frappe.utils.fmt_money(item.amount, currency=doc.currency) }}</td>\n                                <td>{{ docname or \"\" }}</td>\n                                <td>{{ parentname or \"\" }}</td>\n                                <td>{{ childname or \"\" }}</td>\n                                <td>\n                                    {% if docname and parentname %}\n                                        {{ frappe.utils.get_link_to_form(docname, parentname) }}\n                                    {% endif %}\n                                </td>\n                            </tr>\n                        {% endfor %}\n                    </tbody>\n\n                </table>\n            </div>\n        </td>\n        <td width=\"15\"></td>\n    </tr>\n    <tr height=\"10\"></tr>\n</table>\n",
+ "message_type": "HTML",
+ "modified": "2025-05-01 17:40:08.780688",
+ "modified_by": "Administrator",
+ "module": "Cargo Management",
+ "name": "Expenses Intimation",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "",
+   "receiver_by_role": "Sales User"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "subject": "Over Expenses {{doc.name}} Generated"
+}

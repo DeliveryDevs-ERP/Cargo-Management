@@ -8,6 +8,7 @@ from cargo_management.cargo_management.utils.Update_JOB_Container_FO_Status impo
 from cargo_management.cargo_management.utils.getJobTypebyID import get_job_type_by_id
 from cargo_management.cargo_management.utils.getSupplierForCostType import get_supplier
 from cargo_management.cargo_management.utils.api import create_invoice
+from frappe.utils import getdate, get_link_to_form
 
 class MiddleMileWeightError(frappe.ValidationError):
 	pass
@@ -377,6 +378,91 @@ class FPLPerformMiddleMile(Document):
         if self.expected_departure_time_eda and self.expected_time_of_arrival_eta:
             if self.expected_time_of_arrival_eta < self.expected_departure_time_eda:
                 frappe.throw(_("The expected time of arrival (ETA) cannot be before the expected departure time (EDA)."))
+
+    def send_expense_invoice_notification(self):
+        # booking_order = frappe.db.get_value("FPL Containers", self.container_number, "booking_order_id")
+        # sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
+        recipient_emails = [
+            user["email"] for user in frappe.get_all(
+                "User",
+                filters={"role": "Accounts Manager"},
+                fields=["email"]
+            ) if user.get("email")
+        ]
+
+        if not recipient_emails:
+            frappe.msgprint("No Accounts Managers found with valid email addresses.")
+            return
+
+        pending_expenses = []
+        for expense in self.expenses:
+            if expense.invoiced_ == 1 and not expense.sales_invoice_no:
+                pending_expenses.append(expense)
+        # booking_order = frappe.db.get_value("FPL Containers", expense.container_number, "booking_order_id")
+        # sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
+        if not pending_expenses:
+            return  
+        
+        job_link = get_link_to_form("FPL Perform Middle Mile", self.name)
+
+        rows = ""
+        for expense in pending_expenses:
+            rows += f"""
+                <tr>
+                    <td>{expense.expense_type}</td>
+                    <td>{expense.amount}</td>
+                </tr>
+            """
+
+        table_html = f"""
+            <table class="panel-header" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr height="10"></tr>
+                <tr>
+                    <td width="15"></td>
+                    <td>
+                        <div class="text-medium text-muted">
+                            <h2>Please create Sales Invoice for Job: {self.name}</h2>
+                        </div>
+                    </td>
+                    <td width="15"></td>
+                </tr>
+                <tr height="10"></tr>
+            </table>
+
+            <table class="panel-body" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr height="10"></tr>
+                <tr>
+                    <td width="15"></td>
+                    <td>
+                        <div>
+                            <ul class="list-unstyled" style="line-height: 1.7">
+                                <li><b>Job Document:</b> {job_link}</li>
+                            </ul>
+                            <br>
+                            <table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse: collapse;">
+                                <thead style="background: #f0f0f0;">
+                                    <tr>
+                                        <th>Expense Type</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {rows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                    <td width="15"></td>
+                </tr>
+                <tr height="10"></tr>
+            </table>
+    """
+
+        frappe.sendmail(
+            recipients=recipient_emails,
+            subject=f"Pending Sales Invoice for Job: {self.name}",
+            message=table_html
+        )
 
     def calculate_expenses(self):
         wagon_groups = {}

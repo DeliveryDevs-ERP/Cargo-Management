@@ -146,6 +146,9 @@ after_install = "cargo_management.install.after_install"
 # Hook on document methods and events
 
 doc_events = {
+    "Sales Invoice": {
+        "on_submit": "cargo_management.cargo_management.api.Sales_inv_validation_overload.update_expense_references"
+    },
 	"Sales Order": {
 		"on_trash": "cargo_management.cargo_management.doctype.booking_order.booking_order.check_booking_order_status"
 	}

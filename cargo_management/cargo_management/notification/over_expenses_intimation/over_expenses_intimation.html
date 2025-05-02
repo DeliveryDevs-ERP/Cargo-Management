@@ -1,0 +1,69 @@
+<table class="panel-header" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr height="10"></tr>
+    <tr>
+        <td width="15"></td>
+        <td>
+            <div class="text-medium text-muted">
+                <h2>{{ _("Invoice Generated:") }} {{ doc.name }}</h2>
+            </div>
+        </td>
+        <td width="15"></td>
+    </tr>
+    <tr height="10"></tr>
+</table>
+
+<table class="panel-body" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr height="10"></tr>
+    <tr>
+        <td width="15"></td>
+        <td>
+            <div>
+                <ul class="list-unstyled" style="line-height: 1.7">
+    <li><b>{{ _("Sales Order") }}:</b> {{ doc.items[0].sales_order }}</li>
+    <li><b>{{ _("Booking Order") }}:</b> {{ doc.custom_booking_order }}</li>
+</ul>
+
+                <br>
+                <table class="table table-bordered" style="width:100%; border-collapse: collapse;">
+                    <thead style="background: #f0f0f0;">
+                        <tr>
+                            <th>{{ _("Item") }}</th>
+                            <th>{{ _("Qty") }}</th>
+                            <th>{{ _("Rate") }}</th>
+                            <th>{{ _("Amount") }}</th>
+                            <th>{{ _("Doctype") }}</th>
+                            <th>{{ _("Parent Name") }}</th>
+                            <th>{{ _("Child Row Name") }}</th>
+                            <th>{{ _("Parent Link") }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in doc.items %}
+                            {% set parts = item.description and item.description.split(" - ") %}
+                            {% set docname = parts and parts[0].replace("Expense from ", "") %}
+                            {% set parentname = parts and parts[1] %}
+                            {% set childname = parts and parts[2] %}
+                            <tr>
+                                <td>{{ item.item_name }}</td>
+                                <td>{{ item.qty }}</td>
+                                <td>{{ frappe.utils.fmt_money(item.rate, currency=doc.currency) }}</td>
+                                <td>{{ frappe.utils.fmt_money(item.amount, currency=doc.currency) }}</td>
+                                <td>{{ docname or "" }}</td>
+                                <td>{{ parentname or "" }}</td>
+                                <td>{{ childname or "" }}</td>
+                                <td>
+                                    {% if docname and parentname %}
+                                        {{ frappe.utils.get_link_to_form(docname, parentname) }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </td>
+        <td width="15"></td>
+    </tr>
+    <tr height="10"></tr>
+</table>
