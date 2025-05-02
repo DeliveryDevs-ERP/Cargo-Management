@@ -208,8 +208,10 @@ class FPLFreightOrders(Document):
     def fetchNextLocationfromFOJobGrid(self):
         if self.jobs and len(self.jobs) > 1 and self.jobs[1].start_location:
             return self.jobs[1].start_location
+        elif self.jobs and len(self.jobs) == 1 and self.jobs[0].end_location:
+            return self.jobs[0].end_location
         else:
-            frappe.msgprint("No start location found in the second job entry.")
+            frappe.msgprint("No start location found in the second job nor end location in first job entry.")
             return None         
 
     # def update_container_in_jobs(self):

@@ -8,6 +8,8 @@ def update_expense_references(doc, method):
     Parses each row's description to find the source doctype, parent name, and child table row name.
     Then updates the corresponding child table row with the current Sales Invoice's name.
     """
+    if not doc.custom_booking_order and not doc.is_debit_note and not doc.return_against:
+        return
     for item in doc.items:
         description = item.description or ""
         # Expected format: "Expense from FPLRoadJob - First Mile-02251 - 6rn9bkb5i1"
