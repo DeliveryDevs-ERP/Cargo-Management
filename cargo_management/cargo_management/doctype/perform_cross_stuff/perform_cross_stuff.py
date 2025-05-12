@@ -87,7 +87,7 @@ class PerformCrossStuff(Document):
         return temp_jobs
     
     def send_expense_invoice_notification(self):
-        booking_order = self.sales_order_number or frappe.db.get_value("FPL Containers", self.container_number, "booking_order_id")
+        booking_order = self.booking_order_id or frappe.db.get_value("FPL Containers", self.container_number, "booking_order_id")
         sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
         recipient_emails = [
             user["email"] for user in frappe.get_all(
