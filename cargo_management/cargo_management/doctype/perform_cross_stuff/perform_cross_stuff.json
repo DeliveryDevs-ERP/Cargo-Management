@@ -89,6 +89,7 @@
    "label": "Expenses"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "expenses",
    "fieldtype": "Table",
    "label": "Expenses",
@@ -98,7 +99,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-20 14:11:19.429184",
+ "modified": "2025-05-13 17:53:29.836559",
  "modified_by": "Administrator",
  "module": "Cargo Management",
  "name": "Perform Cross Stuff",

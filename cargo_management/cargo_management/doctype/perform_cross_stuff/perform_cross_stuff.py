@@ -43,6 +43,12 @@ class PerformCrossStuff(Document):
         if len(self.expenses) > 0:
             self.send_expense_invoice_notification()
 
+    def on_change(self):
+        self.create_purchase_invoice()
+        if len(self.expenses) > 0:
+            self.send_expense_invoice_notification()
+
+
     def amend_FOs(self):
         temp_jobs = []
         processed_containers = []
@@ -227,8 +233,11 @@ class PerformCrossStuff(Document):
                         supplier=expense.client,
                         company=default_company
                     )
-                    if code == True:
+                    if code:
+                        expense.purchase_invoice_no = code
                         expense.purchase_invoiced_created = 1
+                        expense.save()
+                        
                         
     def get_service_type_name(self, service_name, transport_mode):
         if service_name in ['Gate In', 'Gate Out']:
@@ -388,3 +397,4 @@ class PerformCrossStuff(Document):
             if ref_container_count == count_req:
                 frappe.db.set_value("Container or Vehicle Request", request["name"], "cross_stuff_performance", self.name)
                 frappe.db.commit()
+                
