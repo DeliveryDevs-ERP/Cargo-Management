@@ -169,7 +169,7 @@ class FPLPerformMiddleMile(Document):
             if row.container:
                 # Retrieve Freight Order and Job IDs based on container number
                 container_number = frappe.db.get_value("FPL Containers", {"name": row.container}, "container_number")
-                freight_order_id = frappe.db.get_value("FPL Freight Orders", {"container_number": container_number}, "name")
+                freight_order_id = frappe.db.get_value("FPL Containers", {"name": row.container}, "freight_order_id")
                 mm_job_id = frappe.db.get_value("FPLRailJob", {"container_number": container_number, "freight_order_id": freight_order_id}, "name")
 
                 #frappe.msgprint(f"Processing container: {container_number}")
@@ -338,9 +338,9 @@ class FPLPerformMiddleMile(Document):
         for row in self.middle_mile_in_loading:
             if row.container:
                 # Get the container number associated with the container ID
-                container_number = frappe.db.get_value("FPL Containers", {"name": row.container}, "container_number")
+                freight_order_id = frappe.db.get_value("FPL Containers", {"name": row.container}, "freight_order_id")
                 # Get the Freight Order ID associated with the container
-                freight_order_id = frappe.db.get_value("FPL Freight Orders", {"container_number": container_number}, "name")
+                # freight_order_id = frappe.db.get_value("FPL Freight Orders", {"container_number": container_number}, "name")
 
                 if freight_order_id:
                     # Fetch the Freight Order document
