@@ -286,7 +286,9 @@ def fetch_extra_invoice(booking_no):
             SELECT SUM(sii.amount) AS total_sale_amount
             FROM `tabSales Order` AS so
             LEFT JOIN `tabSales Invoice Item` AS sii ON so.name = sii.sales_order
-            WHERE so.custom_booking_order_id = %s AND sii.qty = 0
+            LEFT JOIN `tabSales Invoice` AS si ON sii.parent = si.name
+            WHERE so.custom_booking_order_id = %s 
+                AND (si.is_return = 1 OR si.is_debit_note = 1)
         """, (booking_no,), as_dict=True)
 
         if result and result[0].get("total_sale_amount") is not None:
