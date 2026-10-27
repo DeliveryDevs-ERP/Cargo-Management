@@ -131,7 +131,7 @@ def get_data(filters, expense_types):
     #     END as selling_cost
     # """
     
-    data_query = f"""
+    data_query = """
         SELECT 
             BO.name as BOName, FO.name , FO.container_number as CName, RD.pickup_arrival, RD.dropoff_completed, RD.job_name as Job_name, pm.departure_time as middle_mile_start, pm.actual_arrival_datetime as middle_mile_end, timediff(pm.departure_time, pm.actual_arrival_datetime) as middle_mile_duration
         FROM

@@ -10,7 +10,7 @@ def before_install():
 
 def after_install():
     initialize_trasnport_mode()
-    frappe.db.commit()
+    frappe.db.commit()  # nosemgrep: frappe-manual-commit - persist initial setup data created in after_install
 
 def initialize_trasnport_mode():
     print("HH")

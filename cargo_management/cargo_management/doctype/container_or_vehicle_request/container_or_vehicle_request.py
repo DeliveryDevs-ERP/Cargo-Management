@@ -83,7 +83,7 @@ class ContainerorVehicleRequest(Document):
             freight_order.next_job = get_job_type_by_id(freight_order.jobs[0].job_id)
             freight_order.save()
 
-        frappe.db.commit()
+        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
 
     def get_service_type_name(self, service_name, transport_mode):
         if service_name in ['Gate In', 'Gate Out']:

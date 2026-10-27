@@ -66,7 +66,7 @@ def get_columns(data, job_types):
 
 def get_data_rail_trains(filters, expense_types):  
     if len(filters.get("train_nos")) > 0:    
-        data_query = f"""
+        data_query = """
             SELECT 
                 BO.name as BOName, BO.workflow_state as BO_status, FO.status as FO_status, FO.name as Fname, FO.container_number as CName, RD.status as RD_status, RD.job_name as Job_name, pm.status as middle_mile_status
             FROM
@@ -89,7 +89,7 @@ def get_data_rail_trains(filters, expense_types):
         return []
 
 def get_data_rail_bookings(filters, expense_types):      
-    data_query = f"""
+    data_query = """
         SELECT 
             BO.name as BOName, BO.workflow_state as BO_status, FO.status as FO_status, FO.name as Fname, FO.container_number as CName, RD.status as RD_status, RD.job_name as Job_name, pm.status as middle_mile_status
         FROM
@@ -111,7 +111,7 @@ def get_data_rail_bookings(filters, expense_types):
 
 
 def get_data_road(filters, expense_types):      
-    data_query = f"""
+    data_query = """
         SELECT 
             BO.name as BOName, BO.workflow_state as BO_status, FO.status as FO_status, FO.name as Fname, FO.container_number as CName, RD.status as RD_status, RD.job_name as Job_name, pm.status as middle_mile_status
         FROM

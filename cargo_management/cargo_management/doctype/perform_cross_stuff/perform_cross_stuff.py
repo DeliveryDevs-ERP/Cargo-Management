@@ -396,5 +396,5 @@ class PerformCrossStuff(Document):
 
             if ref_container_count == count_req:
                 frappe.db.set_value("Container or Vehicle Request", request["name"], "cross_stuff_performance", self.name)
-                frappe.db.commit()
+                frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
                 

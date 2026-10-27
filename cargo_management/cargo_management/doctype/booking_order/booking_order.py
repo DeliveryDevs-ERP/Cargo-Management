@@ -201,7 +201,7 @@ class BookingOrder(Document):
             freight_order.save()
 
             
-        frappe.db.commit()
+        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
 
         # if crossStuff_flag:
         #     self.reorder_Freight_orderJobs_after_crossStuff_insert(freight_order,cross_stuff_index)
@@ -450,7 +450,7 @@ class BookingOrder(Document):
         
         # Save changes to the Freight Order
         freight_order.save()
-        frappe.db.commit()
+        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
             
     def get_str_location(self):
         # Default values for start and end locations

@@ -23,7 +23,7 @@ def get_FO_containers(doctype, txt, searchfield, start, page_len, filters):
         frappe.throw("Booking Order ID is required to fetch containers.")
 
     try:
-        sql_query = f"""
+        sql_query = """
             SELECT 
                 container.name, container.container_number
             FROM 
@@ -38,7 +38,7 @@ def get_FO_containers(doctype, txt, searchfield, start, page_len, filters):
         """
 
         if txt and searchfield:
-            sql_query += f" AND container.container_number LIKE %s"
+            sql_query += " AND container.container_number LIKE %s"
             search_value = f"%{txt}%"
             return frappe.db.sql(sql_query, (booking_order_id, search_value))
         else:
@@ -61,7 +61,7 @@ def get_CFO_containers(doctype, txt, searchfield, start, page_len, filters):
         frappe.throw("Booking Order ID is required to fetch containers.")
 
     try:
-        sql_query = f"""
+        sql_query = """
             SELECT 
                 container.name, container.container_number
             FROM 
@@ -76,7 +76,7 @@ def get_CFO_containers(doctype, txt, searchfield, start, page_len, filters):
         """
 
         if txt and searchfield:
-            sql_query += f" AND container.container_number LIKE %s"
+            sql_query += " AND container.container_number LIKE %s"
             search_value = f"%{txt}%"
             return frappe.db.sql(sql_query, (booking_order_id, search_value))
         else:

@@ -41,14 +41,7 @@ def get_data(filters, expense_types):
     
     # total_cost_field = ", SUM(e.amount) as total_row_cost"
     
-    selling_cost_calculation = """
-    ,   CASE
-            WHEN F.rate_type = 'Per Bag' THEN F.rate * F.bag_qty
-            ELSE F.rate * F.weight
-        END as selling_cost
-    """
-    
-    data_query = f"""
+    data_query = """
         SELECT 
             c.name, c.container_number, F.size, pm.loco_number, BO.name as BOName, BO.bill_to, BO.sales_order_type, pm.movement_type, pm.rail_number, F.rate, F.rate_type, F.weight, F.bag_qty, e.amount as total_cost,
             CASE
@@ -57,7 +50,10 @@ def get_data(filters, expense_types):
                 WHEN e.parenttype = 'FPL Perform Middle Mile' THEN CONCAT('Middle Mile', '-', e.expense_type)
                 WHEN e.parenttype = 'Perform Cross Stuff' THEN CONCAT('Cross Stuff', '-', e.expense_type)
             END as collumn
-            {selling_cost_calculation}
+            ,   CASE
+                    WHEN F.rate_type = 'Per Bag' THEN F.rate * F.bag_qty
+                    ELSE F.rate * F.weight
+                END as selling_cost
         FROM 
             `tabExpenses cdt` e
         JOIN

@@ -9,7 +9,7 @@ def get_applicable_jobs(doctype, txt, searchfield, start, page_len, filters):
     not_in_container_list = tuple(not_in_container)
 
     try:
-        sql_query = f"""
+        sql_query = """
             SELECT 
                 container.name, container.container_number, freight_order.size
             FROM 
@@ -29,7 +29,7 @@ def get_applicable_jobs(doctype, txt, searchfield, start, page_len, filters):
 
         # Adding search condition
         if txt and searchfield:
-            sql_query += f" AND container.container_number LIKE %s"
+            sql_query += " AND container.container_number LIKE %s"
             search_value = f"%{txt}%"
         else:
             search_value = None

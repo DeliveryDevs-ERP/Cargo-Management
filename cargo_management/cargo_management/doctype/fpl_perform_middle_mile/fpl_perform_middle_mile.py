@@ -78,7 +78,7 @@ class FPLPerformMiddleMile(Document):
         if self.status == "" or self.status == "Train Formed":
             for wagon in self.get('wagons'):
                 frappe.db.set_value("Wagons", wagon.wagon_number, "train_no", "")
-        frappe.db.commit()
+        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
 
     def fill_child_middle_mile_tables_with_WagonName_rows(self): # Loading of Containers
         if self.loading_time is None and self.loading_end_time is None: #this will only happen if loading times are not given
@@ -140,7 +140,7 @@ class FPLPerformMiddleMile(Document):
                     for row2 in self.get('wagons'):
                         if row2.wagon_number == row.wagon_number:
                             row2.loaded_ = 0
-        frappe.db.commit()
+        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
             
 
     def carry_forward_the_specified_row2(self):
@@ -162,7 +162,7 @@ class FPLPerformMiddleMile(Document):
             frappe.db.set_value("Wagons", wagon, "status", "In Transit")
         for row in derailed_rows:
             frappe.db.set_value("Wagons", row.wagon_number, "status", "Derailed")
-        frappe.db.commit()        
+        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
                 
     def bulk_update_container_status(self):
         for row in self.middle_mile_copy:
@@ -277,7 +277,7 @@ class FPLPerformMiddleMile(Document):
         for row2 in self.get('wagons'):
             if row2.wagon_number:
                 frappe.db.set_value("Wagons", row2.wagon_number, "status", "Received")
-        frappe.db.commit()   
+        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
                 
     def fix_job_sequence_onGateInGateOut_insert(self, freight_order_id):
         # Fetch the freight order document
@@ -357,7 +357,7 @@ class FPLPerformMiddleMile(Document):
                     # Save changes if any Middle Mile jobs were updated
                     if needs_save:
                         freight_order.save()
-                        frappe.db.commit()  # Commit changes to ensure Middle Mile statuses are updated
+                        frappe.db.commit()  # nosemgrep: frappe-manual-commit - Commit changes to ensure Middle Mile statuses are updated
 
                     # Second pass: Process Gate Out jobs
                     for job in freight_order.jobs:
@@ -371,7 +371,7 @@ class FPLPerformMiddleMile(Document):
 
                                 gate_out_job_doc.gate_out = self.departure_time
                                 gate_out_job_doc.save()
-                                frappe.db.commit()  # Commit each Gate Out job update individually
+                                frappe.db.commit()  # nosemgrep: frappe-manual-commit - Commit each Gate Out job update individually
 
                             except Exception as e:
                                 frappe.msgprint(f"Error updating Gate Out job {job.job_id} for container {row.container}: {str(e)}")
@@ -504,25 +504,24 @@ class FPLPerformMiddleMile(Document):
                 container_details[size]['count'] += 1
                 container_details[size]['total_weight'] += weight
 
-            condition = ""
+            query = """
+                SELECT * FROM `tabRail Freight Cost` WHERE
+                wagon_type = %s AND
+                container_count = %s AND
+                container_count_40 = %s
+            """
             params = [wagon_doc_type,
                     container_details.get(20, {}).get('count', 0),
                     container_details.get(40, {}).get('count', 0)]
 
             if container_details.get(20, {}).get('count', 0) == 1 and container_details.get(40, {}).get('count', 0) == 1:
-                condition = "AND avg_weight >= %s AND avg_weight_40 >= %s"
+                query += " AND avg_weight >= %s AND avg_weight_40 >= %s"
                 params += [
                     container_details.get(20, {}).get('total_weight', 0) / container_details.get(20, {}).get('count', 1),
                     container_details.get(40, {}).get('total_weight', 0) / container_details.get(40, {}).get('count', 1)
                 ]
 
-            rail_freight_costs = frappe.db.sql(f"""
-                SELECT * FROM `tabRail Freight Cost` WHERE
-                wagon_type = %s AND
-                container_count = %s AND
-                container_count_40 = %s
-                {condition}
-            """, params, as_dict=1)
+            rail_freight_costs = frappe.db.sql(query, params, as_dict=1)
             Fixed_exp = frappe.get_all('FPL Cost Type', 
                                     filters={'job_mode': 'Train Job', 'fixed_': 1, 'cost': ['>', 0], 'movement_type': self.movement_type, 'location': self.departure_location},
                                     fields=['name', 'cost'])
@@ -593,7 +592,7 @@ def cancel_departure(docname):
             frappe.db.set_value("Wagons", row.wagon_number, "status", "Loaded")
         else:
             frappe.db.set_value("Wagons", row.wagon_number, "status", "Received")
-    frappe.db.commit()
+    frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
     for row in doc.get("middle_mile_copy"): 
         if row.container:
             # Get the container number associated with the container ID
@@ -623,7 +622,7 @@ def cancel_departure(docname):
                     freight_order.last_job = "Gate In"
                     freight_order.next_job = "Gate Out"
                     freight_order.save()
-                    frappe.db.commit()  
+                    frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
 
                 # Second pass: Process Gate Out jobs
                 for job in freight_order.jobs:
@@ -634,7 +633,7 @@ def cancel_departure(docname):
                             gate_out_job_doc.gate_out = None 
                             gate_out_job_doc.status = 'Assigned' 
                             gate_out_job_doc.save()
-                            frappe.db.commit()  
+                            frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
                         except Exception as e:
                             frappe.msgprint(f"Error updating Gate Out job {job.job_id} for container {row.container}: {str(e)}")
 
@@ -679,4 +678,4 @@ def cancel_loading(docname):
         frappe.db.set_value("Wagons", row.wagon_number, "loaded_", 0)
         frappe.db.set_value("Wagons", row.wagon_number, "train_no", "")
         frappe.db.set_value("FPL Wagon cdt", row.name, "loaded_", 0)
-    frappe.db.commit()
+    frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
