@@ -182,6 +182,11 @@ def prepare():
         f.create('user-company-'+profile,'User Permission',user=user.name,allow='Company',
             for_value=company.name,apply_to_all_doctypes=1,is_default=1)
     make_booking(f,'Road-Domestic',selected_labels=['Long Haul'])
+    # The synthetic setup above supplies the native onboarding prerequisites.
+    # Complete only this disposable site's native wizard flags for Desk tests.
+    from frappe.desk.page.setup_wizard.setup_wizard import enable_setup_wizard_complete,disable_future_access
+    for app in ('frappe','erpnext'):enable_setup_wizard_complete(app)
+    disable_future_access()
     frappe.db.commit()
     f.path.write_text(json.dumps(f.data,indent=2)+'\n')
     f.path.chmod(0o600)
