@@ -110,7 +110,7 @@ def prepare():
         sales_team=[dict(sales_person=person.name,allocated_percentage=100)])
     supplier=f.create('supplier','Supplier',supplier_name=f.label,supplier_type='Company',
         supplier_group=frappe.db.get_value('Supplier Group',{'is_group':0},'name'))
-    f.create('commodity','FPL Commodities',comodity_name='Consumer Goods')
+    f.create('commodity','FPL Commodities',set_name=f.label+' Consumer Goods',comodity_name='Consumer Goods')
     f.create('shipping-line','FPL Shippingline',shipping_line_name=f.label+' Shipping')
     for index in range(1,7):
         f.create('location-'+str(index),'Location',location_name=f.label+' Yard '+str(index),
