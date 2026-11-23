@@ -97,6 +97,13 @@ def prepare():
                       'default_payable_account','cost_center'):
             if not company.get(field): raise RuntimeError('Missing native Company default: '+field)
     company = f.get('company1')
+    defaults=frappe.get_doc('Global Defaults')
+    defaults.update(default_company=company.name,default_currency='PKR',country='Pakistan')
+    defaults.save()
+    for name in ('Standard Buying','Standard Selling'):
+        price_list=frappe.get_doc('Price List',name)
+        price_list.currency='PKR';price_list.save()
+    frappe.clear_cache()
     for name in ('Per Container','Per Bag','Per Weight(Ton)'):
         if not frappe.db.exists('UOM',name):f.create('uom-'+name,'UOM',uom_name=name)
     for name,mode in (('Road (Truck)','Road'),('Rail (Train)','Rail')):

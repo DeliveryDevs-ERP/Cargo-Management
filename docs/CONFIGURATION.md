@@ -6,6 +6,8 @@ Installation creates schema and owned UI metadata; operating configuration is ex
 
 Create a Company and its chart/fiscal year through ordinary ERPNext setup. Configure Customers, Suppliers, service Items and UOMs. Each Item needs valid Company-specific income/expense accounts and buying/selling cost centers. Expense Cost Types need an expense Item and authorized Supplier; do not use an Item belonging to a different Company.
 
+Complete native ERPNext onboarding, including currency and buying/selling Price Lists. For manual setup, align Global Defaults, party currencies and the selected Price List currencies with the intended Company, or configure legitimate native exchange rates for foreign-currency business. A new PKR Company does not automatically change an existing INR Price List or cached global currency default. Synthetic tests use matching PKR settings and require no external exchange-rate provider.
+
 Cargo Operator is normally combined with native Sales User, Accounts User and Stock User. Cargo Manager is normally combined with the required native manager roles. Set Company User Permissions. These are role compositions, not permission overrides; native ERPNext permissions remain authoritative.
 
 ## Cargo catalogs
