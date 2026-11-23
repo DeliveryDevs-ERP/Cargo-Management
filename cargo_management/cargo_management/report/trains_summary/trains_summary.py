@@ -1,12 +1,10 @@
 import frappe
 from frappe import _
-from frappe.utils import date_diff, format_duration, now_datetime
+from frappe.utils import time_diff_in_seconds, format_duration, now_datetime
 
 def execute(filters=None):
-    columns = get_columns()
-    data = get_data(filters)
-
-    return columns, data
+    from cargo_management.cargo_management.utils.reporting import execute_report
+    return execute_report('Trains summary', filters)
 
 def get_columns():
     """Define the columns for the report."""
@@ -35,7 +33,7 @@ def get_columns():
         {"label": "Status", "fieldname": "status", "fieldtype": "Data", "width": 120},
     ]
 
-from frappe.utils import getdate
+from frappe.utils import get_datetime
 
 def get_data(filters):
     """Fetch and process data for the report."""
@@ -43,15 +41,13 @@ def get_data(filters):
     if filters.get("train_no_from") is None or filters.get("train_no_to") is None:
         return []
 
-    train_no_from = getdate(filters.get("train_no_from"))
-    train_no_to = getdate(filters.get("train_no_to"))
+    train_no_from = get_datetime(filters.get("train_no_from"))
+    train_no_to = get_datetime(filters.get("train_no_to"))
     movement = filters.get("movement")
-    conditions = {
-        "departure_time": ["between", [train_no_from, train_no_to]]
-    }
     # Ensure train_no_from is less than train_no_to for the "between" filter
     if train_no_from > train_no_to:
         train_no_from, train_no_to = train_no_to, train_no_from
+    conditions = {"departure_time": ["between", [train_no_from, train_no_to]]}
         
     if movement:
         conditions['movement_type'] = movement    
@@ -112,13 +108,13 @@ def get_data(filters):
         conventional_wagons = sum(1 for w in wagon_types if w["type"] == "Conventional")
         
         if train.get("loading_time") and train.get("loading_end_time"):
-            loading_duration_seconds = date_diff(train["loading_end_time"], train["loading_time"]) * 24 * 3600
+            loading_duration_seconds = time_diff_in_seconds(train["loading_end_time"], train["loading_time"])
             loading_duration = format_duration(loading_duration_seconds)
         else:
             loading_duration = ""
             
         if train.get("departure_time") and train.get("actual_arrival_datetime"):
-            transit_time_seconds = date_diff(train["actual_arrival_datetime"], train["departure_time"]) * 24 * 3600
+            transit_time_seconds = time_diff_in_seconds(train["actual_arrival_datetime"], train["departure_time"])
             transit_time = format_duration(transit_time_seconds)
         else:
             transit_time = ""

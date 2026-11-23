@@ -3,6 +3,7 @@
 
 frappe.query_reports["Rail PNL Container Wise"] = {
 	"filters": [
+        {fieldname: 'company', label: __('Company'), fieldtype: 'Link', options: 'Company'},
 		{
             "fieldname": "from_date",
             "label": __("From Date"),

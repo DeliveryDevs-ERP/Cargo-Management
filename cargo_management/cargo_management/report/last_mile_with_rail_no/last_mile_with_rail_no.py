@@ -1,8 +1,8 @@
 import frappe
 
 def execute(filters=None):
-    columns, data = get_columns(), get_data(filters)
-    return columns, data
+    from cargo_management.cargo_management.utils.reporting import execute_report
+    return execute_report('Last Mile with Rail No', filters)
 
 def get_columns():
     return [

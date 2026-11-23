@@ -1,13 +1,9 @@
+from cargo_management.cargo_management.utils.services import is_service, service_names
 import frappe
 
 def execute(filters=None):
-    columns = get_columns()
-    data = get_data(filters)
-
-    # Generate report summary and primitive summary
-    report_summary, primitive_summary = get_report_summary(data, filters)
-
-    return columns, data, None, None, report_summary, primitive_summary
+    from cargo_management.cargo_management.utils.reporting import execute_report
+    return execute_report('Train Detail', filters)
 
 
 def get_columns():
@@ -52,9 +48,15 @@ def get_data(filters):
     container_data = frappe.get_all(
         "FPL MM cdt",
         filters={"parent": train_doc["name"]},
-        fields=["container_number", "wagon_number", "received_"]
+        fields=["container_number", "wagon_number"]
     )
 
+
+    # Reception uses New MM cdt; FPL MM cdt has no received_ column.
+    for row in container_data:
+        row['received_'] = 0
+    container_data += frappe.get_all('New MM cdt',filters={'parent':train_doc['name']},
+        fields=['container_number','wagon_number','received_'])
 
     # Step 3: Filter unique containers and wagons, prioritize received_
     unique_data = {}
@@ -128,7 +130,7 @@ def get_data(filters):
             "pod": pod,
             "sales_person": booking_order["sales_person"] if booking_order else None,
             "status": container_status,
-            "grounded_datetime": frappe.get_last_doc("FPLYardJob", filters={"job_type": "enrhva2nvi", "status": "Completed", "container_number": container_number}).gate_in,
+            "grounded_datetime": frappe.get_last_doc("FPLYardJob", filters={"job_type": ["in", service_names("Gate In")], "status": "Completed", "container_number": container_number}).gate_in,
         })
 
     return data

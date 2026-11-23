@@ -18,7 +18,9 @@
   "status",
   "assigned_at",
   "train_number",
-  "train_arrival_datetime"
+  "train_arrival_datetime",
+  "cargo_retired",
+  "cargo_transfer"
  ],
  "fields": [
   {
@@ -60,7 +62,8 @@
    "fieldname": "job_type",
    "fieldtype": "Link",
    "label": "Job Type",
-   "options": "Service Type"
+   "options": "Service Type",
+   "in_list_view": 1
   },
   {
    "fieldname": "status",
@@ -100,6 +103,19 @@
    "fieldtype": "Data",
    "label": "Job Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "cargo_retired",
+   "fieldtype": "Check",
+   "label": "Cargo Retired",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cargo_transfer",
+   "fieldtype": "Link",
+   "label": "Cargo Transfer",
+   "options": "Cargo Cross Stuff Transfer",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -131,6 +147,27 @@
    "report": 1,
    "role": "Sales User",
    "share": 1,
+   "write": 1,
+   "read": 1
+  },
+  {
+   "role": "Cargo Operator",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Cargo Manager",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "create": 1,
    "write": 1
   }
  ],

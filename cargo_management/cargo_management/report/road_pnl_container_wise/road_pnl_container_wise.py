@@ -2,11 +2,8 @@ import frappe
 from frappe import _
 
 def execute(filters=None):
-    expense_types = get_expense_types()
-    data = get_data(filters, expense_types)
-    columns = get_columns(data, expense_types)
-    data = process_data(data)
-    return columns, data
+    from cargo_management.cargo_management.utils.reporting import execute_report
+    return execute_report('Road PNL Container Wise', filters)
 
 def get_expense_types():
     # Fetching all expense types from the `FPL Cost Type` DocType
@@ -99,7 +96,7 @@ def process_data(data):
         
         collumn_key = row['collumn'].replace(" ", "_").lower()
         # Add or update the expense under the correct column
-        processed_data[container_key][collumn_key] = row['total_cost']
+        processed_data[container_key][collumn_key] = processed_data[container_key].get(collumn_key, 0) + row['total_cost']
         # Accumulate total cost
         processed_data[container_key]['total_cost'] += row['total_cost']
         processed_data[container_key]['profit'] = processed_data[container_key]['selling_cost'] - processed_data[container_key]['total_cost']

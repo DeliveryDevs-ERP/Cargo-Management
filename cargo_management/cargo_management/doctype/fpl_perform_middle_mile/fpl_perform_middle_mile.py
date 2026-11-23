@@ -1,3 +1,4 @@
+from cargo_management.setup import get_account_manager_emails
 # Copyright (c) 2024, Osama and contributors
 # For license information, please see license.txt
 
@@ -14,6 +15,17 @@ class MiddleMileWeightError(frappe.ValidationError):
 	pass
 
 class FPLPerformMiddleMile(Document):
+    def _set_defaults(self):
+        # Frappe otherwise injects a global Company default before validation.
+        # Preserve explicit ownership and resolve absent NEW ownership only
+        # from the user's actual selectable Company scope.
+        supplied_company = self.get('company')
+        super()._set_defaults()
+        self.company = supplied_company
+        if self.is_new() and not self.company:
+            from cargo_management.cargo_management.utils.configuration import get_train_company_context
+            self.company = get_train_company_context()['sole_company']
+
     # begin: auto-generated types
     # This code is auto-generated. Do not modify anything in this block.
 
@@ -54,6 +66,8 @@ class FPLPerformMiddleMile(Document):
 
     def validate(self):
         self.validate_expected_dates()
+        from cargo_management.cargo_management.utils.rail_allocations import validate_allocations
+        validate_allocations(self)
         
         if self.finish_train_formation == 1 and self.finish_loading == 0: # formation is completed now completing loading
             self.fill_child_middle_mile_tables_with_WagonName_rows()
@@ -65,7 +79,9 @@ class FPLPerformMiddleMile(Document):
             self.carry_forward_the_specified_row2()
             self.update_gate_out_jobs() # do gate out job
             
-        if self.finish_train_formation == 1 and self.finish_loading == 1 and self.finish_departure == 1 and self.finish_arrival==1 and len(self.get('expenses')) == 0: # this will only work when there are no expenses in the expenses grid
+        old = self.get_doc_before_save()
+        legacy_arrival = old and old.finish_arrival and old.expenses and not any(row.get('cargo_charge_key') for row in old.expenses)
+        if self.finish_train_formation == 1 and self.finish_loading == 1 and self.finish_departure == 1 and self.finish_arrival==1 and not legacy_arrival:
             self.arrival_update_wagon()
             self.bulk_update_container_status()
             self.calculate_expenses()
@@ -75,10 +91,17 @@ class FPLPerformMiddleMile(Document):
             self.send_expense_invoice_notification()
             
     def on_trash(self):
-        if self.status == "" or self.status == "Train Formed":
-            for wagon in self.get('wagons'):
-                frappe.db.set_value("Wagons", wagon.wagon_number, "train_no", "")
-        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
+        current=frappe.get_doc(self.doctype,self.name,for_update=True)
+        if current.status not in (None,'','Train Formed') or current.finish_loading or current.finish_departure or current.finish_arrival or current.expenses:
+            frappe.throw(_('Loaded, departed, received or cost-bearing trains cannot be deleted.'))
+        wagons=[]
+        for row in sorted(current.wagons,key=lambda value:value.wagon_number):
+            wagon=frappe.get_doc('Wagons',row.wagon_number,for_update=True)
+            if wagon.train_no and wagon.train_no!=current.name:
+                frappe.throw(_('This wagon belongs to another train; its allocation will not be cleared.'))
+            wagons.append(wagon)
+        for wagon in wagons:
+            frappe.db.set_value('Wagons',wagon.name,'train_no','')
 
     def fill_child_middle_mile_tables_with_WagonName_rows(self): # Loading of Containers
         if self.loading_time is None and self.loading_end_time is None: #this will only happen if loading times are not given
@@ -86,7 +109,8 @@ class FPLPerformMiddleMile(Document):
                 if wagon.loaded_ == 0: #only create rows for the wagon that is not already loaded
                     wagon_doc = frappe.get_doc('FPL Wagons', wagon.wagon_type)
                     max_count = wagon_doc.max_count if wagon_doc else 0
-                    for _ in range(max_count):
+                    existing = sum(row.wagon_number == wagon.wagon_number for row in self.middle_mile)
+                    for _ in range(max(0, max_count - existing)):
                         self.append('middle_mile', {
                             'wagon_number': wagon.wagon_number,
                             'job': 'Middle Mile',
@@ -140,7 +164,6 @@ class FPLPerformMiddleMile(Document):
                     for row2 in self.get('wagons'):
                         if row2.wagon_number == row.wagon_number:
                             row2.loaded_ = 0
-        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
             
 
     def carry_forward_the_specified_row2(self):
@@ -159,14 +182,13 @@ class FPLPerformMiddleMile(Document):
             # doc = frappe.get_doc("Wagons", row.wagon_number)
             frappe.db.set_value("Wagons", row.wagon_number, "status", "In Transit")
         for wagon in self.get('wagons'):
-            frappe.db.set_value("Wagons", wagon, "status", "In Transit")
+            frappe.db.set_value("Wagons", wagon.wagon_number, "status", "In Transit")
         for row in derailed_rows:
             frappe.db.set_value("Wagons", row.wagon_number, "status", "Derailed")
-        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
                 
     def bulk_update_container_status(self):
         for row in self.middle_mile_copy:
-            if row.container:
+            if row.container and row.received_:
                 # Retrieve Freight Order and Job IDs based on container number
                 container_number = frappe.db.get_value("FPL Containers", {"name": row.container}, "container_number")
                 freight_order_id = frappe.db.get_value("FPL Containers", {"name": row.container}, "freight_order_id")
@@ -176,11 +198,15 @@ class FPLPerformMiddleMile(Document):
                 #frappe.msgprint(f"Freight Order ID: {freight_order_id}, Middle Mile Job ID: {mm_job_id}")
 
                 if freight_order_id and mm_job_id:
+                    if frappe.db.get_value('FPL Freight Orders',freight_order_id,'mm_completed_'):
+                        continue  # Arrival already applied; do not append duplicate gate jobs.
                     # Update job status as needed
                     frappe.db.set_value("FPLRailJob",mm_job_id,"train_number",self.name)
                     frappe.db.set_value("FPLRailJob",mm_job_id,"train_arrival_datetime",self.actual_arrival_datetime)
-                    updateJobStatus(mm_job_id, freight_order_id, container_number)
+                    if not updateJobStatus(mm_job_id, freight_order_id, container_number):
+                        frappe.throw(_('Middle Mile arrival cannot bypass unfinished preceding jobs.'))
                     rail_job_doc = frappe.get_doc("FPLRailJob", mm_job_id)
+                    rail_job_doc.flags.cargo_receipt_verified = True
                     rail_job_doc.save()
                     # frappe.msgprint(f"Updated status for Middle Mile job: {mm_job_id}")
 
@@ -199,8 +225,10 @@ class FPLPerformMiddleMile(Document):
 
                     if middle_mile_index is not None and middle_mile_job_end_location:
                         # Retrieve "Gate In" and "Gate Out" service type names
-                        gate_in_type_name = frappe.get_value("Service Type", {"name1": "Gate In"}, "name")
-                        gate_out_type_name = frappe.get_value("Service Type", {"name1": "Gate Out"}, "name")
+                        from cargo_management.cargo_management.utils.configuration import resolve_service, freight_company
+                        company = freight_company(freight_order)
+                        gate_in_type_name = resolve_service('Gate In', company=company)
+                        gate_out_type_name = resolve_service('Gate Out', company=company)
 
                         # Prepare the "Gate In" job document with an initial status of "Draft"
                         gate_in_job = frappe.get_doc({
@@ -267,17 +295,15 @@ class FPLPerformMiddleMile(Document):
                         freight_order.reload()
 
     def arrival_update_wagon(self):
+        groups={}
         for row in self.middle_mile_copy:
-            if row.container:
-                if row.received_:
-                    frappe.db.set_value("Wagons", row.wagon_number, "status", "Received")
-                    frappe.db.set_value("Wagons", row.wagon_number, "loaded_", "0")
-                else:
-                    frappe.db.set_value("Wagons", row.wagon_number, "status", "Derailed")
+            if row.container:groups.setdefault(row.wagon_number,[]).append(bool(row.received_))
+        for wagon, received in groups.items():
+            status='Received' if all(received) else 'Derailed' if not any(received) else 'In Transit'
+            frappe.db.set_value('Wagons',wagon,{'status':status,'loaded_':int(status!='Received')})
         for row2 in self.get('wagons'):
             if row2.wagon_number:
                 frappe.db.set_value("Wagons", row2.wagon_number, "status", "Received")
-        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
                 
     def fix_job_sequence_onGateInGateOut_insert(self, freight_order_id):
         # Fetch the freight order document
@@ -357,7 +383,6 @@ class FPLPerformMiddleMile(Document):
                     # Save changes if any Middle Mile jobs were updated
                     if needs_save:
                         freight_order.save()
-                        frappe.db.commit()  # nosemgrep: frappe-manual-commit - Commit changes to ensure Middle Mile statuses are updated
 
                     # Second pass: Process Gate Out jobs
                     for job in freight_order.jobs:
@@ -371,10 +396,9 @@ class FPLPerformMiddleMile(Document):
 
                                 gate_out_job_doc.gate_out = self.departure_time
                                 gate_out_job_doc.save()
-                                frappe.db.commit()  # nosemgrep: frappe-manual-commit - Commit each Gate Out job update individually
 
-                            except Exception as e:
-                                frappe.msgprint(f"Error updating Gate Out job {job.job_id} for container {row.container}: {str(e)}")
+                            except Exception:
+                                raise  # Native request rollback must include the complete departure.
 
                         
     def validate_expected_dates(self):
@@ -383,25 +407,20 @@ class FPLPerformMiddleMile(Document):
                 frappe.throw(_("The expected time of arrival (ETA) cannot be before the expected departure time (EDA)."))
 
     def send_expense_invoice_notification(self):
-        recipient_emails = [
-            user["email"] for user in frappe.get_all(
-                "User",
-                filters={"role": "Accounts Manager"},
-                fields=["email"]
-            ) if user.get("email")
-        ]
-
-        if not recipient_emails:
-            frappe.msgprint("No Accounts Managers found with valid email addresses.")
-            return
-
         pending_expenses = []
         for expense in self.expenses:
             if expense.invoiced_ == 1 and not expense.sales_invoice_no:
                 pending_expenses.append(expense)
     
         if not pending_expenses:
-            return  
+            return
+        bookings={frappe.db.get_value('FPL Containers',expense.container_number,'booking_order_id') for expense in pending_expenses}
+        if None in bookings:
+            frappe.throw(_('A train expense notification requires verified Booking references.'))
+        recipient_sets=[set(get_account_manager_emails(booking)) for booking in bookings]
+        recipient_emails=sorted(set.intersection(*recipient_sets)) if recipient_sets else []
+        if not recipient_emails:
+            return
         
         job_link = get_link_to_form("FPL Perform Middle Mile", self.name)
 
@@ -474,91 +493,15 @@ class FPLPerformMiddleMile(Document):
         )
 
     def calculate_expenses(self):
-        wagon_groups = {}
-        # Step 1: Group containers by wagon number
-        filtered_rows = [row for row in self.middle_mile_copy if row.wagon_number and row.container]
-        for entry in filtered_rows:  # Arrival Grid
-            if entry.received_ == 1 and entry.wagon_number not in wagon_groups:
-                wagon_groups[entry.wagon_number] = []
-            wagon_groups[entry.wagon_number].append(entry)
-
-        # Step 2: Fetch wagon types from the self.wagons child table
-        wagon_types = {wagon.wagon_number: wagon.wagon_type for wagon in self.wagons}
-
-        for wagon_number, containers in wagon_groups.items():
-            wagon_type = wagon_types.get(wagon_number)
-            if not wagon_type:
-                frappe.throw(_("Wagon type for wagon number {0} not found.").format(wagon_number))
-
-            # Fetch type from 'FPL Wagons'
-            wagon_doc_type = frappe.db.get_value('FPL Wagons', {'name': wagon_type}, 'type')
-
-            container_details = {}
-            for container in containers:
-                fo_doc = frappe.get_doc('FPL Freight Orders', container.fo)
-                size = fo_doc.size
-                weight = fo_doc.weight
-
-                if size not in container_details:
-                    container_details[size] = {'count': 0, 'total_weight': 0}
-                container_details[size]['count'] += 1
-                container_details[size]['total_weight'] += weight
-
-            query = """
-                SELECT * FROM `tabRail Freight Cost` WHERE
-                wagon_type = %s AND
-                container_count = %s AND
-                container_count_40 = %s
-            """
-            params = [wagon_doc_type,
-                    container_details.get(20, {}).get('count', 0),
-                    container_details.get(40, {}).get('count', 0)]
-
-            if container_details.get(20, {}).get('count', 0) == 1 and container_details.get(40, {}).get('count', 0) == 1:
-                query += " AND avg_weight >= %s AND avg_weight_40 >= %s"
-                params += [
-                    container_details.get(20, {}).get('total_weight', 0) / container_details.get(20, {}).get('count', 1),
-                    container_details.get(40, {}).get('total_weight', 0) / container_details.get(40, {}).get('count', 1)
-                ]
-
-            rail_freight_costs = frappe.db.sql(query, params, as_dict=1)
-            Fixed_exp = frappe.get_all('FPL Cost Type', 
-                                    filters={'job_mode': 'Train Job', 'fixed_': 1, 'cost': ['>', 0], 'movement_type': self.movement_type, 'location': self.departure_location},
-                                    fields=['name', 'cost'])
-            Fixed_exp2 = frappe.get_all('FPL Cost Type', 
-                                    filters={'job_mode': 'Train Job', 'fixed_': 1, 'cost': ['>', 0], 'movement_type': self.movement_type, 'location': self.arrival_location},
-                                    fields=['name', 'cost'])
-            for cost in rail_freight_costs:
-                for container in containers:
-                    # Determine the size and apply the correct rate
-                    fo_doc = frappe.get_doc('FPL Freight Orders', container.fo)
-                    size = fo_doc.size
-                    traindoc = frappe.get_doc("FPL Cost Type", "TRAIN FREIGHT")
-                    if traindoc.movement_type == self.movement_type and (traindoc.location == self.arrival_location or traindoc.location == self.departure_location):
-                        self.append('expenses', {
-                            'expense_type': 'TRAIN FREIGHT',
-                            'client': get_supplier('TRAIN FREIGHT'),
-                            'container_number': container.container,
-                            'amount': cost['rate_20'] if size == 20 else cost['rate_40']
-                        })
-                    for expense in Fixed_exp:
-                        self.append('expenses', {
-                            'expense_type': expense['name'],
-                            'container_number': container.container,
-                            'amount': expense['cost']
-                        })
-                    for expense in Fixed_exp2:
-                        self.append('expenses', {
-                            'expense_type': expense['name'],
-                            'container_number': container.container,
-                            'amount': expense['cost']
-                        })
+        from cargo_management.cargo_management.utils.rail_charges import append_train_charges
+        return append_train_charges(self)
 
 
     def create_purchase_invoice(self):
-        default_company = frappe.defaults.get_user_default("company")
+        from cargo_management.cargo_management.utils.configuration import train_company
+        default_company = train_company(self)
         for expense in self.expenses:
-            if expense.purchase_invoiced_created == 0:
+            if not expense.purchase_invoiced_created:
                 item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
                 FO = frappe.get_value("FPL Containers", expense.container_number, 'freight_order_id')
                 BO = frappe.get_value("FPL Freight Orders",FO,'sales_order_number')
@@ -579,68 +522,20 @@ class FPLPerformMiddleMile(Document):
                         supplier=expense.client,
                         company=default_company
                     )
-                    if code == True:
+                    if code:
                         expense.purchase_invoiced_created = 1
+                        expense.purchase_invoice_no = code
                             
 @frappe.whitelist()
 def cancel_departure(docname):
-    
-    doc = frappe.get_doc('FPL Perform Middle Mile', docname)
-    for row in doc.get("wagons"): 
-        doc2 = frappe.get_doc("Wagons", row.wagon_number)
-        if doc2.loaded_:
-            frappe.db.set_value("Wagons", row.wagon_number, "status", "Loaded")
-        else:
-            frappe.db.set_value("Wagons", row.wagon_number, "status", "Received")
-    frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
-    for row in doc.get("middle_mile_copy"): 
-        if row.container:
-            # Get the container number associated with the container ID
-            container_number = frappe.db.get_value("FPL Containers", {"name": row.container}, "container_number")
-            gate_out_job_id = frappe.db.get_value("FPLYardJob", {"container_number": container_number, "job_name": "Gate Out"}, "name")
-            frappe.db.set_value("FPL Containers", row.container , "active_job_id", gate_out_job_id)
-            frappe.db.set_value("FPL Containers", row.container , "state", "Loaded")
-            # Get the Freight Order ID associated with the container
-            freight_order_id = frappe.db.get_value("FPL Freight Orders", {"container_number": container_number}, "name")
-
-            if freight_order_id:
-                # Fetch the Freight Order document
-                freight_order = frappe.get_doc("FPL Freight Orders", freight_order_id)
-                needs_save = False  # Flag to indicate if save is needed
-                # First pass: Update all Middle Mile jobs to Assigned
-                for job in freight_order.jobs:
-                    job_type = get_job_type_by_id(job.job_id)
-                    if job_type == "Gate Out" and job.status == "Completed":
-                        job.status = "Assigned" 
-                        needs_save = True 
-                    if job_type == "Middle Mile":
-                        job.status = "Assigned"   
-                        needs_save = True  
-
-                # Save changes if any Middle Mile jobs were updated
-                if needs_save:
-                    freight_order.last_job = "Gate In"
-                    freight_order.next_job = "Gate Out"
-                    freight_order.save()
-                    frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
-
-                # Second pass: Process Gate Out jobs
-                for job in freight_order.jobs:
-                    job_type = get_job_type_by_id(job.job_id)
-                    if job_type == "Gate Out":
-                        try:
-                            gate_out_job_doc = frappe.get_doc("FPLYardJob", job.job_id)
-                            gate_out_job_doc.gate_out = None 
-                            gate_out_job_doc.status = 'Assigned' 
-                            gate_out_job_doc.save()
-                            frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
-                        except Exception as e:
-                            frappe.msgprint(f"Error updating Gate Out job {job.job_id} for container {row.container}: {str(e)}")
+    from cargo_management.cargo_management.utils.rail_reversal import rewind
+    return rewind(docname, 'departure')
 
 
 @frappe.whitelist()
 def validate_weight_Loading(docname):
     doc = frappe.get_doc('FPL Perform Middle Mile', docname)
+    doc.check_permission('read')
     
     wagon_groups = {}
     for row in doc.get('middle_mile'):
@@ -672,10 +567,5 @@ def validate_weight_Loading(docname):
 
 @frappe.whitelist()
 def cancel_loading(docname):
-    doc = frappe.get_doc('FPL Perform Middle Mile', docname)
-    for row in doc.get("wagons"): 
-        frappe.db.set_value("Wagons", row.wagon_number, "status", "")
-        frappe.db.set_value("Wagons", row.wagon_number, "loaded_", 0)
-        frappe.db.set_value("Wagons", row.wagon_number, "train_no", "")
-        frappe.db.set_value("FPL Wagon cdt", row.name, "loaded_", 0)
-    frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
+    from cargo_management.cargo_management.utils.rail_reversal import rewind
+    return rewind(docname, 'loading')

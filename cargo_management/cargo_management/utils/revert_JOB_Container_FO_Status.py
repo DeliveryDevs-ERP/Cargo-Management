@@ -40,7 +40,7 @@ def revertJobStatus(job_id, freight_order_id, container_number):
     freight_order.jobs[job_index].status = "Assigned"
     freight_order.next_job = get_job_type_by_id(job_id)
     # try:
-    freight_order.last_job = get_job_type_by_id(freight_order.jobs[job_index - 1].job_id) 
+    freight_order.last_job = get_job_type_by_id(freight_order.jobs[job_index - 1].job_id) if job_index > 0 else None
     # except:
     #     freight_order.last_job = None
         

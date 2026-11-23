@@ -2,16 +2,8 @@ import frappe
 from frappe import _
 
 def execute(filters=None):
-    expense_types = get_expense_types()
-    data = get_data(filters, expense_types)
-    columns = get_columns(data, expense_types)
-    data = process_data(data)
-    if not filters.get("summaries"):
-        data = calculate_bo_summary(data)
-    elif filters.get("summaries"):
-        columns = summarised_collumns()
-        data = create_summary(data)
-    return columns, data
+    from cargo_management.cargo_management.utils.reporting import execute_report
+    return execute_report('Customer PNL', filters)
 
 def get_expense_types():
     # Fetching all expense types from the `FPL Cost Type` DocType
@@ -136,7 +128,7 @@ def process_data(data):
             processed_data[container_key]['extra_cost'] += row['total_cost']
         collumn_key = row['collumn'].replace(" ", "_").lower()
         # Add or update the expense under the correct column
-        processed_data[container_key][collumn_key] = row['total_cost']
+        processed_data[container_key][collumn_key] = processed_data[container_key].get(collumn_key, 0) + row['total_cost']
         # Accumulate total cost
         processed_data[container_key]['pickup_location'] = get_pickup_location(processed_data[container_key]['BOName'],processed_data[container_key]['transport_type'])
         processed_data[container_key]['dropoff_location'] = get_dropoff_location(processed_data[container_key]['BOName'],processed_data[container_key]['transport_type'])
@@ -301,4 +293,4 @@ def fetch_extra_invoice(booking_no):
             return 0
     except Exception as e:
         frappe.log_error(f"Error fetching invoice for booking {booking_no}: {str(e)}")
-        return 0
+        raise

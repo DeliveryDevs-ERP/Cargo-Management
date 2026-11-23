@@ -1,17 +1,22 @@
 # cargo_management/tasks/crypto.py
 
 import sys
-import traceback
+import math
+from contextlib import closing
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import requests
-import psycopg2
-import psycopg2.extras
 import frappe
 
-DATABASE_URL = "postgresql://neondb_owner:npg_mM4J2iAtzYuk@ep-still-bar-add0xr42-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-CMC_API_KEY   = "dd143d9f-c387-4629-8b1d-0c00119b5c17"
+# Keep the existing module-level adapter seam for callers/tests, without making
+# a disabled optional integration a mandatory installation dependency.
+try:
+    import psycopg2
+    import psycopg2.extras
+except ImportError:
+    psycopg2 = None
+
 CMC_URL       = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
 FIAT          = "USD"
 
@@ -42,8 +47,8 @@ def _log(msg: str, title: str = "crypto"):
         print(f"[{title}] {msg}", file=sys.stdout)
 
 def _log_exc(err_title: str, err: Exception):
-    tb = traceback.format_exc()
-    _log(f"{err_title}\n{str(err)}\n\n{tb}", title="crypto:ERROR")
+    # Connection/HTTP exceptions and traceback locals may contain credentials.
+    _log("Crypto integration failed; inspect private service diagnostics.", title="crypto:ERROR")
 
 # --- utils ---
 def _parse_iso(ts: Optional[str]) -> Optional[datetime]:
@@ -61,13 +66,18 @@ def _safe_num(v: Any) -> Optional[float]:
     try:
         if v is None:
             return None
-        return float(v)
+        value = float(v)
+        return value if math.isfinite(value) else None
     except Exception:
         return None
 
 def _row_from_item(item: Dict[str, Any], status_ts: Optional[datetime], fiat: str) -> Optional[Dict[str, Any]]:
     q = (item.get("quote") or {}).get(fiat) or {}
-    payload_last_updated = _parse_iso(q.get("last_updated")) or status_ts or datetime.now(timezone.utc)
+    payload_last_updated = _parse_iso(q.get("last_updated")) or status_ts
+    if payload_last_updated is None:
+        # Wall-clock fallback creates a new key on every retry of an identical
+        # invalid payload. Do not invent an ingestion timestamp as market time.
+        raise ValueError("Crypto snapshot requires a source timestamp.")
     ts = payload_last_updated
     return {
         "cmc_id": item.get("id"),
@@ -102,26 +112,49 @@ def _row_from_item(item: Dict[str, Any], status_ts: Optional[datetime], fiat: st
 
 def pull_and_store():
     """Fetch latest listings from CMC (defaults) and upsert into Postgres (USD only)."""
+    # Safety exception to v15: no scheduler or manual network activity without opt-in.
+    if not frappe.utils.cint(frappe.conf.get("cargo_crypto_enabled", 0)):
+        return {"status": "disabled"}
+    database_secret_url = frappe.conf.get("cargo_crypto_database_url")
+    api_key = frappe.conf.get("cargo_crypto_api_key")
+    if not database_secret_url or not api_key:
+        frappe.throw("Crypto integration requires private database and API configuration.")
     try:
-        headers = {"Accept": "application/json", "X-CMC_PRO_API_KEY": CMC_API_KEY}
+        # Optional driver must not prevent app/scheduler metadata import when
+        # this integration is disabled on an ordinary Cargo installation.
+        import psycopg2
+        import psycopg2.extras
+
+        headers = {"Accept": "application/json", "X-CMC_PRO_API_KEY": api_key}
 
         _log(f"Calling CoinMarketCap API (no params) at {CMC_URL} | fiat={FIAT}")
 
         # no params – rely on CMC defaults
-        resp = requests.get(CMC_URL, headers=headers, timeout=60)
+        # A custom API-key header must never follow an unverified redirect.
+        resp = requests.get(CMC_URL, headers=headers, timeout=60, allow_redirects=False)
         if resp.status_code != 200:
             # _log(f"CMC non-200 response: {resp.status_code} {resp.text[:500]}")
             resp.raise_for_status()
+            raise ValueError("Unexpected crypto provider response status.")
 
         try:
             payload = resp.json()
         except Exception:
-            _log(f"Failed to decode JSON. Body (first 500): {resp.text[:500]}")
+            _log("Crypto response was not valid JSON; response body omitted.")
             raise
 
-        status = payload.get("status") or {}
+        if not isinstance(payload, dict):
+            raise ValueError("Invalid crypto response envelope.")
+
+        status = payload.get("status")
+        status = {} if status is None else status
+        if not isinstance(status, dict):
+            raise ValueError("Invalid crypto response status.")
         status_ts = _parse_iso(status.get("timestamp"))
-        data = payload.get("data") or []
+        data = payload.get("data")
+        data = [] if data is None else data
+        if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
+            raise ValueError("Invalid crypto response item collection.")
         if not data:
             _log("CMC returned no data")
             return
@@ -138,11 +171,20 @@ def pull_and_store():
 
         # _log(f"Parsed {len(rows)} rows; connecting to Postgres…")
 
-        with psycopg2.connect(DATABASE_URL) as conn:
-            with conn.cursor() as cur:
-                psycopg2.extras.execute_batch(cur, UPSERT, rows, page_size=1000)
-            conn.commit()
+        # psycopg2's transaction context does not close its connection.
+        with closing(psycopg2.connect(database_secret_url, connect_timeout=10)) as conn:
+            with conn:
+                with conn.cursor() as cur:
+                    psycopg2.extras.execute_batch(cur, UPSERT, rows, page_size=1000)
+                conn.commit()
 
         # _log(f"Upserted {len(rows)} snapshot rows into crypto_snapshots.")
-    except Exception as e:
-        _log_exc("pull_and_store failed", e)
+    except Exception:
+        # Native developer tracebacks include frame locals. Remove objects
+        # whose repr/payload could carry credentials before surfacing failure.
+        database_secret_url = api_key = headers = resp = payload = status = data = rows = item = row = conn = cur = None
+        # Connection exceptions can contain credentials: never log their values.
+        _log("Crypto fetch/store failed; check private configuration and service availability.", title="crypto:ERROR")
+        # Suppress the original exception's message/context in RQ Error Logs.
+        # No HTTP body, connection URL or adapter traceback locals are emitted.
+        raise RuntimeError("Crypto fetch/store failed; check private configuration and service availability.") from None

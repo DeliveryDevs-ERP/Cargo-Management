@@ -27,12 +27,29 @@ class ContainerorVehicleRequest(Document):
         yard_location: DF.Link
     # end: auto-generated types
 
+    def validate(self):
+        # A receiving allocation is a whole physical container, not an empty
+        # range silently produced by zero/negative quantities.
+        from frappe.utils import flt
+        for row in self.get('table_ktch') or []:
+            quantity = flt(row.qty)
+            if quantity <= 0 or quantity != int(quantity):
+                frappe.throw('Receiving request quantities must be positive whole allocations.')
+            if row.type and str(frappe.db.get_value('Container Type', row.type, 'size')) != str(row.size):
+                frappe.throw('Receiving request size must match its selected Container Type.')
+
+    def before_cancel(self):
+        # Native cancellation checks submitted links; receiving Freight Orders
+        # are non-submittable. Keep their provenance rather than leaving live
+        # work linked to a cancelled request or deleting it implicitly.
+        if self.cross_stuff_performance or frappe.db.exists('FPL Freight Orders', {'cargo_request': self.name}):
+            frappe.throw('Receiving work exists. Reverse or resolve the linked work before cancelling this request; no operational or financial history is deleted automatically.')
+
     def on_submit(self):
         try:
             self.create_CrossStuffFreight_orders()  # Create freight orders first
             # self.create_and_submit_sales_order()  # Attempt to create and submit Sales Order
         except Exception as e:
-            frappe.db.rollback()  # Roll back changes if any error occurs
             frappe.throw(f"Booking Order submission failed due to: {str(e)}")
 
     def create_CrossStuffFreight_orders(self):
@@ -48,6 +65,7 @@ class ContainerorVehicleRequest(Document):
             'doctype': 'FPL Freight Orders',
             'freight_order_number':  self.get_next_name("CFO-"),
             'sales_order_number': self.booking_order_id,
+            'cargo_request': self.name,
             'client': self.get_Client_from_BO(),
             'weight': None,
             'size': size,
@@ -83,28 +101,10 @@ class ContainerorVehicleRequest(Document):
             freight_order.next_job = get_job_type_by_id(freight_order.jobs[0].job_id)
             freight_order.save()
 
-        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
 
     def get_service_type_name(self, service_name, transport_mode):
-        if service_name in ['Gate In', 'Gate Out']:
-            service_type = frappe.get_value(
-                "Service Type",
-                {"name1": service_name},
-                "name"
-            )
-        else:
-            service_type = frappe.get_value(
-                "Service Type",
-                {"name1": service_name, "transport_mode": transport_mode},
-                "name"
-            )
-        
-        if service_type:
-            return service_type
-        else:
-            frappe.throw(
-                f"No Service Type found for name1: {service_name} and transport mode: {transport_mode}"
-            )
+        from cargo_management.cargo_management.utils.configuration import resolve_service, booking_company
+        return resolve_service(service_name, transport_mode, booking_company(self.booking_order_id))
 
     def get_Client_from_BO(self):
         """
@@ -116,14 +116,5 @@ class ContainerorVehicleRequest(Document):
         return booking_order.customer
 
     def get_next_name(self, key):
-        try:
-            current = frappe.get_last_doc('FPL Freight Orders')
-            if current:
-                name_parts = current.name.split('-')
-                if name_parts:
-                    next_number = int(name_parts[-1]) + 1
-                    new_name = f"{key}{next_number:04d}"  # Pad with zeros if needed
-                    return new_name
-        except frappe.DoesNotExistError:
-            return f"{key}0001"
-        return f"{key}0001"
+        from cargo_management.cargo_management.utils.naming import freight_name
+        return freight_name(key, self.booking_order_id)

@@ -16,7 +16,6 @@
  ],
  "fields": [
   {
-   "fetch_from": "freight_order_id.container_number",
    "fieldname": "container_number",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -25,7 +24,6 @@
   },
   {
    "description": "(Tons)",
-   "fetch_from": "freight_order_id.weight",
    "fieldname": "weight",
    "fieldtype": "Float",
    "in_list_view": 1,

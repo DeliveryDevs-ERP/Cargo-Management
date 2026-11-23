@@ -1,16 +1,12 @@
-
-# import click
+"""Install schema only; business masters and operational routing are user configuration."""
 import frappe
-from frappe import _
 
 
 def before_install():
-    frappe.msgprint("Before Install: Setting up Cargo Management.")
+    if 'erpnext' not in frappe.get_installed_apps():
+        frappe.throw('Cargo Management requires the existing ERPNext installation.')
 
 
 def after_install():
-    initialize_trasnport_mode()
-    frappe.db.commit()  # nosemgrep: frappe-manual-commit - persist initial setup data created in after_install
-
-def initialize_trasnport_mode():
-    print("HH")
+    from cargo_management.setup import reconcile
+    reconcile()

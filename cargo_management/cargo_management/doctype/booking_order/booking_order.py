@@ -15,8 +15,24 @@ class JobLocationMissing(frappe.ValidationError):
 	pass
 
 
+def _get_cargo_billing_values(cargo):
+    """Preserve explicit Cargo mappings; ordinary UOMs use the form's quantity.
+
+    No Cargo weight override is defined for ordinary UOMs. Omitting that field
+    lets ERPNext fetch the Item's own weight and UOM defaults.
+    """
+    if cargo.rate_type == "Per Container":
+        return {"qty": cargo.qty, "weight_per_unit": cargo.avg_weight}
+    if cargo.rate_type in ("Per Weight(Ton)", "Per Bag"):
+        return {"qty": cargo.bag_qty, "weight_per_unit": cargo.bag_weight}
+    return {"qty": cargo.qty}
+
+
 
 class BookingOrder(Document):
+    def before_insert(self):
+        self.cargo_billing_version = 1
+
     # begin: auto-generated types
     # This code is auto-generated. Do not modify anything in this block.
 
@@ -67,6 +83,8 @@ class BookingOrder(Document):
     
     
     def validate(self):
+        from cargo_management.cargo_management.utils.billing import prepare_booking
+        prepare_booking(self)
         if not self.sales_person:
             frappe.throw(_("Cannot save, Please assign a sales person to customer."), exc=SalesPersonNotFound)
 
@@ -84,12 +102,22 @@ class BookingOrder(Document):
         self.cancel_and_delete_freight_orders()
         self.cancel_and_delete_sales_order()
         self.cancel_and_delete_Request()
+
+    def before_cancel(self):
+        from cargo_management.permissions import protect_freight_deletion
+        if frappe.db.exists('Sales Order', {'custom_booking_order_id':self.name, 'docstatus':1}):
+            frappe.throw(_('Submitted Sales Orders must be handled through their native cancellation process before cancelling this Booking.'))
+        for name in frappe.get_all('FPL Freight Orders',filters={'sales_order_number':self.name},pluck='name'):
+            freight=frappe.get_doc('FPL Freight Orders',name)
+            if freight.status!='Draft':
+                frappe.throw(_('Only unstarted draft Cargo work can be cancelled automatically.'))
+            protect_freight_deletion(freight)
         
     def cancel_and_delete_freight_orders(self):
         # Fetch all related freight orders by the sales_order_number
         freight_orders = frappe.get_list('FPL Freight Orders',
                                         filters={'sales_order_number': self.name},
-                                        fields=['name', 'status'])
+                                        fields=['name', 'status'], limit_page_length=0)
         
         for freight_order in freight_orders:
             fo_doc = frappe.get_doc('FPL Freight Orders', freight_order.name)
@@ -103,7 +131,7 @@ class BookingOrder(Document):
     def cancel_and_delete_Request(self):
         Requests = frappe.get_list('Container or Vehicle Request',
                                 filters={'booking_order_id': self.name},
-                                fields=['name', 'docstatus'])
+                                fields=['name', 'docstatus'], limit_page_length=0)
         for request in Requests:
             if request.docstatus == 1:
                 frappe.throw(_("Cannot cancel Booking Order because related Requests are submitted."))
@@ -125,7 +153,6 @@ class BookingOrder(Document):
             self.create_and_draft_CFO_request()
             self.create_freight_orders() 
         except Exception as e:
-            frappe.db.rollback()
             frappe.throw(f"Booking Order submission failed due to: {str(e)}", exc=SalesPersonNotFound)
 
     def create_freight_orders(self):
@@ -133,10 +160,11 @@ class BookingOrder(Document):
         services = self.get('services')
 
         for item in cargo_details:
-            for _ in range(int(item.qty)):  
-                self.create_freight_order(item, services)
+            for allocation_index in range(int(item.qty)):
+                self.create_freight_order(item, services, allocation_index=allocation_index)
 
-    def create_freight_order(self, item, services):
+    def create_freight_order(self, item, services, allocation_index=0):
+        from cargo_management.cargo_management.utils.billing import allocate_total
         applicable_services = [service for service in services if service.applicable == 1]
         # crossStuff_flag = any(service.service_name == "Cross Stuff" for service in applicable_services) # check if there is cross stuff present
         # if crossStuff_flag:
@@ -149,10 +177,13 @@ class BookingOrder(Document):
             'sales_order_number': self.name,
             'client': self.customer,
             'weight': weight, 
-            'bag_qty': item.bag_qty,
+            'bag_qty': float(allocate_total(item.bag_qty, int(item.qty), allocation_index, precision=0)) if self.get('cargo_billing_version') else item.bag_qty,
             'rate': item.rate, 
             'rate_type': item.rate_type, 
             'size':size,
+            'cargo_detail_reference': item.name if self.get('cargo_billing_version') else None,
+            'cargo_contracted_revenue': float(allocate_total(item.cargo_native_amount, int(item.qty), allocation_index)) if self.get('cargo_billing_version') else 0,
+            'cargo_billing_version': self.get('cargo_billing_version') or 0,
             'jobs': [] 
         })
 
@@ -179,7 +210,7 @@ class BookingOrder(Document):
                 'end_location': self.get_Job_LocationPickup(service.service_name)
                 })
                 freight_order.append('jobs', {
-                'job_name': self.get_service_type_name(service.service_name, self.transport_type),
+                'job_name': self.get_service_type_name(service.service_name, self.transport_type, service.services),
                 'status': 'Draft',
                 'start_location': self.get_Job_LocationPickup(service.service_name),
                 'end_location': self.get_Job_LocationDropoff(service.service_name)
@@ -187,7 +218,7 @@ class BookingOrder(Document):
                 
             else:
                 freight_order.append('jobs', {
-                'job_name': self.get_service_type_name(service.service_name, self.transport_type),
+                'job_name': self.get_service_type_name(service.service_name, self.transport_type, service.services),
                 'status': 'Draft',
                 'start_location': self.get_Job_LocationPickup(service.service_name),
                 'end_location': self.get_Job_LocationDropoff(service.service_name)
@@ -201,21 +232,21 @@ class BookingOrder(Document):
             freight_order.save()
 
             
-        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
 
         # if crossStuff_flag:
         #     self.reorder_Freight_orderJobs_after_crossStuff_insert(freight_order,cross_stuff_index)
 
     def create_and_draft_CFO_request(self):
         MiscServices = self.get('miscellaneous_services')
-        if self.location_of_cross_stuff == "oagb0ddmuo":
-            location = self.mm_loading_station
-        elif self.location_of_cross_stuff == "vg2osur4ei":
-            location = self.fm_pickup_location
-        elif self.location_of_cross_stuff == "oalds7gjs7":
-            location = self.lm_pickup_location
         for service in MiscServices:
             if service.applicable == 1:
+                # The form offers Long/Short Haul as well as the three rail
+                # legs. Resolve its selected Service Type through the same
+                # pickup mapping used by freight creation, never a site ID.
+                label = frappe.db.get_value('Service Type', self.location_of_cross_stuff, 'name1') if self.location_of_cross_stuff else None
+                location = self.get_Job_LocationPickup(label)
+                if not location:
+                    frappe.throw(_('Cross-Stuff request location is missing.'), exc=JobLocationMissing)
                 Request = frappe.get_doc({
                     'doctype': 'Container or Vehicle Request',
                     'booking_order_id': self.name,
@@ -225,23 +256,8 @@ class BookingOrder(Document):
                 Request.insert()
         
     def get_next_name(self, key):
-        try:
-            # Try to get the last document in the series
-            current = frappe.get_last_doc('FPL Freight Orders')
-            if current:
-                name_parts = current.name.split('-')
-                if name_parts:
-                    # Assuming the last part is the numeric
-                    next_number = int(name_parts[-1]) + 1
-                    new_name = f"{key}{next_number:04d}"  # Pad with zeros if needed
-                    return new_name
-        except frappe.DoesNotExistError:
-            # If no documents are found, start at the beginning of the series
-            return f"{key}0001"
-
-        # Fallback in case of any other unexpected issue
-        return f"{key}0001"
-
+        from cargo_management.cargo_management.utils.naming import freight_name
+        return freight_name(key, self.name)
 
     def get_Job_LocationPickup(self, serviceName):
         if serviceName == 'First Mile':
@@ -255,7 +271,9 @@ class BookingOrder(Document):
         elif serviceName == 'Empty Return':
             return self.empty_return_pickup_location
         elif serviceName == 'Cross Stuff':
-            return self.location_of_cross_stuff
+            # This field links to the service before cross-stuff, not Location.
+            label = frappe.db.get_value('Service Type', self.location_of_cross_stuff, 'name1') if self.location_of_cross_stuff else None
+            return self.get_Job_LocationPickup(label) if label != 'Cross Stuff' else None
         elif serviceName == 'Long Haul':
             return self.long_haul_pickup_location
         elif serviceName == 'Short Haul':
@@ -285,42 +303,21 @@ class BookingOrder(Document):
 
 
     def get_ordered_services(self, services):
-        if not services:
-            return []        
-        job_sequence = frappe.get_all('FPL Jobs Sequence', 
-                                        fields=['service_name', 'sequence'], 
-                                        filters={'transport_mode': self.transport_type,
-                                                'sales_order_type': self.sales_order_type},
-                                        order_by='sequence asc')
-        service_map = {service.services: service for service in services if service.applicable == 1}  
-        ordered_services = []
-        for seq in job_sequence:
-            service_name = seq['service_name']  
-            matching_service = next((s for s in services if s.services == service_name), None)
-            if matching_service:
-                ordered_services.append(matching_service)  
-        return ordered_services
+        from cargo_management.cargo_management.utils.configuration import ordered_services
+        return ordered_services(self, services)
 
-    def get_service_type_name(self, service_name, transport_mode):
-        if service_name in ['Gate In', 'Gate Out']:
-            service_type = frappe.get_value(
-                "Service Type",
-                {"name1": service_name},
-                "name"
-            )
-        else:
-            service_type = frappe.get_value(
-                "Service Type",
-                {"name1": service_name, "transport_mode": transport_mode},
-                "name"
-            )
-        
-        if service_type:
-            return service_type
-        else:
-            frappe.throw(
-                f"No Service Type found for name1: {service_name} and transport mode: {transport_mode}"
-            )
+    def get_service_type_name(self, service_name, transport_mode, explicit=None):
+        from cargo_management.cargo_management.utils.configuration import resolve_service
+        return resolve_service(service_name, transport_mode, self.company, explicit=explicit)
+
+    @frappe.whitelist()
+    def get_service_catalog(self):
+        self.check_permission('write' if not self.is_new() else 'create')
+        from cargo_management.cargo_management.utils.configuration import catalog
+        return dict(services=[row for row in catalog('Service Type', self.company) if row.transport_mode in (self.transport_type, None, '')],
+                    sequence=catalog('FPL Jobs Sequence', self.company,
+                        {'transport_mode': self.transport_type, 'sales_order_type': self.sales_order_type},
+                        order_by='sequence asc, name asc'))
 
     def create_and_submit_sales_order(self):
         try:
@@ -352,20 +349,10 @@ class BookingOrder(Document):
         """Extract items from the Booking Order to populate Sales Order."""
         sales_order_items = []
         for cargo in self.get("cargo_details", []):
-            UOM = cargo.rate_type
-            if (UOM == "Per Container"):
-                weight = cargo.avg_weight
-                qty = cargo.qty
-            elif (UOM == "Per Weight(Ton)")or (UOM == 'Per Bag'):
-                weight = cargo.bag_weight
-                qty = cargo.bag_qty
             sales_order_items.append({
                 "item_code": cargo.cargo_type,
-                "qty": qty,  
+                **self.get_billing_values(cargo),
                 "uom": cargo.rate_type,
-                "rate": cargo.rate, 
-                "amount" : cargo.amount,
-                "weight_per_unit": weight,
                 "description": f"{cargo.cargo_type}: Transport Mode: {self.transport_type}, Container Size: {cargo.size}, Avg Weight: {cargo.avg_weight or cargo.bag_weight} Tons ,BOL: {self.bill_of_landing_number}, Location: " + self.get_str_location()
             })
         return sales_order_items
@@ -400,23 +387,17 @@ class BookingOrder(Document):
         """Extract items from the Booking Order to populate Sales Invoice."""
         sales_invoice_items = []
         for cargo in self.get("cargo_details", []):
-            UOM = cargo.rate_type
-            if UOM == "Per Container":
-                weight = cargo.avg_weight
-                qty = cargo.qty
-            elif UOM in ("Per Weight(Ton)", "Per Bag"):
-                weight = cargo.bag_weight
-                qty = cargo.bag_qty
             sales_invoice_items.append({
                 "item_code": cargo.cargo_type,  # Assuming cargo contains 'item_code'
-                "qty": qty,  
+                **self.get_billing_values(cargo),
                 "uom": cargo.rate_type,
-                "rate": cargo.rate, 
-                "amount": cargo.amount,
-                "weight_per_unit": weight,
-                "description": f"Transport Mode: {self.transport_type}, Container Size: {cargo.size}, Avg Weight: {cargo.avg_weight or cargo.bag_weight} Tons, from {self.pickup_location} to {self.dropoff_location}, BOL: {self.bill_of_landing_number}"
+                "description": f"Transport Mode: {self.transport_type}, Container Size: {cargo.size}, Avg Weight: {cargo.avg_weight or cargo.bag_weight or 0} Tons, {self.get_str_location()}, BOL: {self.bill_of_landing_number or ''}"
             })
         return sales_invoice_items
+
+    def get_billing_values(self, row):
+        from cargo_management.cargo_management.utils.billing import item_values
+        return item_values(row, self.get('cargo_billing_version') or 0)
 
     
     def reorder_Freight_orderJobs_after_crossStuff_insert(self, freight_order, initial_cross_stuff_index):
@@ -450,7 +431,6 @@ class BookingOrder(Document):
         
         # Save changes to the Freight Order
         freight_order.save()
-        frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
             
     def get_str_location(self):
         # Default values for start and end locations
@@ -489,6 +469,8 @@ def get_sales_person(customer):
     # Ensure the method only fetches data if there's a valid customer ID
     if not customer:
         return None
+    from cargo_management.cargo_management.utils.search import require_read
+    require_read('Customer',customer)
 
     # Attempt to fetch the first sales person from the Sales Team linked to the customer
     sales_person = frappe.get_value("Sales Team", 
@@ -507,6 +489,9 @@ def get_sales_person(customer):
 
 @frappe.whitelist()
 def check_booking_order_status(doc, method):
+    if not isinstance(doc,Document):
+        frappe.throw(_('This Cargo hook requires a native Document event context.'),frappe.PermissionError)
+    doc.check_permission('delete')
     # frappe.errprint("SO Deleting")
     # Fetch the Booking Order based on the custom_booking_order_id from the Sales Order
     if doc.custom_booking_order_id:

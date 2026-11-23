@@ -1,0 +1,34 @@
+{% set cargo = get_cargo_print_context(doc) %}
+<style>
+.cargo-invoice { font-family: Arial, sans-serif; color: #222; }
+.cargo-invoice h1 { text-align: center; font-size: 24px; }
+.cargo-invoice table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+.cargo-invoice th, .cargo-invoice td { border: 1px solid #555; padding: 7px; vertical-align: top; }
+.cargo-invoice th { background: #f2f2f2; }
+.cargo-invoice .number { text-align: right; }
+.cargo-invoice .qr { width: 128px; height: 128px; }
+</style>
+<div class="cargo-invoice">
+<h1>{{ _('Sales Invoice') }}</h1>
+<table><tr><th>{{ _('Invoice to') }}</th><th>{{ _('Ship to') }}</th><th>{{ _('Invoice No') }}</th></tr>
+<tr><td>{{ (doc.customer_name or doc.customer) | e }}</td>
+<td>{{ doc.shipping_address or doc.address_display or '' }}</td><td>{{ doc.name | e }}</td></tr>
+<tr><th>{{ _('Reference') }}</th><th>{{ _('Date') }}</th><th>{{ _('Terms') }}</th></tr>
+<tr><td>{{ ((cargo.booking.name if cargo.booking else doc.po_no) or '') | e }}</td>
+<td>{{ doc.get_formatted('posting_date') }}</td><td>{{ (doc.payment_terms_template or '') | e }}</td></tr></table>
+<table><thead><tr><th>{{ _('Description') }}</th><th>{{ _('Container Size') }}</th><th>{{ _('Qty') }}</th>
+<th>{{ _('Unit Price') }}</th><th>{{ _('Total (exc. Tax)') }}</th></tr></thead><tbody>
+{% for row in cargo['items'] %}
+<tr><td>{{ row.description | e }}</td><td>{{ row.size | e }}</td>
+<td class="number">{{ row.item.get_formatted('qty') }} {{ row.item.uom | e }}</td>
+<td class="number">{{ row.item.get_formatted('rate', doc) }}</td><td class="number">{{ row.item.get_formatted('net_amount', doc) }}</td></tr>
+{% endfor %}</tbody></table>
+<table><tr><th>{{ _('Cargo Details') }}</th><th>{{ _('Size') }}</th><th>{{ _('Weight (Ton)') }}</th></tr>
+{% for row in cargo.containers %}<tr><td>{{ row.container_number | e }}</td><td>{{ row.size | e }}</td><td>{{ row.weight | e }}</td></tr>{% endfor %}</table>
+<table><tr><th>{{ _('Customer Message') }}</th><td>{{ (doc.remarks or '') | e }}</td></tr></table>
+<p class="number">{{ _('Subtotal') }}: {{ doc.get_formatted('net_total') }}</p>
+<p class="number">{{ _('Tax') }}: {{ doc.get_formatted('total_taxes_and_charges') }}</p>
+<p class="number"><strong>{{ _('Total') }}: {{ doc.get_formatted('grand_total') }}</strong></p>
+{% if cargo_qr_enabled %}<img class="qr" alt="{{ _('Authenticated invoice link QR code') }}"
+ src="data:image/png;base64,{{ get_qr_code(cargo.qr_url) }}"><p>{{ _('Scan to open this invoice. Sign-in is required.') }}</p>{% endif %}
+</div>

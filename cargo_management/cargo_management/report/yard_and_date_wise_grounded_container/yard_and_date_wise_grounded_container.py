@@ -1,11 +1,10 @@
+from cargo_management.cargo_management.utils.services import is_service, service_names
 import frappe
 from datetime import timedelta
 
 def execute(filters=None):
-    columns = get_columns()
-    data = get_data(filters)
-
-    return columns, data
+    from cargo_management.cargo_management.utils.reporting import execute_report
+    return execute_report('Yard and Date wise Grounded Container', filters)
 
 def get_columns():
     """Define the columns for the report."""
@@ -43,7 +42,7 @@ def get_data(filters):
     gate_in_jobs = frappe.get_all(
         "FPLYardJob",
         filters={
-            "job_type": "enrhva2nvi",
+            "job_type": ["in", service_names("Gate In")],
             "job_start_location": gate_in_location,
             "status": "Completed"
         },
@@ -54,7 +53,7 @@ def get_data(filters):
     gate_out_jobs = frappe.get_all(
         "FPLYardJob",
         filters={
-            "job_type": "eo0ldr6jda",  # Gate Out type
+            "job_type": ["in", service_names("Gate Out")],  # Gate Out type
             "job_start_location": gate_in_location,
             "status": "Completed"
         },

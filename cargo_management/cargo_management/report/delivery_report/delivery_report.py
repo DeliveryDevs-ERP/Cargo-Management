@@ -2,12 +2,8 @@ import frappe
 from frappe import _
 
 def execute(filters=None):
-    data = []
-    job_types = get_job_types(filters)
-    columns = get_columns(data ,job_types)
-    data = get_data(filters, job_types)
-    data = process_data(data, job_types)
-    return columns, data
+    from cargo_management.cargo_management.utils.reporting import execute_report
+    return execute_report('Delivery report', filters)
 
 def get_job_types(filters):
     # Fetching all expense types from the `FPL Cost Type` DocType

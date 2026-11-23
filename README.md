@@ -1,103 +1,47 @@
-# Cargo Management App
+# Cargo Management for Frappe / ERPNext v16
 
-## Overview
-
-The **Cargo Management App** is a powerful tool designed to streamline logistics and transportation workflows. This app provides features for managing services, tracking orders, and optimizing transport modes across various operations.
-
-## Features
-
-- **Service Type Management**: Define and manage various service types.
-- **Transport Modes**: Support for multiple transport modes like Road, Rail, and more.
-- **Sales Order Types**: Differentiate between Domestic, Export, and Import orders.
-- **Sequence Tracking**: Maintain the order of operations for services.
+Cargo Management covers Booking Orders, Sales Orders, Freight Orders, Road/Rail/Yard/Cross-Stuff operations, containers and wagons, expenses and invoicing. It contains 31 original DocTypes, two Cross-Stuff financial-history models, 16 reports and two invoice print formats.
 
 ## Installation
 
-### Prerequisites
+Use an existing Docker-based Frappe/ERPNext v16 Bench with ERPNext installed on the intended site. Qualification baseline: Frappe **16.55.1**, ERPNext **16.53.0**, Python **3.14.10**, Node **24.22.2**, Yarn **1.22.22**, Bench **5.31.1**, MariaDB **11.8.9**, Redis **7.4.12**. Version constraints do not certify every v16 release.
 
-- Frappe Framework installed
-- A MariaDB database set up
+Inside the Bench container, from its Bench directory:
 
-### Steps to Install
+```bash
+bench get-app --branch version-16 https://github.com/DeliveryDevs-ERP/Cargo-Management.git
+bench --site YOUR_SITE install-app cargo_management
+bench --site YOUR_SITE migrate
+bench build --production --apps cargo_management
+bench pip check
+```
 
-1. Clone the repository into your apps directory:
-   ```bash
-   bench get-app cargo_management
-   ```
-2. Install the app on your site:
-   ```bash
-   bench --site [your-site-name] install-app cargo_management
-   ```
-3. Apply the setup SQL (optional for default master configuration):
-   ```sql
-   INSERT INTO `tabService Type` (`name`, `name1`, `transport_mode`, `applicable`, `job_type`)
-   VALUES
-   ('82ghk3ttss', 'Shifting', '', 0, 'Road'),
-   ('eo0ldr6jda', 'Gate Out', '', 0, 'Yard'),
-   ('enrhva2nvi', 'Gate In', '', 0, 'Yard'),
-   ('giml5efmsh', 'Long Haul', 'Road (Truck)', 0, 'Road'),
-   ('b8mpmejmts', 'Empty Pickup', 'Rail (Train)', 0, 'Road'),
-   ('vg2osur4ei', 'First Mile', 'Rail (Train)', 0, 'Road'),
-   ('l6cdsvneqs', 'Cross Stuff', 'Road (Truck)', 0, 'Cross Stuff'),
-   ('l645t4f4fm', 'Cross Stuff', 'Rail (Train)', 0, 'Cross Stuff'),
-   ('l5if4pva8b', 'Empty Return', 'Road (Truck)', 0, 'Road'),
-   ('l5dbk4s5u4', 'Empty Return', 'Rail (Train)', 0, 'Road'),
-   ('oasikqkqg2', 'Short Haul', 'Road (Truck)', 0, 'Road'),
-   ('oapcdu6gv3', 'Empty Pickup', 'Road (Truck)', 0, 'Road'),
-   ('oalds7gjs7', 'Last Mile', 'Rail (Train)', 0, 'Road'),
-   ('oagb0ddmuo', 'Middle Mile', 'Rail (Train)', 0, 'Rail');
+Bench installs the declared Python dependencies. Frappe and ERPNext are managed by Bench. Do not use an initial-environment installer or force-install onto an existing business site.
 
+Installation creates schema, Cargo roles, integration fields and application-owned UI metadata. It creates **no Companies, parties, Items, operating catalogs, tariffs, sequences, transactions or demonstration records**. No development database, separate source archive or manual file copying is required.
 
+## Configuration
 
-   INSERT INTO `tabTransport Mode` (`name`, `mode`)
-   VALUES
-   ('Road (Truck)', 'Road'),
-   ('Rail (Train)', 'Rail');
+Follow [Company configuration](docs/CONFIGURATION.md) for native ERPNext Company/chart/fiscal year, parties, service Items/UOMs, accounts, cost centers and Cargo catalogs. Required transport modes are `Road (Truck)` with mode `Road`, and `Rail (Train)` with mode `Rail`. Bind service sequences to records created in the target site.
 
+Configure classified Locations, container/wagon capacities, services, sequences, expense Item/Supplier bindings and approved tariffs before operational use. Test prices are synthetic examples. Existing blank-Company legacy catalogs remain supported; a Company-specific catalog is exclusive and must be complete. Missing or ambiguous configuration fails explicitly.
 
+Cargo Operator normally combines with native Sales User, Accounts User and Stock User roles. Cargo Manager complements appropriate native manager roles. Apply Company User Permissions. Cargo preserves native accounting authority.
 
-   INSERT INTO `tabFPL Wagons` (`name`, `type`, `state`, `size`, `max_weight`, `max_count`)
-   VALUES
-   ('ZBFC (S)', 'Small', 'Empty', 40, 60, 2),
-   ('BKF', 'Large', 'Empty', 60, 0, 3),
-   ('BFC', 'Large', 'Empty', 60, 0, 3),
-   ('KF', 'Conventional', 'Empty', 20, 0, 0),
-   ('KK', 'Conventional', 'Empty', 20, 0, 0),
-   ('ZRRV', 'Large', 'Empty', 40, 0, 0),
-   ('ZBFC', 'Large', 'Empty', 60, 60, 3);
-   ```
+Open Cargo Management through the app switcher or `/desk/cargo-management`. Invoice formats: **Sales Invoice PF Midway** and **Sales invoice pf with qr**. Use a Frappe-supported PDF renderer. The tested Chromium executable is `/usr/bin/chromium-headless-shell`; select an installed executable through native Bench `chromium_path` configuration when required. Configure the native site hostname for QR links. QR output contains an authenticated invoice URL without access tokens.
 
-## Usage
+## Upgrades and verification
 
-1. Access the app via the desk in your Frappe instance.
-2. Navigate to the **Service Type** section to view and manage available services.
-3. Use the **Transport Mode** and **Sales Order Type** to classify and filter operations.
+See [upgrade instructions](docs/UPGRADING.md) and [repeatable tests](docs/TESTING.md). Approved versioned billing, deterministic rail tariffs, expense precision, Company isolation, allocations and Cross-Stuff history protections are retained. Existing version-0 contracts remain unchanged; new records use version 1. Migration does not reprice historical transactions or infer missing weights.
 
-## Development
+Commercial tariff authority, partially received wagon pricing, bag-weight/fallback semantics and currency scope require business confirmation. Successful source installation is distinct from production/business certification.
 
-### Setting Up a Development Environment
+## Optional integrations
 
-1. Clone the repository locally:
-   ```bash
-   git clone [repo-url]
-   cd cargo_management
-   ```
-2. Set up the app in a local Frappe bench instance:
-   ```bash
-   bench start
-   ```
+Crypto is disabled by default and its scheduled job is stopped. Optional dependencies can be installed with `bench pip install -e 'apps/cargo_management[crypto]'`. Installation does not enable execution. Live opt-in requires private `cargo_crypto_database_url` and `cargo_crypto_api_key` settings and separate authorization. Keep secrets outside source and fixtures; tests mock provider, PostgreSQL and email calls.
 
-### Contributing
+The original development site's independent outbound policy remains conditional on that site's identity. It is not a firewall or a substitute for configuring another environment's integrations, email and scheduler. Financial QA guards are not installed. Framework/vendor dependency risks need deployment-specific review; Cargo does not patch framework source or certify production security or Marketplace readiness.
 
-We welcome contributions! Please submit a pull request with a detailed description of your changes.
+## Licence
 
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For support or inquiries, contact: [[osama.ahmed@deliverydevs.com](mailto\:osama.ahmed@deliverydevs.com)].
-
-
-
+MIT. Preserve original author/publisher attribution in project metadata and `license.txt`.

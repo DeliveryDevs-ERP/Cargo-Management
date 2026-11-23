@@ -1,0 +1,9 @@
+{
+  "name": "cargo-management-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test cargo_management/tests/test_client_compatibility.cjs cargo_management/tests/test_booking_order_calculations.cjs",
+    "test:browser": "node cargo_management/tests/publication_browser.cjs"
+  },
+  "devDependencies": {"playwright": "1.64.1"}
+}

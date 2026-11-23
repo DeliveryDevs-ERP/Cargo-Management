@@ -1,0 +1,25 @@
+{
+ "doctype": "Report",
+ "name": "Child doc type testing",
+ "report_name": "Child doc type testing",
+ "module": "Cargo Management",
+ "ref_doctype": "FPL Freight Orders",
+ "report_type": "Script Report",
+ "is_standard": "Yes",
+ "disabled": 0,
+ "prepared_report": 0,
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Cargo Operator"
+  },
+  {
+   "role": "Cargo Manager"
+  }
+ ]
+}

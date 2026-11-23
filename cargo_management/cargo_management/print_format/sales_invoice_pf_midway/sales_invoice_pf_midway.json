@@ -1,0 +1,11 @@
+{
+ "doctype": "Print Format",
+ "name": "Sales Invoice PF Midway",
+ "doc_type": "Sales Invoice",
+ "module": "Cargo Management",
+ "standard": "Yes",
+ "custom_format": 1,
+ "print_format_type": "Jinja",
+ "disabled": 0,
+ "html": "{% set cargo_qr_enabled = false %}\n{% include \"templates/cargo_invoice.html\" %}"
+}

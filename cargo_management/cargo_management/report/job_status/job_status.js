@@ -1,17 +1,14 @@
 frappe.query_reports["Job Status"] = {
     "filters": [
+        {fieldname: 'company', label: __('Company'), fieldtype: 'Link', options: 'Company'},
         {
             "fieldname": "transport_mode",
             "label": __("Transport Mode"),
             "fieldtype": "Link",
             "options": "Transport Mode",
-            "on_change": function() {
-                var transport_mode = frappe.query_report.get_filter_value('transport_mode');
-                frappe.query_report.toggle_display('check_booking', transport_mode === 'Rail (Train)');
-                frappe.query_report.toggle_display('check_train', transport_mode === 'Rail (Train)');
-                frappe.query_report.toggle_display('train_no', transport_mode === 'Rail (Train)' && frappe.query_report.get_filter_value('check_train'));
-                frappe.query_report.toggle_display('from_date', transport_mode === 'Road (Truck)' || frappe.query_report.get_filter_value('check_booking'));
-                frappe.query_report.toggle_display('to_date', transport_mode === 'Road (Truck)' || frappe.query_report.get_filter_value('check_booking'));
+            "on_change": function(report) {
+                report.refresh_filters_dependency();
+                if (!report._no_refresh) report.refresh();
             }
         },
         {
@@ -22,7 +19,7 @@ frappe.query_reports["Job Status"] = {
             "on_change": function() {
                 if (frappe.query_report.get_filter_value('check_booking')) {
                     frappe.query_report.set_filter_value('check_train', 0);
-                    frappe.query_report.toggle_display('train_no', false);
+                    frappe.query_report.refresh_filters_dependency();
                 }
             }
         },
@@ -34,9 +31,9 @@ frappe.query_reports["Job Status"] = {
             "on_change": function() {
                 if (frappe.query_report.get_filter_value('check_train')) {
                     frappe.query_report.set_filter_value('check_booking', 0);
-                    frappe.query_report.toggle_display('train_no', true);
+                    frappe.query_report.refresh_filters_dependency();
                 } else {
-                    frappe.query_report.toggle_display('train_no', false);
+                    frappe.query_report.refresh_filters_dependency();
                 }
             }
         },

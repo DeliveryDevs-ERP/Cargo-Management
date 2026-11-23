@@ -3,6 +3,7 @@
 
 frappe.query_reports["Yard and Date wise Grounded Container"] = {
 "filters": [
+        {fieldname: 'company', label: __('Company'), fieldtype: 'Link', options: 'Company'},
         {
             "fieldname": "gate_in_location",
             "label": __("Grounded Location"),

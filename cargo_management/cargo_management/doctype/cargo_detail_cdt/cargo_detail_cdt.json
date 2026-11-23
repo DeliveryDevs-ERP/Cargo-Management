@@ -15,7 +15,14 @@
   "rate_type",
   "rate",
   "qty",
-  "amount"
+  "amount",
+  "cargo_billing_override",
+  "cargo_override_reason",
+  "cargo_override_amount",
+  "cargo_effective_rate",
+  "cargo_discrepancy_acknowledged",
+  "cargo_billing_input_hash",
+  "cargo_native_amount"
  ],
  "fields": [
   {
@@ -84,6 +91,45 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Amount"
+  },
+  {
+   "fieldname": "cargo_billing_override",
+   "fieldtype": "Check",
+   "label": "Cargo Billing Override"
+  },
+  {
+   "fieldname": "cargo_override_reason",
+   "fieldtype": "Small Text",
+   "label": "Cargo Override Reason"
+  },
+  {
+   "fieldname": "cargo_override_amount",
+   "fieldtype": "Currency",
+   "label": "Cargo Override Amount"
+  },
+  {
+   "fieldname": "cargo_effective_rate",
+   "fieldtype": "Currency",
+   "label": "Cargo Effective Rate",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cargo_discrepancy_acknowledged",
+   "fieldtype": "Check",
+   "label": "Cargo Discrepancy Acknowledged"
+  },
+  {
+   "fieldname": "cargo_billing_input_hash",
+   "fieldtype": "Data",
+   "label": "Cargo Billing Input Hash",
+   "hidden": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cargo_native_amount",
+   "fieldtype": "Currency",
+   "label": "Cargo Native Amount",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

@@ -3,6 +3,7 @@
 
 frappe.query_reports["Customer PNL"] = {
 	"filters": [
+        {fieldname: 'company', label: __('Company'), fieldtype: 'Link', options: 'Company'},
 		{
             "fieldname": "from_date",
             "label": __("From Date"),
@@ -26,7 +27,7 @@ frappe.query_reports["Customer PNL"] = {
         },
 		{
             "fieldname": "summaries",
-            "label": __("Summarize with AI"),
+            "label": __("Summarize"),
             "fieldtype": "Check"
         },
 	]

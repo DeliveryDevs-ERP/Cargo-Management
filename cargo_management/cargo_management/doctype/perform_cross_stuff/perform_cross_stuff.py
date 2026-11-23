@@ -1,3 +1,5 @@
+from cargo_management.cargo_management.utils.services import is_service, service_names
+from cargo_management.setup import get_account_manager_emails
 import frappe
 from frappe.model.document import Document
 
@@ -27,7 +29,36 @@ class PerformCrossStuff(Document):
         remaining_weight: DF.Float
         total_weight: DF.Float
     # end: auto-generated types
+    def before_submit(self):
+        import uuid
+        from cargo_management.cargo_management.utils.cross_stuff_history import prepare
+        self.flags.cargo_cross_savepoint = 'cargo_cross_' + uuid.uuid4().hex[:12]
+        frappe.db.savepoint(self.flags.cargo_cross_savepoint)
+        try:
+            prepare(self)
+        except Exception:
+            frappe.db.rollback(save_point=self.flags.cargo_cross_savepoint)
+            frappe.flags.cargo_active_transfer = None
+            raise
+
     def on_submit(self):
+        existing = frappe.db.get_value('Cargo Cross Stuff Transfer', {'performance': self.name}, ['name', 'after_state', 'state'], as_dict=True)
+        if existing and existing.after_state and existing.state == 'Applied':
+            return
+        try:
+            return self.apply_transfer()
+        except Exception:
+            if self.flags.get('cargo_cross_savepoint'):
+                frappe.db.rollback(save_point=self.flags.cargo_cross_savepoint)
+            raise
+        finally:
+            frappe.flags.cargo_active_transfer = None
+
+    def before_cancel(self):
+        from cargo_management.cargo_management.utils.cross_stuff_history import reverse
+        reverse(self)
+
+    def apply_transfer(self):
         temp_jobs = self.amend_FOs()
         # frappe.msgprint(f"length of temp Job after: {len(temp_jobs)}")
         #temp_jobs = list(set(temp_jobs))
@@ -42,6 +73,8 @@ class PerformCrossStuff(Document):
         self.create_purchase_invoice()
         if len(self.expenses) > 0:
             self.send_expense_invoice_notification()
+        from cargo_management.cargo_management.utils.cross_stuff_history import finish
+        finish(self)
 
     def on_change(self):
         self.create_purchase_invoice()
@@ -49,34 +82,40 @@ class PerformCrossStuff(Document):
             self.send_expense_invoice_notification()
 
 
+    def freight_for_container(self, container_record):
+        freight = frappe.db.get_value('FPL Containers', container_record, 'freight_order_id') if container_record else None
+        if not freight:
+            frappe.throw('Selected container has no Freight Order reference.')
+        return freight
+
     def amend_FOs(self):
         temp_jobs = []
         processed_containers = []
-        cross_stuff_job_names = ["l645t4f4fm", "l6cdsvneqs"]
+        cross_stuff_job_names = service_names("Cross Stuff")
         for row in self.grounded_filled_containers:
             if row.container_number and row.container_number not in processed_containers:
                 processed_containers.append(row.container_number)
                 container_number = frappe.get_value("FPL Containers", {"name": row.container_number}, "container_number")
                 frappe.db.set_value("FPL Containers", row.container_number, "status", "Empty")
-                FO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
+                FO = frappe.get_doc("FPL Freight Orders", self.freight_for_container(row.container_number))
                 FO.status = "Cross Stuff"
                 FO.weight = 0
                 existing_cross_stuff_job_index = next((i for i, job in enumerate(FO.jobs) if job.job_name in cross_stuff_job_names), None)
                 if existing_cross_stuff_job_index is not None:
-                    temp_jobs.extend(FO.jobs[existing_cross_stuff_job_index:])
-                    if FO.jobs[existing_cross_stuff_job_index - 1].job_name == 'eo0ldr6jda':
-                        FO.jobs = FO.jobs[:existing_cross_stuff_job_index]
-                    else:
-                        FO.jobs = FO.jobs[:existing_cross_stuff_job_index]
-                    self.append_Gate_Out_job(FO, existing_cross_stuff_job_index, row)
+                    crossStuff_location = FO.jobs[existing_cross_stuff_job_index].start_location
+                    # Keep the source Cross-Stuff job: on_submit completes it.
+                    # Only subsequent work transfers to the replacement CFO.
+                    temp_jobs.extend(FO.jobs[existing_cross_stuff_job_index + 1:])
+                    FO.jobs = FO.jobs[:existing_cross_stuff_job_index + 1]
+                    self.append_Gate_Out_job(FO, crossStuff_location, row)
                     self.append_empty_return_job(FO, crossStuff_location, row)
                 else:
                     job_to_amend_index = next((i for i, job in enumerate(FO.jobs) if job.job_name == self.job_before_cross_stuff), None)
                     if job_to_amend_index is not None:
                         crossStuff_location = FO.jobs[job_to_amend_index].start_location
                         temp_jobs.extend(FO.jobs[job_to_amend_index:])
-                        if FO.jobs[job_to_amend_index - 1].job_name == 'eo0ldr6jda':
-                            frappe.db.delete("FPLYardJob", {"name": FO.jobs[job_to_amend_index - 1].job_id})
+                        if job_to_amend_index > 0 and is_service(FO.jobs[job_to_amend_index - 1].job_name, "Gate Out"):
+                            self.flags.setdefault('cargo_discard_jobs', []).append(FO.jobs[job_to_amend_index - 1])
                             FO.jobs = FO.jobs[:job_to_amend_index - 1]
                         else:
                             FO.jobs = FO.jobs[:job_to_amend_index]
@@ -87,6 +126,10 @@ class PerformCrossStuff(Document):
                 # Reindex jobs to maintain sequential idx
                 for idx, job in enumerate(FO.jobs, start=1):
                     job.idx = idx
+                # This FO already has its container. Apply the existing
+                # assignment routine before validating a mix of retained and
+                # newly appended jobs; job creation below repeats it safely.
+                FO.update_container_in_jobs()
                 # frappe.msgprint(f"Length of FO jobs {len(FO.jobs)}")
                 FO.save()
                 create_Job_withoutId(FO.name)
@@ -95,13 +138,7 @@ class PerformCrossStuff(Document):
     def send_expense_invoice_notification(self):
         booking_order = self.booking_order_id or frappe.db.get_value("FPL Containers", self.container_number, "booking_order_id")
         sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
-        recipient_emails = [
-            user["email"] for user in frappe.get_all(
-                "User",
-                filters={"role": "Accounts Manager"},
-                fields=["email"]
-            ) if user.get("email")
-        ]
+        recipient_emails = get_account_manager_emails(booking_order)
 
         if not recipient_emails:
             frappe.msgprint("No Accounts Managers found with valid email addresses.")
@@ -206,18 +243,22 @@ class PerformCrossStuff(Document):
         })
 
     def determine_transport_mode(self):
-        rail_truck_jobs = ["giml5efmsh", "oasikqkqg2", "82ghk3ttss"]
-        rail_train_jobs = ["oalds7gjs7", "oagb0ddmuo", "vg2osur4ei"]
-        if self.job_before_cross_stuff in rail_truck_jobs:
+        rail_truck_jobs = ["Long Haul", "Short Haul", "Shifting"]
+        rail_train_jobs = ["Last Mile", "Middle Mile", "First Mile"]
+        label = frappe.db.get_value("Service Type", self.job_before_cross_stuff, "name1")
+        if label in rail_truck_jobs:
             return "Road (Truck)"
-        elif self.job_before_cross_stuff in rail_train_jobs:
+        elif label in rail_train_jobs:
             return "Rail (Train)"
         return None
 
     def create_purchase_invoice(self):
-        default_company = frappe.defaults.get_user_default("company")
+        if not self.expenses:
+            return
+        from cargo_management.cargo_management.utils.configuration import booking_company
+        default_company = booking_company(self.booking_order_id)
         for expense in self.expenses:
-            if expense.purchase_invoiced_created == 0:
+            if not expense.purchase_invoiced_created:
                 item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
                 if item:
                     code = create_invoice(
@@ -240,34 +281,13 @@ class PerformCrossStuff(Document):
                         
                         
     def get_service_type_name(self, service_name, transport_mode):
-        if service_name in ['Gate In', 'Gate Out']:
-            service_type = frappe.get_value(
-                "Service Type",
-                {"name1": service_name},
-                "name"
-            )
-        else:
-            service_type = frappe.get_value(
-                "Service Type",
-                {"name1": service_name, "transport_mode": transport_mode},
-                "name"
-            )
-        
-        if service_type:
-            return service_type
-        else:
-            frappe.throw(
-                f"No Service Type found for name1: {service_name} and transport mode: {transport_mode}"
-            )
+        from cargo_management.cargo_management.utils.configuration import resolve_service, booking_company
+        return resolve_service(service_name, transport_mode, booking_company(self.booking_order_id))
 
     def remove_jobIds(self, Jobs):
-        for job in Jobs: #Delete the Documents in respective documents
-            if job.job_id:
-                frappe.db.delete("FPLRoadJob", {"name": job.job_id})
-                frappe.db.delete("FPLRailJob", {"name": job.job_id})
-                frappe.db.delete("FPLYardJob", {"name": job.job_id})
-                job.job_id = None
-        return Jobs    
+        from cargo_management.cargo_management.utils.cross_stuff_history import retire_or_delete
+        retire_or_delete(self, self.flags.get('cargo_discard_jobs') or [])
+        return retire_or_delete(self, Jobs)
 
     def amend_CFOs(self, temp_jobs):
         processed_containers = []
@@ -277,10 +297,10 @@ class PerformCrossStuff(Document):
                 container_number = frappe.get_value("FPL Containers", {"name": row.reference_container}, "container_number")
                 FO_container_number = frappe.get_value("FPL Containers", {"name": row.container_number}, "container_number")
                 frappe.db.set_value("FPL Containers", row.reference_container, "status", "Filled")
-                CFO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
-                FO = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "name")
-                FO_rate_type = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "rate_type")
-                FO_rate = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "rate")
+                CFO = frappe.get_doc("FPL Freight Orders", self.freight_for_container(row.reference_container))
+                FO = self.freight_for_container(row.container_number)
+                FO_rate_type = frappe.get_value("FPL Freight Orders", FO, "rate_type")
+                FO_rate = frappe.get_value("FPL Freight Orders", FO, "rate")
                 # FO_weight = frappe.get_value("FPL Freight Orders",{"sales_order_number":self.booking_order_id, "container_number": FO_container_number}, "weight")
                 FO_weight = row.weight
                 CFO.rate_type = FO_rate_type
@@ -299,6 +319,7 @@ class PerformCrossStuff(Document):
                             "start_location": job.start_location,
                             "end_location": job.end_location,
                             "idx": next_idx
+                            ,"cargo_transfer": self.flags.cargo_transfer_journal.name
                         })
                         next_idx += 1
 
@@ -324,7 +345,7 @@ class PerformCrossStuff(Document):
         for row in self.grounded_filled_containers:
             if row.container_number:
                 container_number = frappe.get_value("FPL Containers", {"name": row.container_number}, "container_number")
-                FO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
+                FO = frappe.get_doc("FPL Freight Orders", self.freight_for_container(row.container_number))
                 CrossStuff = frappe.get_doc("FPLCrossStuffJob", {"container_number": container_number, "freight_order_id": FO.name, "sales_order_number": self.booking_order_id})
                 CrossStuff.performance_details = self.name
                 CrossStuff.save()
@@ -333,7 +354,7 @@ class PerformCrossStuff(Document):
         for row in self.grounded_filled_containers:
             if row.reference_container:
                 container_number = frappe.get_value("FPL Containers", {"name": row.reference_container}, "container_number")
-                CFO = frappe.get_doc("FPL Freight Orders", {"container_number": container_number})
+                CFO = frappe.get_doc("FPL Freight Orders", self.freight_for_container(row.reference_container))
                 
                 # Fetch the specific Empty Return job
                 EmptyReturn =  frappe.get_list("FPLRoadJob", 
@@ -341,12 +362,14 @@ class PerformCrossStuff(Document):
                         "container_number": container_number,
                         "freight_order_id": CFO.name,
                         "sales_order_number": self.booking_order_id,
-                        "job_type": ["in", ["l5dbk4s5u4", "l5if4pva8b"]]
+                        "job_type": ["in", service_names("Empty Return")]
                     }, 
                     fields=["name"]
                 )
                 if EmptyReturn:
                     EmptyReturn = frappe.get_doc("FPLRoadJob", EmptyReturn[0].name)
+                else:
+                    continue  # Export profiles need not contain an Empty Return.
                 EmptyReturn.job_end_location = row.empty_return_location
                 EmptyReturn.save()
                 
@@ -376,25 +399,19 @@ class PerformCrossStuff(Document):
     
     
     def assign_performance_in_request(self):
-        ref_container_count = 0
-        for row in self.grounded_filled_containers:
-            ref_container_count += sum(1 for x in self.grounded_filled_containers if x.reference_container == row.reference_container)
-        requests = frappe.get_all("Container or Vehicle Request",
-                                filters={
-                                    "booking_order_id": self.booking_order_id,
-                                    "cross_stuff_performance": ["is", "not set"],
-                                    "docstatus": 1
-                                },
-                                fields=["name"])
-
-        for request in requests:
-            count_req = 0
-            request_doc = frappe.get_doc("Container or Vehicle Request", request["name"])
-            # frappe.errprint(f"request_doc {request_doc.yard_location}")
-            for row in request_doc.table_ktch:
-                count_req += row.qty
-
-            if ref_container_count == count_req:
-                frappe.db.set_value("Container or Vehicle Request", request["name"], "cross_stuff_performance", self.name)
-                frappe.db.commit()  # nosemgrep: frappe-manual-commit - intentional commit so these updates persist even if a later step fails
-                
+        requests = set()
+        for container in sorted({row.reference_container for row in self.grounded_filled_containers}):
+            freight = frappe.get_doc('FPL Freight Orders', self.freight_for_container(container), for_update=True)
+            if freight.cargo_request:
+                requests.add(freight.cargo_request)
+                freight.db_set('cargo_cross_stuff_performance', self.name, update_modified=False)
+        for name in sorted(requests):
+            request = frappe.get_doc('Container or Vehicle Request', name, for_update=True)
+            if request.booking_order_id != self.booking_order_id or request.docstatus != 1:
+                frappe.throw('Receiving Freight Order has an invalid container request lineage.')
+            remaining = frappe.db.sql('''SELECT name FROM `tabFPL Freight Orders`
+                WHERE cargo_request=%s AND COALESCE(cargo_cross_stuff_performance,'')='' FOR UPDATE''', name)
+            if not remaining:
+                request.db_set('cross_stuff_performance', self.name, update_modified=False)
+        # Historical receivers without a request link are deliberately not
+        # assigned by quantity; equal counts cannot prove document ownership.

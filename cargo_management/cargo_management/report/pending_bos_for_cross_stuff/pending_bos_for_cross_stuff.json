@@ -15,16 +15,21 @@
  "name": "Pending BOs for Cross Stuff",
  "owner": "Administrator",
  "prepared_report": 0,
- "query": "SELECT BO.name \r\nFROM `tabBooking Order` AS BO\r\nWHERE BO.location_of_cross_stuff IS NOT NULL\r\n  AND BO.name NOT IN (\r\n    SELECT Request.booking_order_id\r\n    FROM `tabContainer or Vehicle Request` AS Request\r\n    JOIN `tabBooking Order` AS SubBO ON Request.booking_order_id = SubBO.name\r\n    WHERE SubBO.location_of_cross_stuff IS NOT NULL\r\n  );\r\n",
  "ref_doctype": "Booking Order",
  "report_name": "Pending BOs for Cross Stuff",
- "report_type": "Query Report",
+ "report_type": "Script Report",
  "roles": [
   {
    "role": "System Manager"
   },
   {
    "role": "Sales User"
+  },
+  {
+   "role": "Cargo Operator"
+  },
+  {
+   "role": "Cargo Manager"
   }
  ],
  "timeout": 0

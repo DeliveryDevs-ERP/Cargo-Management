@@ -17,7 +17,10 @@
   "slip",
   "sales_invoice_no",
   "container_number",
-  "purchase_invoice_no"
+  "purchase_invoice_no",
+  "cargo_charge_key",
+  "cargo_tariff",
+  "cargo_invoice_history"
  ],
  "fields": [
   {
@@ -38,11 +41,10 @@
   {
    "columns": 1,
    "fieldname": "amount",
-   "fieldtype": "Float",
+   "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Amount",
    "options": "currency",
-   "precision": "1",
    "read_only_depends_on": "eval: doc.purchase_invoiced_created === 1;"
   },
   {
@@ -87,7 +89,8 @@
    "fieldtype": "Link",
    "label": "Sales Invoice No.",
    "options": "Sales Invoice",
-   "read_only": 1
+   "read_only": 1,
+   "in_list_view": 1
   },
   {
    "columns": 2,
@@ -110,7 +113,31 @@
    "fieldname": "purchase_invoice_no",
    "fieldtype": "Data",
    "label": "Purchase Invoice No.",
-   "read_only_depends_on": "eval: doc.purchase_invoiced_created === 1;"
+   "read_only_depends_on": "eval: doc.purchase_invoiced_created === 1;",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "cargo_charge_key",
+   "fieldtype": "Data",
+   "label": "Cargo Charge Key",
+   "hidden": 1,
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "cargo_tariff",
+   "fieldtype": "Link",
+   "label": "Cargo Tariff",
+   "options": "Rail Freight Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cargo_invoice_history",
+   "fieldtype": "Long Text",
+   "label": "Cargo Invoice History",
+   "read_only": 1,
+   "hidden": 1
   }
  ],
  "index_web_pages_for_search": 1,

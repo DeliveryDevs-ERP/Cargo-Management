@@ -1,0 +1,11 @@
+{
+ "doctype": "Print Format",
+ "name": "Sales invoice pf with qr",
+ "doc_type": "Sales Invoice",
+ "module": "Cargo Management",
+ "standard": "Yes",
+ "custom_format": 1,
+ "print_format_type": "Jinja",
+ "disabled": 0,
+ "html": "{% set cargo_qr_enabled = true %}\n{% include \"templates/cargo_invoice.html\" %}"
+}

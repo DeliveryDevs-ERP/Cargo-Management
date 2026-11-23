@@ -57,7 +57,8 @@ frappe.ui.form.on("FPLRoadJob", {
                 args: {
                     container_number_to_link: frm.doc.container_number_to_link,
                     self_container_number: frm.doc.container_number,
-                    job_type: frm.doc.job_type
+                    job_type: frm.doc.job_type,
+                    self_freight_order: frm.doc.freight_order_id
                 },
                 callback: function(response) {
                     if (response.message) {
@@ -69,66 +70,22 @@ frappe.ui.form.on("FPLRoadJob", {
     },
 });
 
-function populate_expenses(frm, job_mode) {
-    // First, fetch cost types
-    frappe.call({
-        method: "frappe.client.get_list",
-        args: {
-            doctype: "FPL Cost Type",
-            filters: {
-                job_mode: job_mode
-            },
-            fields: ["*"]
-        },
-        callback: function(response) {
-            if (response.message) {
-                console.log('Fetched Cost Types:', response.message);
-                response.message.forEach(function(cost_obj) {
-                    if (cost_obj.fixed_ == 1) {
-                        let row = frm.add_child('expenses');
-                        row.expense_type = cost_obj.name;
-                        row.amount = cost_obj.cost;
-                    }
-                });
-                frm.refresh_field('expenses');
-            }
-        }
-    });
-
-    if (frm.doc.container_number && frm.doc.freight_order_id) {
-        frappe.call({
-            method: "frappe.client.get_value",
-            args: {
-                doctype: "FPL Containers",
-                filters: {
-                    container_number: frm.doc.container_number,
-                    freight_order_id: frm.doc.freight_order_id
-                },
-                fieldname: 'name'
-            },
-            callback: function(r) {
-                if (r.message) {
-                    console.log('Fetched Container:', r.message);
-                    // Update the container_number in expenses after fetching
-                    let expenses = frm.doc.expenses;
-                    expenses.forEach(function(expense) {
-                        expense.container_number = r.message.name;
-                    });
-                    frm.refresh_field('expenses');
-                }
-            }
-        });
-    }
+async function populate_expenses(frm, job_mode) {
+    // The server initializes fixed charges once and validates Company bindings.
+    return set_cost_type_filter(frm, job_mode);
 }
 
-function set_cost_type_filter(frm, job_mode) {
-    frm.fields_dict['expenses'].grid.get_field('expense_type').get_query = function() {
-        return {
-            filters: {
-                job_mode: job_mode
-            }
-        };
-    };
+async function set_cost_type_filter(frm, job_mode) {
+    if (!frm.doc.company && !frm.doc.sales_order_number && !frm.doc.booking_order_id) return;
+    const identity = JSON.stringify([frm.doc.name, frm.doc.company, frm.doc.sales_order_number, frm.doc.booking_order_id]);
+    const response = await frappe.call({
+        method: 'cargo_management.expense_controls.get_cost_catalog',
+        args: {doctype: frm.doctype, docname: frm.is_new?.() ? null : frm.doc.name,
+            booking: frm.doc.booking_order_id || frm.doc.sales_order_number, company: frm.doc.company},
+    });
+    if (identity !== JSON.stringify([frm.doc.name, frm.doc.company, frm.doc.sales_order_number, frm.doc.booking_order_id])) return;
+    const names = (response.message || []).map(row => row.name);
+    frm.fields_dict.expenses.grid.get_field('expense_type').get_query = () => ({filters: {name: ['in', names], job_mode}});
 }
 
 function set_container_name_filter(frm) {
@@ -176,51 +133,9 @@ function set_container_name_filter(frm) {
 
 frappe.ui.form.on('Expenses cdt', {
     before_expenses_remove: function(frm, cdt, cdn) {
-        const row = locals[cdt][cdn];
-        console.log("Attempting to delete row:", row);
-
-        if (row.purchase_invoice_no) {
-            frappe.db.get_doc("Purchase Invoice", row.purchase_invoice_no)
-                .then(PI => {
-                    // console.log("Fetched PI:", PI);
-                    if (PI.docstatus === 0) {
-                        // If the PI is in draft status, allow deletion
-                        frappe.db.delete_doc('Purchase Invoice', PI.name)
-                            .then(() => {
-                                if (frm.doc.double_20_ === 1) {
-                                    frappe.msgprint("Please remove this row manually from other double 20 Road Job");
-                                } 
-                                frm.save();                        
-                            })
-                            .catch(err => {
-                                console.error('Error deleting Purchase Invoice:', err);
-                                frappe.msgprint(__('An error occurred while deleting the Purchase Invoice.'), __('Error'));
-                                throw new frappe.ValidationError();
-                            });
-                    } else if (PI.docstatus === 1) {
-                        // If the PI is submitted, do not allow deletion and reload the form
-                        frappe.msgprint({
-                            title: __('Not Allowed'),
-                            message: __('Rows linked to a submitted Purchase Invoice cannot be deleted.'),
-                            indicator: 'red'
-                        });
-                        frm.reload_doc();
-                    }
-                })
-                .catch(err => {
-                    console.error("Error fetching Purchase Invoice:", err);
-                    frappe.msgprint({
-                        title: __('Error'),
-                        message: __('Failed to fetch the Purchase Invoice linked to this row.'),
-                        indicator: 'red'
-                    });
-                    frm.reload_doc(); // Reload the document in case of fetch error too
-                });
-
-            // Prevent the default deletion action until the promise is resolved
-            frappe.validated = false;
-        }
-    },
+    const row = locals[cdt][cdn];
+    if (row.purchase_invoice_no || row.sales_invoice_no) frappe.throw(__('Financially referenced Cargo expenses must be retained. Invoices are never deleted automatically.'));
+},
 
 
     expenses_move: function(frm, cdt, cdn) {

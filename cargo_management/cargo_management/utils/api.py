@@ -8,6 +8,19 @@ import json
 def create_invoice(**kwargs):
     try:
         data = kwargs
+        if data.get('BO'):
+            from cargo_management.cargo_management.utils.configuration import booking_company
+            company = booking_company(data['BO'])
+            if data.get('company') and data['company'] != company:
+                frappe.throw(_('Cargo Purchase Invoice Company differs from its Booking.'))
+            data['company'] = company
+            for line in data.get('items',[]):
+                flags=frappe.db.get_value('Item',line.get('item_code'),['enable_deferred_revenue','enable_deferred_expense'])
+                if flags and any(flags):
+                    frappe.throw(_('Cargo deferred-accounting Item binding is not verified; existing Item flags are preserved.'))
+            if not frappe.has_permission('Purchase Invoice','create'):
+                frappe.msgprint(_('Cargo expense retained. An accounting user must create its draft Purchase Invoice.'))
+                return None
         # if data.get("crm_bill_no"):
             # if frappe.db.exists(
             #     "Purchase Invoice", {"crm_bill_no": data.get("crm_bill_no")}
@@ -124,10 +137,8 @@ def create_invoice(**kwargs):
         gen_response(200, "Invoice Created Successfully", res)
         return invoice_doc.name
     except Exception as exec:
-        frappe.db.rollback()
         frappe.log_error(title="Midway Error Log", message=frappe.get_traceback())
-        gen_response(500, cstr(exec))
-        return None
+        raise  # Let the caller roll back the complete document transaction.
 
 
 

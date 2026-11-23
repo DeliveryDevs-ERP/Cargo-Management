@@ -101,7 +101,8 @@ from frappe.utils import flt
 
 
 def get_qr_code(qr_text, scale=5):
-    return pyqrcode.create(qr_text).png_as_base64_str(scale=scale, quiet_zone=1)
+    # Four modules of clear border are required for reliable QR scanning.
+    return pyqrcode.create(qr_text, error='Q').png_as_base64_str(scale=scale, quiet_zone=4)
 
 
 # def get_ewaybill_barcode(ewaybill):

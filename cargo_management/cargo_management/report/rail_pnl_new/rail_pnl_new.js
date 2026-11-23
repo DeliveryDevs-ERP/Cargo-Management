@@ -3,6 +3,7 @@
 
 frappe.query_reports["RAIL PNL NEW"] = {
 	"filters": [
+        {fieldname: 'company', label: __('Company'), fieldtype: 'Link', options: 'Company'},
 		{
             "fieldname": "from_date",
             "label": __("From Date"),

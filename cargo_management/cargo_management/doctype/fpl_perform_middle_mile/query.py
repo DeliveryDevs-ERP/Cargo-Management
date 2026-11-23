@@ -1,88 +1,45 @@
 import frappe
-
-@frappe.whitelist()
-def get_applicable_jobs(doctype, txt, searchfield, start, page_len, filters):
-
-    departure_location = filters.get('container_location')
-    arrival_location = filters.get('container_next_location')
-    not_in_container = filters.get('not_in_container')
-    not_in_container_list = tuple(not_in_container)
-
-    try:
-        sql_query = """
-            SELECT 
-                container.name, container.container_number, freight_order.size
-            FROM 
-                `tabFPL Containers` AS container
-            JOIN 
-                `tabFPL Freight Orders` AS freight_order ON container.freight_order_id = freight_order.name
-            JOIN
-                `tabFPL Jobs` AS Jobs ON Jobs.parent = freight_order.name
-            WHERE
-                freight_order.last_job = 'Gate In' AND
-                freight_order.next_job = 'Gate Out' AND
-                Jobs.job_name = 'oagb0ddmuo' AND
-                freight_order.mm_completed_ = 0 AND
-                Jobs.start_location = %s AND
-                Jobs.end_location = %s
-        """
-
-        # Adding search condition
-        if txt and searchfield:
-            sql_query += " AND container.container_number LIKE %s"
-            search_value = f"%{txt}%"
-        else:
-            search_value = None
-
-        # Add NOT IN clause if there are items to exclude
-        if not_in_container_list:
-            sql_query += " AND container.name NOT IN %s"
-            sql_query += " ORDER BY container.container_number, freight_order.size ASC"
-            if search_value:
-                return frappe.db.sql(sql_query, (departure_location, arrival_location, search_value, not_in_container_list))
-            else:
-                return frappe.db.sql(sql_query, (departure_location, arrival_location, not_in_container_list))
-        else:
-            if search_value:
-                return frappe.db.sql(sql_query, (departure_location, arrival_location, search_value))
-            else:
-                return frappe.db.sql(sql_query, (departure_location, arrival_location))
-    
-    except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "Failed to execute SQL query in get_applicable_jobs")
-        frappe.throw(f"Error fetching container data: {str(e)}")
+from cargo_management.cargo_management.utils.search import search_arguments, require_read, results
 
 
 @frappe.whitelist()
-def get_containers_from_Loading(*args, **kwargs):
-    txt = kwargs.get('txt', '')
-    searchfield = kwargs.get('searchfield', None)
-    start = int(kwargs.get('start', 0))
-    page_len = int(kwargs.get('page_len', 20))
-    filters = kwargs.get('filters', {})
-    parent = args[5].get('parent')
-   
-    try:
-        return frappe.db.sql("""
-            SELECT DISTINCT
-                Loading.container, Loading.container_number
-            FROM 
-                `tabFPL MM cdt` AS Loading
-            WHERE
-                Loading.container IS NOT NULL AND
-                Loading.parentfield = 'middle_mile' AND
-                Loading.parent = %s
-            """, (parent,))
-    
-    except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "Failed to execute SQL query in get_containers_from_Loading")
-        frappe.throw(("Error fetching container data: {0}").format(str(e)))
-        
-        
-import frappe
+def get_applicable_jobs(doctype,txt,searchfield,start,page_len,filters):
+    arguments=search_arguments((doctype,txt,searchfield,start,page_len,filters),{})
+    excluded=arguments.filters.get('not_in_container') or []
+    if isinstance(excluded,str): excluded=frappe.parse_json(excluded)
+    sql="""SELECT DISTINCT container.name,container.container_number,freight_order.size
+        FROM `tabFPL Containers` container
+        JOIN `tabFPL Freight Orders` freight_order ON container.freight_order_id=freight_order.name
+        JOIN `tabFPL Jobs` jobs ON jobs.parent=freight_order.name
+        JOIN `tabService Type` service ON service.name=jobs.job_name
+        WHERE freight_order.last_job='Gate In' AND freight_order.next_job='Gate Out'
+          AND service.name1='Middle Mile' AND freight_order.mm_completed_=0
+          AND jobs.start_location=%s AND jobs.end_location=%s"""
+    parameters=[arguments.filters.get('container_location'),arguments.filters.get('container_next_location')]
+    if arguments.txt:
+        sql+=' AND (container.container_number LIKE %s OR container.name=%s)';parameters.extend(('%'+arguments.txt+'%', arguments.txt))
+    if excluded:
+        sql+=' AND container.name NOT IN %s';parameters.append(tuple(excluded))
+    sql+=' ORDER BY container.container_number,freight_order.size,container.name'
+    return results(sql,parameters,'FPL Containers',arguments)
+
+
+@frappe.whitelist()
+def get_containers_from_Loading(*args,**kwargs):
+    arguments=search_arguments(args,kwargs)
+    parent=arguments.filters.get('parent')
+    require_read('FPL Perform Middle Mile',parent)
+    return results("""SELECT DISTINCT loading.container,loading.container_number
+        FROM `tabFPL MM cdt` loading
+        WHERE loading.container IS NOT NULL AND loading.container<>''
+          AND loading.parentfield='middle_mile' AND loading.parent=%s
+          AND (loading.container_number LIKE %s OR loading.container=%s) ORDER BY loading.container_number,loading.container""",
+        (parent,'%'+arguments.txt+'%',arguments.txt),'FPL Containers',arguments)
+
 
 @frappe.whitelist()
 def fetch_wagons_from_undeparted_trains(departure_location, movement_type):
+    require_read("FPL Perform Middle Mile")
     query = """
         SELECT 
             D.wagon_number,
@@ -118,10 +75,11 @@ def fetch_wagons_from_undeparted_trains(departure_location, movement_type):
             )
     """
     wagons = frappe.db.sql(query, (departure_location, movement_type), as_dict=True)
-    return wagons
+    return [row for row in wagons if frappe.has_permission('FPL Perform Middle Mile','read',doc=row.parent)]
 
 @frappe.whitelist()
 def get_wagons_from_train(train_number):
+    require_read("FPL Perform Middle Mile",train_number)
     # SQL query to fetch wagons associated with a specified train number
     query = """
         SELECT

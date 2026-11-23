@@ -1,4 +1,7 @@
 frappe.ui.form.on("FPL Freight Orders", {
+    setup(frm) {
+        frm.set_query('container_type', () => ({filters: {size: frm.doc.size}}));
+    },
 
 
     change_container_number(frm) {
@@ -43,7 +46,7 @@ frappe.ui.form.on("FPL Freight Orders", {
                     docname: frm.doc.name
                 },
                 callback: function () {
-                    frm.refresh();
+                    frm.reload_doc();
                 }
             });
         }

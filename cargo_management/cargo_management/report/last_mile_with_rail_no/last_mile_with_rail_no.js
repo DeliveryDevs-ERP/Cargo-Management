@@ -3,6 +3,7 @@
 
 frappe.query_reports["Last Mile with Rail No"] = {
 "filters": [
+        {fieldname: 'company', label: __('Company'), fieldtype: 'Link', options: 'Company'},
         {
             "fieldname":"status",
             "label": __("Status"),

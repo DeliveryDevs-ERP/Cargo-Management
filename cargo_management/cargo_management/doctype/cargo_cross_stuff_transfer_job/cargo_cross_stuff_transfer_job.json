@@ -1,0 +1,52 @@
+{
+ "doctype": "DocType",
+ "name": "Cargo Cross Stuff Transfer Job",
+ "module": "Cargo Management",
+ "engine": "InnoDB",
+ "autoname": "hash",
+ "istable": 1,
+ "fields": [
+  {
+   "fieldname": "job_type",
+   "fieldtype": "Data",
+   "label": "Job Type"
+  },
+  {
+   "fieldname": "job",
+   "fieldtype": "Data",
+   "label": "Job"
+  },
+  {
+   "fieldname": "source_freight",
+   "fieldtype": "Link",
+   "label": "Source Freight",
+   "options": "FPL Freight Orders"
+  },
+  {
+   "fieldname": "replacement_freight",
+   "fieldtype": "Link",
+   "label": "Replacement Freight",
+   "options": "FPL Freight Orders"
+  },
+  {
+   "fieldname": "disposition",
+   "fieldtype": "Data",
+   "label": "Disposition"
+  },
+  {
+   "fieldname": "before_image",
+   "fieldtype": "Long Text",
+   "label": "Before Image"
+  }
+ ],
+ "field_order": [
+  "job_type",
+  "job",
+  "source_freight",
+  "replacement_freight",
+  "disposition",
+  "before_image"
+ ],
+ "permissions": [],
+ "track_changes": 0
+}

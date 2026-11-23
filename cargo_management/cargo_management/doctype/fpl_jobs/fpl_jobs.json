@@ -9,7 +9,9 @@
   "job_id",
   "status",
   "start_location",
-  "end_location"
+  "end_location",
+  "cargo_retired",
+  "cargo_transfer"
  ],
  "fields": [
   {
@@ -45,6 +47,19 @@
    "fieldname": "job_id",
    "fieldtype": "Data",
    "label": "Job Id"
+  },
+  {
+   "fieldname": "cargo_retired",
+   "fieldtype": "Check",
+   "label": "Cargo Retired",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cargo_transfer",
+   "fieldtype": "Link",
+   "label": "Cargo Transfer",
+   "options": "Cargo Cross Stuff Transfer",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

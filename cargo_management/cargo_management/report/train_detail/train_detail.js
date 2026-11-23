@@ -3,6 +3,7 @@
 
 frappe.query_reports["Train Detail"] = {
 "filters": [
+        {fieldname: 'company', label: __('Company'), fieldtype: 'Link', options: 'Company'},
         {
             "fieldname": "train_no",
             "label": __("Train Number"),

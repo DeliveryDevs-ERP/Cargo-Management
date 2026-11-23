@@ -1,3 +1,4 @@
+from cargo_management.setup import get_account_manager_emails
 # Copyright (c) 2024, Osama and contributors
 # For license information, please see license.txt
 
@@ -56,13 +57,7 @@ class FPLYardJob(Document):
 	def send_expense_invoice_notification(self):
 		booking_order = self.sales_order_number or frappe.db.get_value("FPL Containers", self.container_number, "booking_order_id")
 		sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
-		recipient_emails = [
-			user["email"] for user in frappe.get_all(
-				"User",
-				filters={"role": "Accounts Manager"},
-				fields=["email"]
-			) if user.get("email")
-		]
+		recipient_emails = get_account_manager_emails(booking_order)
 
 		if not recipient_emails:
 			frappe.msgprint("No Accounts Managers found with valid email addresses.")
@@ -139,9 +134,12 @@ class FPLYardJob(Document):
 		)
 
 	def create_purchase_invoice(self):
-		default_company = frappe.defaults.get_user_default("company")
+		if not self.expenses:
+			return
+		from cargo_management.cargo_management.utils.configuration import booking_company
+		default_company = booking_company(self.sales_order_number)
 		for expense in self.expenses:
-			if expense.purchase_invoiced_created == 0:
+			if not expense.purchase_invoiced_created:
 				item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
 				BO = frappe.get_value("FPL Freight Orders", self.freight_order_id, 'sales_order_number')
 				if item:

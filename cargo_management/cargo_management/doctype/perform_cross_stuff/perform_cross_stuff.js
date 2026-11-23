@@ -5,10 +5,17 @@ frappe.ui.form.on("Perform Cross Stuff", {
     },
 
     setup: function(frm) {
+        // This is a reversible provenance backlink, not a dependent transaction
+        // to cancel. The server restores it from the verified transfer journal
+        // in before_cancel, and still rejects cost-bearing/changed history.
+        frm.ignore_doctypes_on_cancel_all = [...new Set([
+            ...(frm.ignore_doctypes_on_cancel_all || []), 'Container or Vehicle Request'
+        ])];
         set_cost_type_filter(frm, 'Cross Stuff Job');
         frm.set_query('job_before_cross_stuff', function() {
             return {
-                query: 'cargo_management.cargo_management.doctype.perform_cross_stuff.query.get_unique_service_types'
+                query: 'cargo_management.cargo_management.doctype.perform_cross_stuff.query.get_unique_service_types',
+                filters: {booking_order_id: frm.doc.booking_order_id},
             };
         });
     },
@@ -55,7 +62,7 @@ frappe.ui.form.on("Perform Cross Stuff", {
                     doctype: 'FPL Freight Orders',
                     filters: {
                         sales_order_number: frm.doc.booking_order_id,
-                        name: ['like', 'FPL-FO%']
+                        name: ['like', 'FO-%']
                     },
                     fields: ['name'],
                     limit_page_length: 1  // Fetch only the first freight order
@@ -147,17 +154,21 @@ frappe.ui.form.on('Grounded Filled Cdt', {
                     filters: {
                         name: row.container_number  // Match the container number
                     },
-                    fields: ['container_number']  // Fetch the container_name
+                    fields: ['freight_order_id']
                 },
                 callback: function(container_response) {
                     if (container_response.message && container_response.message.length > 0) {
-                        const container_name = container_response.message[0].container_number;
+                        const freight_order_name = container_response.message[0].freight_order_id;
+                        if (!freight_order_name) {
+                            frappe.msgprint(__('The selected allocation has no linked Freight Order.'));
+                            return;
+                        }
                         frappe.call({
                             method: 'frappe.client.get_list',
                             args: {
                                 doctype: 'FPL Freight Orders',
                                 filters: {
-                                    container_number: container_name  // Match the container name
+                                    name: freight_order_name
                                 },
                                 fields: ['weight','bag_qty']  // Fetch the weight field
                             },
@@ -227,87 +238,30 @@ function recalculate_remaining_weight(frm) {
 }
 
 
-function populate_expenses(frm, job_mode) {    
-    frappe.call({
-        method: "frappe.client.get_list",
-        args: {
-            doctype: "FPL Cost Type",
-            filters: {
-                job_mode: job_mode
-            },
-            fields: ["*"]
-        },
-        callback: function(response) {
-            if (response.message) {
-                console.log('Fetched Cost Types:', response.message);
-                response.message.forEach(function(cost_obj) {
-                    if (cost_obj.fixed_ == 1) {
-                        let row = frm.add_child('expenses');
-                        row.expense_type = cost_obj.name;
-                        row.amount = cost_obj.cost;
-                    }
-                });
-                frm.refresh_field('expenses');
-            }
-        }
-    });
+async function populate_expenses(frm, job_mode) {
+    // The server initializes fixed charges once and validates Company bindings.
+    return set_cost_type_filter(frm, job_mode);
 }
 
-function set_cost_type_filter(frm, job_mode) {
-    frm.fields_dict['expenses'].grid.get_field('expense_type').get_query = function() {
-        return {
-            filters: {
-                job_mode: job_mode
-            }
-        };
-    };
+async function set_cost_type_filter(frm, job_mode) {
+    if (!frm.doc.company && !frm.doc.sales_order_number && !frm.doc.booking_order_id) return;
+    const identity = JSON.stringify([frm.doc.name, frm.doc.company, frm.doc.sales_order_number, frm.doc.booking_order_id]);
+    const response = await frappe.call({
+        method: 'cargo_management.expense_controls.get_cost_catalog',
+        args: {doctype: frm.doctype, docname: frm.is_new?.() ? null : frm.doc.name,
+            booking: frm.doc.booking_order_id || frm.doc.sales_order_number, company: frm.doc.company},
+    });
+    if (identity !== JSON.stringify([frm.doc.name, frm.doc.company, frm.doc.sales_order_number, frm.doc.booking_order_id])) return;
+    const names = (response.message || []).map(row => row.name);
+    frm.fields_dict.expenses.grid.get_field('expense_type').get_query = () => ({filters: {name: ['in', names], job_mode}});
 }
 
 
 frappe.ui.form.on('Expenses cdt', {
     before_expenses_remove: function(frm, cdt, cdn) {
-        const row = locals[cdt][cdn];
-        console.log("Attempting to delete row:", row);
-
-        if (row.purchase_invoice_no) {
-            frappe.db.get_doc("Purchase Invoice", row.purchase_invoice_no)
-                .then(PI => {
-                    console.log("Fetched PI:", PI);
-                    if (PI.docstatus === 0) {
-                        // If the PI is in draft status, allow deletion
-                        frappe.db.delete_doc('Purchase Invoice', PI.name)
-                            .then(() => {
-                                frm.save();
-                            })
-                            .catch(err => {
-                                console.error('Error deleting Purchase Invoice:', err);
-                                frappe.msgprint(__('An error occurred while deleting the Purchase Invoice.'), __('Error'));
-                                throw new frappe.ValidationError();
-                            });
-                    } else if (PI.docstatus === 1) {
-                        // If the PI is submitted, do not allow deletion and reload the form
-                        frappe.msgprint({
-                            title: __('Not Allowed'),
-                            message: __('Rows linked to a submitted Purchase Invoice cannot be deleted.'),
-                            indicator: 'red'
-                        });
-                        frm.reload_doc();
-                    }
-                })
-                .catch(err => {
-                    console.error("Error fetching Purchase Invoice:", err);
-                    frappe.msgprint({
-                        title: __('Error'),
-                        message: __('Failed to fetch the Purchase Invoice linked to this row.'),
-                        indicator: 'red'
-                    });
-                    frm.reload_doc(); // Reload the document in case of fetch error too
-                });
-
-            // Prevent the default deletion action until the promise is resolved
-            frappe.validated = false;
-        }
-    },
+    const row = locals[cdt][cdn];
+    if (row.purchase_invoice_no || row.sales_invoice_no) frappe.throw(__('Financially referenced Cargo expenses must be retained. Invoices are never deleted automatically.'));
+},
 
     expenses_move: function(frm, cdt, cdn) {
         const row = locals[cdt][cdn];

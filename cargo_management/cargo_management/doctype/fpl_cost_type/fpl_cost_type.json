@@ -13,7 +13,10 @@
   "cost",
   "column_break_augo",
   "fixed_",
-  "item_id"
+  "item_id",
+  "company",
+  "cargo_supplier",
+  "cargo_rail_freight"
  ],
  "fields": [
   {
@@ -43,7 +46,8 @@
    "fieldname": "item_id",
    "fieldtype": "Link",
    "label": "Item ID",
-   "options": "Item"
+   "options": "Item",
+   "in_list_view": 1
   },
   {
    "fieldname": "column_break_augo",
@@ -61,7 +65,8 @@
    "fieldname": "movement_type",
    "fieldtype": "Select",
    "label": "Movement Type",
-   "options": "\nUp\nDown"
+   "options": "\nUp\nDown",
+   "in_list_view": 1
   },
   {
    "depends_on": "eval: doc.job_mode === 'Train Job';",
@@ -69,7 +74,27 @@
    "fieldtype": "Link",
    "label": "Location",
    "link_filters": "[[\"Location\",\"custom_disabled\",\"=\",0]]",
-   "options": "Location"
+   "options": "Location",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "description": "Blank retains the shared legacy Cargo catalog."
+  },
+  {
+   "fieldname": "cargo_supplier",
+   "fieldtype": "Link",
+   "label": "Cargo Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "cargo_rail_freight",
+   "fieldtype": "Check",
+   "label": "Cargo Rail Freight",
+   "description": "Explicit variable rail tariff cost binding for this Company and qualifiers."
   }
  ],
  "index_web_pages_for_search": 1,
@@ -91,6 +116,24 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "role": "Cargo Operator",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "Cargo Manager",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "create": 1,
    "write": 1
   }
  ],

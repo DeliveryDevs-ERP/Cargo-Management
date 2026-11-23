@@ -8,7 +8,7 @@ app_license = "mit"
 # Apps
 # ------------------
 
-# required_apps = []
+required_apps = ["erpnext"]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -44,6 +44,8 @@ app_license = "mit"
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {"Sales Invoice": "public/js/sales_invoice.js", **{name: "public/js/cargo_expense_actions.js" for name in
+    ("FPLRoadJob","FPLYardJob","Perform Cross Stuff","FPL Perform Middle Mile")}}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -81,7 +83,8 @@ app_license = "mit"
 
 jinja = {
 	"methods": [
-        "cargo_management.cargo_management.utils.jinja.get_qr_code"
+        "cargo_management.cargo_management.utils.jinja.get_qr_code",
+        "cargo_management.print_context.get_cargo_print_context"
     ],
 	# "filters": "rental_management.utils.jinja_filters
 }
@@ -90,8 +93,9 @@ jinja = {
 # Installation
 # ------------
 
-before_install = "cargo_management.install.before_install"
-after_install = "cargo_management.install.after_install"
+before_install = "cargo_management.cargo_management.install.before_install"
+before_migrate = "cargo_management.setup.ensure_cargo_roles"
+after_install = "cargo_management.cargo_management.install.after_install"
 
 # Uninstallation
 # ------------
@@ -146,8 +150,15 @@ after_install = "cargo_management.install.after_install"
 # Hook on document methods and events
 
 doc_events = {
+    "FPL Containers": {"before_validate": "cargo_management.permissions.validate_container_identity"},
+    "FPL Freight Orders": {"on_trash": "cargo_management.permissions.protect_freight_deletion"},
+    "Service Type": {"on_update": "cargo_management.workspace.reconcile", "after_delete": "cargo_management.workspace.reconcile"},
     "Sales Invoice": {
-        "on_submit": "cargo_management.cargo_management.api.Sales_inv_validation_overload.update_expense_references"
+        "validate": "cargo_management.cargo_management.api.expense_billing.validate_cargo_invoice",
+        "before_submit": "cargo_management.cargo_management.api.expense_billing.before_submit",
+        "on_submit": "cargo_management.cargo_management.api.Sales_inv_validation_overload.update_expense_references",
+        "before_cancel": "cargo_management.cargo_management.api.expense_billing.before_cancel",
+        "on_cancel": "cargo_management.cargo_management.api.expense_billing.release_cancelled_invoice"
     },
     "Sales Order": {
         "on_trash": "cargo_management.cargo_management.doctype.booking_order.booking_order.check_booking_order_status"
@@ -260,3 +271,35 @@ export_python_type_annotations = True
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
+
+# Reconcile only Cargo-owned schema and the explicitly opt-in external job.
+after_sync = "cargo_management.setup.reconcile"
+after_migrate = "cargo_management.setup.reconcile"
+# Native DocPerm checks still apply. These hooks add the Company restriction
+# missing from legacy Data references; no ERPNext standard grants are replaced.
+_cargo_scoped_types = ["Booking Order", "FPL Freight Orders", "FPLRoadJob", "FPLRailJob", "FPLYardJob",
+    "FPLCrossStuffJob", "FPL Containers", "Container or Vehicle Request", "Perform Cross Stuff",
+    "Service Type", "FPL Jobs Sequence", "FPL Cost Type", "Rail Freight Cost", "FPL Perform Middle Mile",
+    "Cargo Cross Stuff Transfer"]
+has_permission = {name: "cargo_management.permissions.has_permission" for name in _cargo_scoped_types}
+permission_query_conditions = {name: "cargo_management.permissions.query_" + str(index)
+    for index, name in enumerate(_cargo_scoped_types)}
+for _name in ("FPLRoadJob", "FPLYardJob", "FPLRailJob", "FPLCrossStuffJob"):
+    doc_events.setdefault(_name, {}).update({"before_validate": "cargo_management.permissions.validate_expense_history",
+                                          "on_trash": "cargo_management.permissions.protect_job_deletion"})
+for _name in ("Perform Cross Stuff", "FPL Perform Middle Mile"):
+    doc_events.setdefault(_name, {})["before_validate"] = "cargo_management.permissions.validate_expense_history"
+doc_events.setdefault('Location', {})['validate'] = 'cargo_management.location.validate_location'
+extend_doctype_class = {name: ["cargo_management.expense_controls.CargoExpenseControls"] for name in
+    ("FPLRoadJob", "FPLYardJob", "Perform Cross Stuff", "FPL Perform Middle Mile")}
+extend_doctype_class['Notification'] = ['cargo_management.notifications.CargoNotificationRecipients']
+app_home = "/desk/cargo-management"
+add_to_apps_screen = [{"name": app_name, "title": app_title, "route": app_home,
+    "logo": "/assets/cargo_management/images/cargo-management-logo.webp",
+    "has_permission": "cargo_management.setup.has_app_permission"}]
+
+# Preserve the local outbound opt-out independently of financial operations.
+before_request = ["cargo_management.outbound_safety.install"]
+before_job = ["cargo_management.outbound_safety.before_job"]
+extend_doctype_class.setdefault('Scheduled Job Type', []).append(
+    'cargo_management.outbound_safety.OutboundScheduledJobs')

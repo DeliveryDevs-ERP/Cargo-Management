@@ -1,0 +1,83 @@
+{
+ "doctype": "DocType",
+ "name": "Cargo Cross Stuff Transfer",
+ "module": "Cargo Management",
+ "engine": "InnoDB",
+ "autoname": "hash",
+ "istable": 0,
+ "fields": [
+  {
+   "fieldname": "performance",
+   "fieldtype": "Link",
+   "label": "Performance",
+   "options": "Perform Cross Stuff",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "booking_order",
+   "fieldtype": "Link",
+   "label": "Booking Order",
+   "options": "Booking Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Select",
+   "label": "State",
+   "options": "Applied\nReversed",
+   "default": "Applied",
+   "read_only": 1
+  },
+  {
+   "fieldname": "before_state",
+   "fieldtype": "Long Text",
+   "label": "Before State",
+   "read_only": 1
+  },
+  {
+   "fieldname": "after_state",
+   "fieldtype": "Long Text",
+   "label": "After State",
+   "read_only": 1
+  },
+  {
+   "fieldname": "mappings",
+   "fieldtype": "Table",
+   "label": "Mappings",
+   "options": "Cargo Cross Stuff Transfer Job",
+   "read_only": 1
+  }
+ ],
+ "field_order": [
+  "performance",
+  "company",
+  "booking_order",
+  "state",
+  "before_state",
+  "after_state",
+  "mappings"
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1
+  },
+  {
+   "role": "Cargo Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "track_changes": 1
+}

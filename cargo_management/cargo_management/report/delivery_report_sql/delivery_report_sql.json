@@ -1,0 +1,25 @@
+{
+ "doctype": "Report",
+ "name": "Delivery Report SQL",
+ "report_name": "Delivery Report SQL",
+ "module": "Cargo Management",
+ "ref_doctype": "Booking Order",
+ "report_type": "Script Report",
+ "is_standard": "Yes",
+ "disabled": 0,
+ "prepared_report": 0,
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Sales User"
+  },
+  {
+   "role": "Cargo Operator"
+  },
+  {
+   "role": "Cargo Manager"
+  }
+ ]
+}

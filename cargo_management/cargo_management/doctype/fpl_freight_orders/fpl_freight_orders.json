@@ -11,20 +11,22 @@
   "freight_order_number",
   "sales_order_number",
   "client",
-  "column_break_auic",
+  "column_break_mbvl",
   "documents_received",
   "rate",
   "rate_type",
   "container_section",
+  "column_break_auic",
+  "custom_section_break_eywky",
   "container_number",
   "container_type",
-  "column_break_mbvl",
+  "custom_column_break_oc69a",
   "bounded",
   "seal_no",
   "column_break_jkzu",
-  "size",
   "weight",
   "bag_qty",
+  "size",
   "section_break_eays",
   "jobs",
   "freight_order_status_tab",
@@ -34,13 +36,28 @@
   "section_break_vdvh",
   "last_job",
   "column_break_pppd",
-  "next_job"
+  "next_job",
+  "cargo_detail_reference",
+  "cargo_contracted_revenue",
+  "cargo_billing_version",
+  "cargo_request",
+  "cargo_cross_stuff_performance"
  ],
  "fields": [
   {
+   "fieldname": "change_container_number",
+   "fieldtype": "Button",
+   "label": "Change Container Number"
+  },
+  {
+   "fieldname": "section_break_pmrs",
+   "fieldtype": "Section Break",
+   "read_only_depends_on": "eval: doc.mm_completed_;"
+  },
+  {
    "fieldname": "freight_order_number",
    "fieldtype": "Data",
-   "in_list_view": 1,
+   "in_list_view": 0,
    "label": "Freight Order Number",
    "read_only": 1
   },
@@ -60,117 +77,14 @@
    "read_only": 1
   },
   {
-   "fieldname": "jobs",
-   "fieldtype": "Table",
-   "label": "Jobs",
-   "options": "FPL Jobs"
-  },
-  {
-   "fieldname": "column_break_auic",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "container_number",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Container Number",
-   "read_only_depends_on": "eval: doc.status === \"In Progress\" || doc.status === \"Completed\";"
-  },
-  {
-   "description": "(Tons)",
-   "fieldname": "weight",
-   "fieldtype": "Float",
-   "label": "Weight",
-   "read_only_depends_on": "eval: doc.mm_completed_;"
-  },
-  {
-   "fieldname": "section_break_eays",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "container_section",
-   "fieldtype": "Section Break",
-   "label": "Container Details"
-  },
-  {
-   "fieldname": "container_type",
-   "fieldtype": "Link",
-   "label": "Container Type",
-   "options": "Container Type",
-   "read_only_depends_on": "eval: doc.mm_completed_;"
-  },
-  {
    "fieldname": "column_break_mbvl",
    "fieldtype": "Column Break"
   },
   {
    "fieldname": "documents_received",
    "fieldtype": "Datetime",
-   "label": "Documents Received"
-  },
-  {
-   "fieldname": "freight_order_status_tab",
-   "fieldtype": "Tab Break",
-   "label": "Status"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "\nDraft\nAssigned\nCross Stuff\nIn Progress\nCompleted"
-  },
-  {
-   "fieldname": "last_job",
-   "fieldtype": "Data",
-   "label": "Last Job",
-   "read_only": 1
-  },
-  {
-   "fieldname": "next_job",
-   "fieldtype": "Data",
-   "label": "Next Job",
-   "read_only": 1
-  },
-  {
-   "fieldname": "status_section",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "section_break_vdvh",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "column_break_pppd",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "column_break_jkzu",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "size",
-   "fieldtype": "Int",
-   "label": "Size",
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "mm_completed_",
-   "fieldtype": "Check",
-   "label": "MM Completed ?"
-  },
-  {
-   "default": "0",
-   "fieldname": "bounded",
-   "fieldtype": "Check",
-   "label": "Bounded?"
-  },
-  {
-   "fieldname": "seal_no",
-   "fieldtype": "Data",
-   "label": "Seal No"
+   "label": "Documents Received",
+   "in_list_view": 1
   },
   {
    "fieldname": "rate",
@@ -187,6 +101,53 @@
    "options": "UOM"
   },
   {
+   "fieldname": "container_section",
+   "fieldtype": "Section Break",
+   "label": "Container Details"
+  },
+  {
+   "fieldname": "column_break_auic",
+   "fieldtype": "Column Break",
+   "hidden": 1
+  },
+  {
+   "fieldname": "container_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Container Number",
+   "read_only_depends_on": "eval: doc.status === \"In Progress\" || doc.status === \"Completed\";"
+  },
+  {
+   "fieldname": "container_type",
+   "fieldtype": "Link",
+   "label": "Container Type",
+   "options": "Container Type",
+   "read_only_depends_on": "eval: doc.mm_completed_;"
+  },
+  {
+   "default": "0",
+   "fieldname": "bounded",
+   "fieldtype": "Check",
+   "label": "Bounded?"
+  },
+  {
+   "fieldname": "seal_no",
+   "fieldtype": "Data",
+   "label": "Seal No"
+  },
+  {
+   "fieldname": "column_break_jkzu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "(Tons)",
+   "fieldname": "weight",
+   "fieldtype": "Float",
+   "label": "Weight",
+   "read_only_depends_on": "eval: doc.mm_completed_;"
+  },
+  {
    "default": "0",
    "depends_on": "eval: doc.bag_qty > 0;",
    "fieldname": "bag_qty",
@@ -195,14 +156,97 @@
    "read_only_depends_on": "eval: doc.mm_completed_;"
   },
   {
-   "fieldname": "section_break_pmrs",
-   "fieldtype": "Section Break",
-   "read_only_depends_on": "eval: doc.mm_completed_;"
+   "fieldname": "size",
+   "fieldtype": "Int",
+   "label": "Size",
+   "read_only": 1
   },
   {
-   "fieldname": "change_container_number",
-   "fieldtype": "Button",
-   "label": "Change Container Number"
+   "fieldname": "section_break_eays",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "jobs",
+   "fieldtype": "Table",
+   "label": "Jobs",
+   "options": "FPL Jobs"
+  },
+  {
+   "fieldname": "freight_order_status_tab",
+   "fieldtype": "Tab Break",
+   "label": "Status"
+  },
+  {
+   "fieldname": "status_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nDraft\nAssigned\nCross Stuff\nIn Progress\nCompleted"
+  },
+  {
+   "default": "0",
+   "fieldname": "mm_completed_",
+   "fieldtype": "Check",
+   "label": "MM Completed ?"
+  },
+  {
+   "fieldname": "section_break_vdvh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "last_job",
+   "fieldtype": "Data",
+   "label": "Last Job",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_pppd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "next_job",
+   "fieldtype": "Data",
+   "label": "Next Job",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cargo_detail_reference",
+   "fieldtype": "Data",
+   "label": "Cargo Detail Reference",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cargo_contracted_revenue",
+   "fieldtype": "Currency",
+   "label": "Cargo Contracted Revenue",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cargo_billing_version",
+   "fieldtype": "Int",
+   "label": "Cargo Billing Version",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "cargo_request",
+   "fieldtype": "Link",
+   "label": "Cargo Container Request",
+   "options": "Container or Vehicle Request",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cargo_cross_stuff_performance",
+   "fieldtype": "Link",
+   "label": "Cargo Cross-Stuff Performance",
+   "options": "Perform Cross Stuff",
+   "read_only": 1,
+   "no_copy": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -253,6 +297,27 @@
    "report": 1,
    "role": "Sales User",
    "share": 1,
+   "write": 1,
+   "read": 1
+  },
+  {
+   "role": "Cargo Operator",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Cargo Manager",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "create": 1,
    "write": 1
   }
  ],

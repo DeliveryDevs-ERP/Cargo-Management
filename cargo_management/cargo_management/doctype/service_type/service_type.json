@@ -10,7 +10,8 @@
   "transport_mode",
   "applicable",
   "job_type",
-  "miscellaneous"
+  "miscellaneous",
+  "company"
  ],
  "fields": [
   {
@@ -22,7 +23,7 @@
   {
    "fieldname": "transport_mode",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "in_list_view": 0,
    "label": "Transport mode",
    "options": "Transport Mode"
   },
@@ -47,6 +48,13 @@
    "fieldtype": "Check",
    "in_list_view": 1,
    "label": "Miscellaneous?"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "description": "Blank retains the shared legacy Cargo catalog."
   }
  ],
  "index_web_pages_for_search": 1,
@@ -78,6 +86,24 @@
    "report": 1,
    "role": "Sales User",
    "share": 1,
+   "write": 1
+  },
+  {
+   "role": "Cargo Operator",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "Cargo Manager",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "create": 1,
    "write": 1
   }
  ],

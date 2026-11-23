@@ -3,6 +3,7 @@
 
 frappe.query_reports["Delivery report"] = {
 	"filters": [
+        {fieldname: 'company', label: __('Company'), fieldtype: 'Link', options: 'Company'},
 		{
             "fieldname": "from_date",
             "label": __("From Date"),

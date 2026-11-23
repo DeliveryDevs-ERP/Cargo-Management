@@ -1,3 +1,5 @@
+from cargo_management.cargo_management.utils.services import is_service, service_names
+from cargo_management.setup import get_account_manager_emails
 from cargo_management.cargo_management.utils.Update_JOB_Container_FO_Status import updateJobStatus
 from frappe.utils import now_datetime
 from frappe.model.document import Document
@@ -78,9 +80,12 @@ class FPLRoadJob(Document):
                         expense.container_number = container_name
 
     def create_purchase_invoice(self):
-        default_company = frappe.defaults.get_user_default("company")
+        if not self.expenses:
+            return
+        from cargo_management.cargo_management.utils.configuration import booking_company
+        default_company = booking_company(self.sales_order_number)
         for expense in self.expenses:
-            if expense.purchase_invoiced_created == 0:
+            if not expense.purchase_invoiced_created:
                 item = frappe.get_value("FPL Cost Type", expense.expense_type, 'item_id')
                 BO = frappe.get_value("FPL Freight Orders",self.freight_order_id,'sales_order_number')
                 if item:
@@ -112,12 +117,17 @@ class FPLRoadJob(Document):
         # Check if next job is 'Gate In' type
         if current_job_index is not None and current_job_index + 1 < len(jobs):
             next_job = jobs[current_job_index + 1]
-            if next_job.job_name == "enrhva2nvi":  # Assuming there is a 'job_name' field in the job entries enrhva2nvi == Gate In
+            if is_service(next_job.job_name, "Gate In"):  # Assuming there is a 'job_name' field in the job entries enrhva2nvi == Gate In
                 yard_job = frappe.get_doc("FPLYardJob", next_job.job_id)
                 yard_job.gate_in = self.dropoff_completed
-                yard_job.save(ignore_permissions=True)
+                yard_job.save()
 
     def validate_dates(self):
+        from frappe.utils import get_datetime
+        dates = [self.get(field) for field in ('pickup_arrival', 'pickup_departure', 'dropoff_arrival', 'dropoff_completed')]
+        actual = [get_datetime(value) for value in dates if value]
+        if actual != sorted(actual):
+            frappe.throw(_('Road performance timestamps must follow pickup arrival, pickup departure, dropoff arrival and completion order.'))
         BO_date = frappe.get_value("Booking Order", {"name": self.sales_order_number}, "sales_order_date")
 
         if not BO_date:
@@ -138,22 +148,16 @@ class FPLRoadJob(Document):
         # Check if previous job is 'Gate Out' type
         if current_job_index is not None and current_job_index - 1 >= 0:
             previous_job = jobs[current_job_index - 1]
-            if previous_job.job_name == "eo0ldr6jda":  # Assuming 'eo0ldr6jda' is a 'Gate Out' job name
+            if is_service(previous_job.job_name, "Gate Out"):  # Assuming 'eo0ldr6jda' is a 'Gate Out' job name
                 yard_job = frappe.get_doc("FPLYardJob", previous_job.job_id)
                 yard_job.gate_out = self.pickup_departure  # Assuming 'pickup_departure' is the correct field for setting Gate Out time
-                yard_job.save(ignore_permissions=True)
+                yard_job.save()
                 
 
     def send_expense_invoice_notification(self):
         booking_order = self.sales_order_number or frappe.db.get_value("FPL Containers", self.container_number, "booking_order_id")
         sales_order = frappe.db.get_value("Sales Order", {"custom_booking_order_id": booking_order}, "name")
-        recipient_emails = [
-            user["email"] for user in frappe.get_all(
-                "User",
-                filters={"role": "Accounts Manager"},
-                fields=["email"]
-            ) if user.get("email")
-        ]
+        recipient_emails = get_account_manager_emails(booking_order)
 
         if not recipient_emails:
             frappe.msgprint("No Accounts Managers found with valid email addresses.")
@@ -281,13 +285,14 @@ class FPLRoadJob(Document):
     #     del self._is_syncing
 
 @frappe.whitelist()
-def link_container(container_number_to_link, self_container_number, job_type=None):
+def link_container(container_number_to_link, self_container_number, job_type=None, self_freight_order=None):
     try:
         # Retrieve container number based on container_number_to_link
         container_number = frappe.db.get_value("FPL Containers", {"name": container_number_to_link}, "container_number")
         
         # Find the FPLRoadJob that matches the container_number and job_type if specified
-        filters = {"container_number": container_number}
+        target_freight = frappe.db.get_value('FPL Containers',container_number_to_link,'freight_order_id')
+        filters = {"container_number": container_number, "freight_order_id": target_freight}
         if job_type:
             filters["job_type"] = job_type
         
@@ -298,9 +303,25 @@ def link_container(container_number_to_link, self_container_number, job_type=Non
 
         # Link the container number to the first matching Road Job
         road_job_id = road_jobs[0].name
+        target_job = frappe.get_doc('FPLRoadJob',road_job_id,for_update=True)
+        target_job.check_permission('write')
+        if target_job.get('cargo_retired'):
+            frappe.throw(_('Retired Cargo work cannot be linked or processed.'))
 
         # Retrieve the name of the container using self_container_number
-        container_name = frappe.db.get_value("FPL Containers", {"container_number": self_container_number}, "name")
+        source_filters = {"container_number": self_container_number}
+        if self_freight_order:
+            source_filters['freight_order_id'] = self_freight_order
+        sources = frappe.get_all('FPL Containers',filters=source_filters,pluck='name')
+        if len(sources) != 1:
+            frappe.throw(_('Specify the source Freight Order to identify this container unambiguously.'))
+        container_name = sources[0]
+        from cargo_management.cargo_management.utils.configuration import freight_company
+        source_freight = frappe.db.get_value('FPL Containers', container_name, 'freight_order_id')
+        source_doc = frappe.get_doc('FPL Freight Orders', source_freight)
+        source_doc.check_permission('write')
+        if freight_company(source_freight) != freight_company(target_freight):
+            frappe.throw(_('Linked road work must belong to the same Company.'))
 
         # Set the container_number_to_link in FPLRoadJob to the container name
         frappe.db.set_value("FPLRoadJob", road_job_id, "container_number_to_link", container_name)
@@ -310,15 +331,20 @@ def link_container(container_number_to_link, self_container_number, job_type=Non
 
         return 
     
+    except frappe.PermissionError:
+        raise
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Error in link_container")
-        return {"message": f"An error occurred: {str(e)}"}
+        raise
 
 
 @frappe.whitelist()
 def sync_with_linked_job(docname):
     
     self = frappe.get_doc("FPLRoadJob",docname)
+    self.check_permission('write')
+    if self.get('cargo_retired'):
+        frappe.throw(_('Retired Cargo work cannot be synchronized.'))
     # Prevent recursion by setting a temporary flag
     # if hasattr(self, "_is_syncing") and self._is_syncing:
     #     return
@@ -328,10 +354,16 @@ def sync_with_linked_job(docname):
     container_number = frappe.db.get_value("FPL Containers", {"name": self.container_number_to_link}, "container_number")
 
     # Get the name of the linked FPLRoadJob based on the container number and job type
-    linked_job_name = frappe.db.get_value("FPLRoadJob", {"container_number": container_number, "job_type": self.job_type}, "name")
+    target_freight = frappe.db.get_value('FPL Containers',self.container_number_to_link,'freight_order_id')
+    linked_job_name = frappe.db.get_value("FPLRoadJob", {"container_number": container_number, "job_type": self.job_type,
+        "freight_order_id": target_freight}, "name")
 
     if linked_job_name:
         linked_job = frappe.get_doc("FPLRoadJob", linked_job_name)
+        linked_job.check_permission('write')
+        from cargo_management.cargo_management.utils.configuration import freight_company
+        if linked_job.get('cargo_retired') or freight_company(self.freight_order_id) != freight_company(linked_job.freight_order_id):
+            frappe.throw(_('Linked road work is retired or belongs to another Company.'))
 
         # List of fields to sync
         fields_to_sync = ["pickup_arrival", "pickup_departure", "dropoff_arrival", "dropoff_completed",
@@ -344,24 +376,13 @@ def sync_with_linked_job(docname):
 
         # Sync expenses separately without altering container_number
         if self.expenses:
-            # Clear existing expenses and add new ones
-            existing_expenses = {(expense.client, expense.expense_type, expense.amount) for expense in linked_job.expenses}
-            for expense in self.expenses:
-                new_expense = frappe.get_doc("Expenses cdt", expense.name).as_dict()
-                # frappe.errprint(f" Fetched expenses from self , {new_expense}")
-                del new_expense["container_number"]
-                del new_expense["name"]
-                del new_expense["parent"]
-                del new_expense["purchase_invoiced_created"]
-                del new_expense["purchase_invoice_no"]
-                # frappe.errprint(f" Fetched expenses from self after del , {new_expense}")
-                expense_key = (new_expense.get("client"), new_expense.get("expense_type"), new_expense.get("amount"))
-                if expense_key not in existing_expenses:
-                    linked_job.append("expenses", new_expense)
-                    existing_expenses.add(expense_key)
+            # Performance synchronization never duplicates an existing payable
+            # or billable expense onto another Booking/container. Allocate a new
+            # expense explicitly on its actual owner when sharing a truck cost.
+            frappe.msgprint(_('Vehicle and performance fields synchronized. Costs remain on their original job; enter any separate allocation explicitly.'))
         # Set a temporary flag in the linked job to prevent further recursion
         linked_job._is_syncing = True
-        linked_job.save(ignore_permissions=True)
+        linked_job.save()
         # del linked_job._is_syncing  # Remove the flag after save
             
     # Clean up the flag after sync is done

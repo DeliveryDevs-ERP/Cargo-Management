@@ -24,6 +24,12 @@
    "role": "System Manager"
   },
   {
+   "role": "Cargo Manager"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
    "role": "Sales User"
   }
  ],

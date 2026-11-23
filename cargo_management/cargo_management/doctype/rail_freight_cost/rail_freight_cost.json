@@ -13,7 +13,9 @@
   "column_break_ebeg",
   "container_count_40",
   "avg_weight_40",
-  "rate_40"
+  "rate_40",
+  "company",
+  "cargo_priority"
  ],
  "fields": [
   {
@@ -69,6 +71,19 @@
    "in_list_view": 1,
    "label": "Rate 40",
    "non_negative": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "description": "Blank retains the shared legacy Cargo catalog."
+  },
+  {
+   "fieldname": "cargo_priority",
+   "fieldtype": "Int",
+   "label": "Cargo Priority",
+   "description": "Explicit tiebreaker for incomparable eligible tariffs; lower positive value wins. No implicit priority."
   }
  ],
  "index_web_pages_for_search": 1,
@@ -90,6 +105,24 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "role": "Cargo Operator",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "Cargo Manager",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "create": 1,
    "write": 1
   }
  ],

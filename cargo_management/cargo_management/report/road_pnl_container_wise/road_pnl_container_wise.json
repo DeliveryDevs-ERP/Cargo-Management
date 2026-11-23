@@ -21,6 +21,12 @@
  "roles": [
   {
    "role": "System Manager"
+  },
+  {
+   "role": "Cargo Manager"
+  },
+  {
+   "role": "Accounts Manager"
   }
  ],
  "timeout": 0

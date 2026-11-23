@@ -1,4 +1,10 @@
 frappe.ui.form.on('Booking Order', {
+    setup(frm) {
+        ['mm_loading_station', 'mm_offloading_station'].forEach(field => frm.set_query(field, () => ({
+            filters: {custom_location_type: 'Yard', custom_disabled: 0},
+        })));
+    },
+    async company(frm) { await cargo_load_services(frm); },
     onload: function(frm) { 
         
         frm.get_field('services').grid.cannot_add_rows = true; 
@@ -77,86 +83,10 @@ frappe.ui.form.on('Booking Order', {
         else{
             frm.toggle_display('transport_type', false);
         }
+        return cargo_load_services(frm);
     },
 
-    transport_type: function(frm) {
-        frm.clear_table('services');
-        frm.clear_table('miscellaneous_services');
-    
-        if (frm.doc.transport_type && frm.doc.sales_order_type) {
-            // Fetch services based on transport type
-            frappe.call({
-                method: 'frappe.client.get_list',
-                args: {
-                    doctype: 'Service Type',
-                    filters: {
-                        transport_mode: frm.doc.transport_type
-                    },
-                    fields: ['*']
-                },
-                callback: function(r) {
-                    if (r.message) {
-                        let services = r.message;
-    
-                        // Fetch FPL Job Sequence to order services
-                        frappe.call({
-                            method: 'frappe.client.get_list',
-                            args: {
-                                doctype: 'FPL Jobs Sequence',
-                                filters: {
-                                    transport_mode: frm.doc.transport_type,
-                                    sales_order_type: frm.doc.sales_order_type
-                                },
-                                fields: ['service_name', 'sequence'],
-                                order_by: 'sequence asc'
-                            },
-                            callback: function(jobSeqRes) {
-                                if (jobSeqRes.message) {
-                                    let jobSequence = jobSeqRes.message;
-    
-                                    // Map services by name for easy lookup
-                                    let serviceMap = {};
-                                    services.forEach(service => {
-                                        if (service.applicable === 0) {
-                                            serviceMap[service.name] = service;
-                                        }
-                                    });
-    
-                                    // Order services based on the job sequence
-                                    jobSequence.forEach(seq => {
-                                        let serviceName = seq.service_name;
-                                        if (serviceMap[serviceName]) {
-                                            let d = frm.add_child('services');
-                                            d.services = serviceMap[serviceName].name;
-                                            d.service_name = serviceMap[serviceName].name1;
-                                            d.applicable = 1;
-                                        }
-                                    });
-    
-                                    frm.refresh_field('services');
-                                }
-                            }
-                        });
-    
-                        // Populate miscellaneous_services
-                        services.forEach(service => {
-                            if (service.miscellaneous === 1) {
-                                let miscService = frm.add_child('miscellaneous_services');
-                                miscService.services = service.name;
-                                miscService.service_name = service.name1;
-                                miscService.miscellaneous = 1;
-                            }
-                        });
-    
-                        frm.refresh_field('miscellaneous_services');
-                    }
-                }
-            });
-        }
-    
-        // toggle_columns_based_on_services(frm);
-
-    },
+    async transport_type(frm) { await cargo_load_services(frm); },
 
     fm_dropoff_location: function(frm) {
         if (frm.doc.fm_dropoff_location) {
@@ -283,32 +213,57 @@ frappe.ui.form.on('FPL Servicess', {
 
 
 frappe.ui.form.on('Cargo Detail cdt', {
-    avg_weight: function(frm, cdt, cdn) {
-        validate_weight(frm, cdt, cdn);
-        // calculate_total(frm); // Recalculate total when qty changes
+    avg_weight: async function(frm, cdt, cdn) {
+        await validate_weight(frm, cdt, cdn);
+        if (locals[cdt][cdn].rate_type === "Per Weight(Ton)") {
+            return recalculate_cargo_amount(frm, cdt, cdn);
+        }
     },
     rate: function(frm, cdt, cdn) {
-        calculate_amount(frm, cdt, cdn);
-        calculate_total(frm); // Recalculate total when rate changes
+        return recalculate_cargo_amount(frm, cdt, cdn);
+    },
+    rate_type: function(frm, cdt, cdn) {
+        return recalculate_cargo_amount(frm, cdt, cdn);
+    },
+    qty: function(frm, cdt, cdn) {
+        if (locals[cdt][cdn].rate_type !== "Per Bag") {
+            return recalculate_cargo_amount(frm, cdt, cdn);
+        }
+    },
+    bag_qty: function(frm, cdt, cdn) {
+        if (locals[cdt][cdn].rate_type === "Per Bag") {
+            return recalculate_cargo_amount(frm, cdt, cdn);
+        }
     },
     amount: function(frm, cdt, cdn) {
-        calculate_total(frm); // Recalculate total when amount changes
+        return calculate_total(frm); // Preserve manual Amount edits.
+    },
+    cargo_details_add: function(frm) {
+        return calculate_total(frm);
+    },
+    cargo_details_remove: function(frm) {
+        return calculate_total(frm);
     },
 });
+
+async function recalculate_cargo_amount(frm, cdt, cdn) {
+    await calculate_amount(frm, cdt, cdn);
+    return calculate_total(frm);
+}
 
 function calculate_amount(frm, cdt, cdn) {
     var child = locals[cdt][cdn];
     if (child.rate && child.rate_type == "Per Weight(Ton)") {
         var amount = child.rate * child.avg_weight * child.qty;
-        frappe.model.set_value(cdt, cdn, 'amount', amount);
+        return frappe.model.set_value(cdt, cdn, 'amount', amount);
     }
     else if (child.rate  && child.rate_type == "Per Bag") {
         var amount = child.rate * child.bag_qty;
-        frappe.model.set_value(cdt, cdn, 'amount', amount);
+        return frappe.model.set_value(cdt, cdn, 'amount', amount);
     }   
     else{
         var amount = child.rate * child.qty;
-        frappe.model.set_value(cdt, cdn, 'amount', amount);
+        return frappe.model.set_value(cdt, cdn, 'amount', amount);
     }
 }
 
@@ -324,7 +279,7 @@ function calculate_total(frm) {
     });
 
     // Update the 'total' field in the parent form
-    frm.set_value('total', total);
+    return frm.set_value('total', total);
 }
 
 function validate_weight(frm, cdt, cdn) {
@@ -333,7 +288,7 @@ function validate_weight(frm, cdt, cdn) {
     // Check if size is defined before making a database call
     if (child.size) {
         // Fetch container types with the same size as the child row
-        frappe.db.get_list('Container Type', {
+        return frappe.db.get_list('Container Type', {
             fields: ['name', 'size', 'max_cargo_weight_kg'],
             filters: {
                 'size': child.size
@@ -349,7 +304,7 @@ function validate_weight(frm, cdt, cdn) {
                 if (child.avg_weight > container.max_cargo_weight_kg) {
                     // If the weight is greater than the max cargo weight, warn the user
                     frappe.msgprint(__('The weight entered exceeds the maximum limit for the selected container size.'));
-                    frappe.model.set_value(cdt, cdn, 'avg_weight', 0);
+                    return frappe.model.set_value(cdt, cdn, 'avg_weight', 0);
                 }
             } else {
                 // If no container type matches the size
@@ -363,4 +318,26 @@ function validate_weight(frm, cdt, cdn) {
         // If size is not defined in the child row
         frappe.msgprint(__('Please enter the size of the cargo first.'));
     }
+}
+
+// Server-derived Company catalogs and a request identity prevent stale async
+// replies from repopulating the wrong movement/profile.
+async function cargo_load_services(frm) {
+    if (frm.doc.docstatus || !frm.doc.company || !frm.doc.transport_type || !frm.doc.sales_order_type) return;
+    const key = JSON.stringify([frm.doc.company, frm.doc.transport_type, frm.doc.sales_order_type]);
+    const serial = frm.__cargo_catalog_serial = (frm.__cargo_catalog_serial || 0) + 1;
+    const response = await frm.call('get_service_catalog');
+    if (serial !== frm.__cargo_catalog_serial || key !== JSON.stringify([frm.doc.company, frm.doc.transport_type, frm.doc.sales_order_type])) return;
+    const scope = response.message;
+    const services = Object.fromEntries(scope.services.map(row => [row.name, row]));
+    frm.clear_table('services'); frm.clear_table('miscellaneous_services');
+    scope.sequence.forEach(row => {
+        const service = services[row.service_name];
+        if (!service) return;
+        Object.assign(frm.add_child('services'), {services: service.name, service_name: service.name1, applicable: 1});
+    });
+    scope.services.filter(row => row.miscellaneous).forEach(service => {
+        Object.assign(frm.add_child('miscellaneous_services'), {services: service.name, service_name: service.name1, miscellaneous: 1});
+    });
+    frm.refresh_field('services'); frm.refresh_field('miscellaneous_services');
 }

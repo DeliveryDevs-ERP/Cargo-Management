@@ -2,19 +2,8 @@ import frappe
 from frappe import _
 
 def execute(filters=None):
-    data = columns = []
-    job_types = get_job_types(filters)
-
-    columns = get_columns(data ,job_types)
-    if filters.get("transport_mode") == "Rail (Train)" and filters.get("check_train"):
-        data = get_data_rail_trains(filters, job_types)
-    if filters.get("transport_mode") == "Rail (Train)" and filters.get("check_booking"):
-        data = get_data_rail_bookings(filters, job_types)
-    if filters.get("transport_mode") == "Road (Truck)":
-        data = get_data_road(filters, job_types)
-        
-    data = process_data(data, job_types)
-    return columns, data
+    from cargo_management.cargo_management.utils.reporting import execute_report
+    return execute_report('Job Status', filters)
 
 def get_job_types(filters):
     job_types = []

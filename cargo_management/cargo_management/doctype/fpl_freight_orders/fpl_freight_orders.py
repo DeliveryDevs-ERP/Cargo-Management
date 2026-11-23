@@ -39,6 +39,7 @@ class FPLFreightOrders(Document):
     # end: auto-generated types
 
     def validate(self):
+        self.validate_job_lineage()
         self.check_job_status()
         self.verify_job_location_status()
         if self.container_number and self.container_type and self.documents_received:
@@ -68,8 +69,33 @@ class FPLFreightOrders(Document):
         if not re.match(pattern, self.container_number):
             frappe.throw(_("Container number must be 4 uppercase letters followed by 7 digits."),exc=ContainerNumberFormatError,)            
     
+    def validate_job_lineage(self):
+        old=self.get_doc_before_save()
+        if old and any(self.get(key)!=old.get(key) for key in ('sales_order_number','freight_order_number')):
+            frappe.throw(_('Saved Cargo Freight Order and Booking identities cannot be reassigned.'))
+        prior={row.name:row for row in old.jobs} if old else {}
+        kinds={'Road':'FPLRoadJob','Rail':'FPLRailJob','Yard':'FPLYardJob','Cross Stuff':'FPLCrossStuffJob'}
+        seen=set()
+        for row in self.jobs:
+            previous=prior.get(row.name)
+            if row.get('cargo_transfer') and row.get('cargo_transfer')!=(previous.get('cargo_transfer') if previous else None):
+                if row.cargo_transfer!=frappe.flags.get('cargo_active_transfer'):
+                    frappe.throw(_('Freight replacement provenance requires the active server-owned transfer.'))
+            if not row.job_id:continue
+            kind=kinds.get(frappe.db.get_value('Service Type',row.job_name,'job_type'))
+            actual=frappe.db.get_value(kind,row.job_id,['freight_order_id','sales_order_number','job_type'],as_dict=True) if kind else None
+            if not actual or (actual.freight_order_id,actual.sales_order_number,actual.job_type)!=(self.name,self.sales_order_number,row.job_name):
+                frappe.throw(_('Cargo job reference belongs to another Freight Order, Booking or service.'))
+            if (kind,row.job_id) in seen:
+                frappe.throw(_('A Cargo job cannot occupy two Freight Order sequence positions.'))
+            seen.add((kind,row.job_id))
+
     def after_insert(self):
         self.process_jobs()
+        # Child rows were inserted before after_insert. Persist the generated
+        # job references inside this same transaction, including direct inserts.
+        for job in self.jobs:
+            job.db_update()
 
     def check_job_status(self):
         if not self.jobs:
@@ -81,7 +107,7 @@ class FPLFreightOrders(Document):
             self.status = 'Completed'
         elif any(status == 'Completed' for status in statuses):
             self.status = 'In Progress'
-        elif all(status == 'Assigned' for status in statuses):
+        elif all(status in ('Draft', 'Assigned') for status in statuses) and 'Assigned' in statuses:
             self.status = 'Assigned'
         elif all(status == 'Draft' for status in statuses):
             self.status = 'Draft'
@@ -92,7 +118,17 @@ class FPLFreightOrders(Document):
             
     @frappe.whitelist()
     def process_jobs(self):
+        self.check_permission('write')
+        frappe.db.sql('SELECT name FROM `tabFPL Freight Orders` WHERE name=%s FOR UPDATE',self.name)
         for job in self.get("jobs"):
+            stored=frappe.db.get_value('FPL Jobs',job.name,['parent','job_name','job_id'],as_dict=True,for_update=True)
+            if not stored or stored.parent!=self.name or stored.job_name!=job.job_name:
+                frappe.throw(_('Save and verify the Freight Order job rows before generating jobs.'))
+            if stored.job_id:
+                job.job_id=stored.job_id
+                continue
+            if job.job_id:
+                frappe.throw(_('Unpersisted Cargo job references cannot be supplied by the caller.'))
             service_type_doc = frappe.get_value("Service Type", {"name": job.job_name}, ["*"], as_dict=True)
             if service_type_doc:
                 job_type = service_type_doc.get("job_type")
@@ -108,10 +144,12 @@ class FPLFreightOrders(Document):
                     frappe.msgprint(f"Job type for {job.job_name} is not specified.")
             else:
                 frappe.msgprint(f"No Service Type found for job {job.job_name}")
+            job.db_update()
 
     def create_fpl_CrossStuff_job(self, job, service_type_doc):
         crossStuff_job = frappe.get_doc({
             'doctype': 'FPLCrossStuffJob',
+            'cargo_transfer': job.get('cargo_transfer'),
             'freight_order_id': self.freight_order_number,
             'job_type': service_type_doc['name'],
             'status': 'Draft',
@@ -127,6 +165,7 @@ class FPLFreightOrders(Document):
     def create_fpl_rail_job(self, job, service_type_doc):
         rail_job = frappe.get_doc({
             'doctype': 'FPLRailJob',
+            'cargo_transfer': job.get('cargo_transfer'),
             'freight_order_id': self.freight_order_number,
             'job_type': service_type_doc['name'],
             'status': 'Draft',
@@ -142,6 +181,7 @@ class FPLFreightOrders(Document):
     def create_fpl_road_job(self, job, service_type_doc):
         road_job = frappe.get_doc({
             'doctype': 'FPLRoadJob',
+            'cargo_transfer': job.get('cargo_transfer'),
             'freight_order_id': self.freight_order_number,
             'job_type': service_type_doc['name'],
             'status': 'Draft',
@@ -157,6 +197,7 @@ class FPLFreightOrders(Document):
     def create_fpl_yard_job(self, job, service_type_doc):
         yard_job = frappe.get_doc({
             'doctype': 'FPLYardJob',
+            'cargo_transfer': job.get('cargo_transfer'),
             'freight_order_id': self.freight_order_number,
             'job_type': service_type_doc['name'],
             'status': 'Draft',
@@ -230,12 +271,14 @@ class FPLFreightOrders(Document):
     #         job.status = "Assigned"
 
     def update_container_in_jobs(self):
+        if not (self.container_number and self.container_type and self.documents_received):
+            return
         job_doctypes = ['FPLRailJob', 'FPLRoadJob', 'FPLYardJob', 'FPLCrossStuffJob']
         for doctype in job_doctypes:
             jobs = frappe.get_all(doctype, filters={'freight_order_id': self.freight_order_number}, fields=['name'])
             for job in jobs:
                 job_doc = frappe.get_doc(doctype, job.name)
-                if hasattr(job_doc, 'container_number') and job_doc.status != "Completed":
+                if hasattr(job_doc, 'container_number') and job_doc.status != "Completed" and not job_doc.get('cargo_retired'):
                     job_doc.container_number = self.container_number
                     job_doc.status = "Assigned"
                     job_doc.save()
@@ -245,7 +288,7 @@ class FPLFreightOrders(Document):
                 job.status = "Assigned"
                 
     def has_jobs_for_this_fo(self):
-        job_doctypes = ['FPLRailJob', 'FPLYardJob', 'FPLRoadJob']
+        job_doctypes = ['FPLRailJob', 'FPLYardJob', 'FPLRoadJob', 'FPLCrossStuffJob']
         for doctype in job_doctypes:
             # Check if there are any jobs associated with this Freight Order
             jobs = frappe.get_all(doctype, filters={'freight_order_id': self.name}, fields=['name'])
@@ -254,7 +297,7 @@ class FPLFreightOrders(Document):
         return False              
                 
     def delete_all_jobs_for_this_fo(self):
-        job_doctypes = ['FPLRailJob', 'FPLYardJob', 'FPLRoadJob']
+        job_doctypes = ['FPLRailJob', 'FPLYardJob', 'FPLRoadJob', 'FPLCrossStuffJob']
         for doctype in job_doctypes:
             jobs = frappe.get_all(doctype, filters={'freight_order_id': self.name}, fields=['name'])
             for job in jobs:
@@ -301,9 +344,11 @@ class FPLFreightOrders(Document):
 
 @frappe.whitelist()
 def create_Job_withoutId(docname):
-    doc = frappe.get_doc("FPL Freight Orders", docname)
+    doc = frappe.get_doc("FPL Freight Orders", docname, for_update=True)
+    doc.check_permission('write')
+    frappe.db.sql('SELECT name FROM `tabFPL Freight Orders` WHERE name=%s FOR UPDATE',docname)
     for job in doc.get("jobs"):
-        if job.job_id is None:
+        if not job.job_id:
             service_type_doc = frappe.get_value("Service Type", {"name": job.job_name}, ["*"], as_dict=True)
             job.status = 'Draft'
             if service_type_doc:
@@ -332,6 +377,7 @@ def change_container_number(freight_order_id, new_container_number):
         frappe.throw(_("Container number must be 4 uppercase letters followed by 7 digits."))
 
     freight_order = frappe.get_doc("FPL Freight Orders", freight_order_id)
+    freight_order.check_permission('write')
 
     container = frappe.get_doc("FPL Containers", {
         "freight_order_id": freight_order_id,

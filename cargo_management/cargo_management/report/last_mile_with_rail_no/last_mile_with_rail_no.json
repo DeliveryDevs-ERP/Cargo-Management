@@ -15,7 +15,6 @@
  "name": "Last Mile with Rail No",
  "owner": "Administrator",
  "prepared_report": 0,
- "query": "",
  "ref_doctype": "FPLRoadJob",
  "report_name": "Last Mile with Rail No",
  "report_type": "Script Report",
@@ -25,6 +24,12 @@
   },
   {
    "role": "Sales User"
+  },
+  {
+   "role": "Cargo Operator"
+  },
+  {
+   "role": "Cargo Manager"
   }
  ],
  "timeout": 0

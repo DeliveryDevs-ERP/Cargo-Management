@@ -16,7 +16,9 @@
   "job_name",
   "status",
   "assigned_at",
-  "performance_details"
+  "performance_details",
+  "cargo_retired",
+  "cargo_transfer"
  ],
  "fields": [
   {
@@ -85,6 +87,19 @@
    "fieldtype": "Data",
    "label": "Job Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "cargo_retired",
+   "fieldtype": "Check",
+   "label": "Cargo Retired",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cargo_transfer",
+   "fieldtype": "Link",
+   "label": "Cargo Transfer",
+   "options": "Cargo Cross Stuff Transfer",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -106,6 +121,26 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "write": 1
+  },
+  {
+   "role": "Cargo Operator",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Cargo Manager",
+   "read": 1,
+   "select": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "create": 1,
    "write": 1
   }
  ],

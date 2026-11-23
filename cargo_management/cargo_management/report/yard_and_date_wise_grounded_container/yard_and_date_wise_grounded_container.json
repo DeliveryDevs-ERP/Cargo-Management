@@ -24,6 +24,12 @@
   },
   {
    "role": "Sales User"
+  },
+  {
+   "role": "Cargo Operator"
+  },
+  {
+   "role": "Cargo Manager"
   }
  ],
  "timeout": 0
