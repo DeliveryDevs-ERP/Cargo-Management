@@ -65,6 +65,13 @@ class Fixtures:
 
 
 def prepare():
+    """Create test fixtures while preventing native provider HTTP calls."""
+    require_disposable()
+    with patch('requests.sessions.Session.request',side_effect=AssertionError('External HTTP is disabled during synthetic setup')):
+        return _prepare()
+
+
+def _prepare():
     """Run explicitly after checking that installation created no business data."""
     require_disposable()
     if (directory() / 'synthetic-fixtures.json').exists():
