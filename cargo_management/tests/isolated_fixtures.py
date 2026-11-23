@@ -75,6 +75,18 @@ def prepare():
     # Native setup creates only test-owned masters; installation never calls this.
     from erpnext.setup.setup_wizard.operations.install_fixtures import install
     install('Pakistan')
+    # Reproduce documented native setup, not a prior site's fiscal defaults.
+    year=int(nowdate()[:4])
+    for value in (year-1,year):
+        f.create('fiscal-year-'+str(value),'Fiscal Year',year=str(value),
+                 year_start_date=str(value)+'-01-01',year_end_date=str(value)+'-12-31')
+    frappe.db.set_value('Currency','PKR','enabled',1)
+    for label,buying,selling in [('Standard Buying',1,0),('Standard Selling',0,1)]:
+        if not frappe.db.exists('Price List',label):
+            f.create('price-list-'+label,'Price List',price_list_name=label,enabled=1,
+                     buying=buying,selling=selling,currency='PKR')
+    frappe.db.set_single_value('Global Defaults','default_currency','PKR')
+    frappe.db.set_single_value('System Settings','time_zone','Asia/Karachi')
     for index in (1, 2):
         company = f.create('company'+str(index), 'Company',
             company_name=f.label+' '+str(index), abbr=('PTA' if index==1 else 'PTB')+f.run[:5],
