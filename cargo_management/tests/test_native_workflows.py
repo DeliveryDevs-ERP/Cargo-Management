@@ -561,3 +561,33 @@ class TestNativeWorkflows(RollbackCase):
         with self.assertRaisesRegex(frappe.ValidationError,'inactive deferred'):
             make_booking(self.f,self.uid,submit=False)
         self.assertEqual(frappe.db.get_value('Item',item.name,'enable_deferred_revenue'),1)
+
+
+    def charge_candidate(self,weights=(25,25),received=(1,1)):
+        at=frappe.utils.now_datetime()-timedelta(hours=12)
+        bookings=[];containers=[]
+        for i,(size,weight) in enumerate(zip((20,40),weights)):
+            booking=make_booking(self.f,self.uid+'-'+str(i),mode='Rail (Train)',movement='Import',size=size,
+                avg_weight=weight,coherent_route=True,booking_date=frappe.utils.add_days(frappe.utils.nowdate(),-1))
+            freight=frappe.get_doc('FPL Freight Orders',{'sales_order_number':booking.name})
+            container=allocate_freight(self.f,freight,self.uid+str(i))
+            bookings.append(booking);containers.append((container,freight))
+        train=frappe.get_doc(dict(doctype='FPL Perform Middle Mile',name=self.uid+'-Candidate',__islocal=1,
+            company=bookings[0].company,movement_type='Up',departure_location=bookings[0].mm_loading_station,
+            arrival_location=bookings[0].mm_offloading_station,
+            wagons=[dict(wagon_number=self.uid+'-new-unsaved-wagon',wagon_type=self.f.get('reference-wagon-BFC').name)]))
+        for i,(container,freight) in enumerate(containers):
+            row=dict(container=container.name,fo=freight.name,wagon_number=train.wagons[0].wagon_number,
+                size=str(freight.size),weight=str(freight.weight))
+            train.append('middle_mile_in_loading',row)
+            train.append('middle_mile_copy',dict(**row,received_=received[i]))
+        return train
+
+
+    def test_more_than_twenty_freight_orders_cancel_without_leftovers(self):
+        booking=self.booking(qty=21,selected_labels=[])
+        order=frappe.db.get_value('Sales Order',{'custom_booking_order_id':booking.name},'name')
+        self.assertEqual(frappe.db.count('FPL Freight Orders',{'sales_order_number':booking.name}),21)
+        booking.cancel()
+        self.assertEqual(frappe.db.count('FPL Freight Orders',{'sales_order_number':booking.name}),0)
+        self.assertFalse(frappe.db.exists('Sales Order',order))

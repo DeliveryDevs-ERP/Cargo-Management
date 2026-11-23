@@ -35,7 +35,12 @@ const {chromium}=require('playwright');
   assert.equal(logo.status(),200);assert.equal((await logo.body()).subarray(0,4).toString(),'RIFF');
   checks.push('latest logo');
   for(const dt of ctx.parents){
-   await page.evaluate(async name=>{await frappe.model.with_doctype(name);frappe.new_doc(name);},dt);
+   await page.evaluate(async name=>{
+    if(window.cur_frm?.doc)cur_frm.doc.__unsaved=0;
+    await frappe.model.with_doctype(name);
+    const doc=frappe.model.get_new_doc(name);
+    frappe.set_route('Form',name,doc.name);
+   },dt);
    await page.waitForFunction(name=>window.cur_frm?.doctype===name,dt,{timeout:30000});
    assert(await page.locator('.form-layout').count(),dt+' form');
    checks.push('form '+dt);
@@ -47,7 +52,7 @@ const {chromium}=require('playwright');
    assert.equal(result.status(),200,name+' report');
    const data=(await result.json()).message;
    assert(Array.isArray(data.columns),name+' columns');assert(Array.isArray(data.result),name+' rows');
-   await page.evaluate(report=>frappe.set_route('query-report',report),name);
+   await page.evaluate(report=>{if(window.cur_frm?.doc)cur_frm.doc.__unsaved=0;frappe.set_route('query-report',report);},name);
    await page.waitForFunction(report=>frappe.query_report?.report_name===report,name,{timeout:30000});
    checks.push('report '+name);
   }

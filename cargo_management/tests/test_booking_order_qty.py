@@ -2,6 +2,7 @@
 import copy
 import itertools
 import uuid
+from decimal import Decimal, ROUND_HALF_UP
 from unittest.mock import patch
 import frappe
 from frappe.utils import add_days, nowdate
@@ -177,7 +178,8 @@ class TestBookingQuantity(RollbackCase):
             bo.submit()
             so = self.sales_order(bo)
             expected_qty = 1 if rate_type == 'Per Container' else 19.25 if rate_type == 'Per Weight(Ton)' else 4
-            self.assertEqual((so.docstatus, so.items[0].qty, so.items[0].amount), (0, expected_qty, round(12.5 * expected_qty, 2)))
+            expected_amount=float((Decimal('12.5')*Decimal(str(expected_qty))).quantize(Decimal('0.01'),rounding=ROUND_HALF_UP))
+            self.assertEqual((so.docstatus, so.items[0].qty, so.items[0].amount), (0, expected_qty, expected_amount))
             self.assertEqual(so.items[0].weight_per_unit, 19.25 if rate_type == 'Per Container' else 0.125 if rate_type == 'Per Bag' else 0)
 
 

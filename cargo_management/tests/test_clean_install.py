@@ -131,3 +131,31 @@ class TestCleanInstall(unittest.TestCase):
                 driver.connect.return_value.close.assert_called_once()
         finally:
             frappe.conf.clear();frappe.conf.update(original)
+
+    def test_crypto_provider_and_database_failures_are_sanitized(self):
+        import sys
+        from types import ModuleType
+        from unittest.mock import MagicMock
+        from cargo_management.tasks import crypto
+        original=dict(frappe.conf)
+        try:
+            frappe.conf.update(cargo_crypto_enabled=1,cargo_crypto_api_key='test-only',cargo_crypto_database_url='test-only')
+            for kind in ('redirect','provider','database'):
+                with self.subTest(kind=kind):
+                    driver=ModuleType('psycopg2');extras=ModuleType('psycopg2.extras')
+                    driver.extras=extras;driver.connect=MagicMock();extras.execute_batch=MagicMock()
+                    response=MagicMock(status_code=302 if kind=='redirect' else 500 if kind=='provider' else 200)
+                    response.json.return_value={'status':{'timestamp':'2026-01-01T00:00:00Z'},'data':[
+                        {'id':1,'symbol':'TEST','name':'Synthetic asset','quote':{'USD':{'price':2}}}]}
+                    private_marker='test-only-private-error'
+                    if kind=='provider':response.raise_for_status.side_effect=RuntimeError(private_marker)
+                    if kind=='database':driver.connect.side_effect=RuntimeError(private_marker)
+                    with patch.dict(sys.modules,{'psycopg2':driver,'psycopg2.extras':extras}),\
+                         patch.object(crypto.requests,'get',return_value=response) as http,patch.object(frappe,'log_error') as log:
+                        with self.assertRaisesRegex(RuntimeError,'Crypto fetch/store failed') as error:crypto.pull_and_store()
+                        self.assertNotIn(private_marker,str(error.exception))
+                        self.assertNotIn(private_marker,str(log.call_args_list))
+                        self.assertFalse(http.call_args.kwargs['allow_redirects'])
+                        if kind!='database':driver.connect.assert_not_called()
+        finally:
+            frappe.conf.clear();frappe.conf.update(original)

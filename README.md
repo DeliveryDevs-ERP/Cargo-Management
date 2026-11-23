@@ -40,7 +40,7 @@ Commercial tariff authority, partially received wagon pricing, bag-weight/fallba
 
 Crypto is disabled by default and its scheduled job is stopped. Optional dependencies can be installed with `bench pip install -e 'apps/cargo_management[crypto]'`. Installation does not enable execution. Live opt-in requires private `cargo_crypto_database_url` and `cargo_crypto_api_key` settings and separate authorization. Keep secrets outside source and fixtures; tests mock provider, PostgreSQL and email calls.
 
-The original development site's independent outbound policy remains conditional on that site's identity. It is not a firewall or a substitute for configuring another environment's integrations, email and scheduler. Financial QA guards are not installed. Framework/vendor dependency risks need deployment-specific review; Cargo does not patch framework source or certify production security or Marketplace readiness.
+Sites named `erp16.local` retain the development HTTP/job outbound protections. Other site names configure their own integrations, email and scheduler policies. This application policy is not a network firewall. Financial QA guards are not installed. Framework/vendor dependency risks need deployment-specific review; Cargo does not patch framework source or certify production security or Marketplace readiness.
 
 ## Licence
 

@@ -25,6 +25,8 @@ class TestFinancialIntegrations(RollbackCase):
     def test_extra_invoice_claim_submit_cancel_preserves_expense_identity(self):
         from cargo_management.cargo_management.api.expense_billing import fetch_expenses_items
         booking=make_booking(self.f,self.uid,selected_labels=['Long Haul'])
+        order=frappe.get_doc('Sales Order',{'custom_booking_order_id':booking.name})
+        order.submit()
         freight=frappe.get_doc('FPL Freight Orders',{'sales_order_number':booking.name})
         job=frappe.get_doc('FPLRoadJob',freight.jobs[0].job_id)
         expense=job.expenses[0]
