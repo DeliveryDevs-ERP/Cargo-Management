@@ -105,7 +105,7 @@ def _prepare():
             if not company.get(field): raise RuntimeError('Missing native Company default: '+field)
     company = f.get('company1')
     defaults=frappe.get_doc('Global Defaults')
-    defaults.update(default_company=company.name,default_currency='PKR',country='Pakistan')
+    defaults.update(dict(default_company=company.name,default_currency='PKR',country='Pakistan'))
     defaults.save()
     for name in ('Standard Buying','Standard Selling'):
         price_list=frappe.get_doc('Price List',name)
